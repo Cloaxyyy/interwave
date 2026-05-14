@@ -1,0 +1,65 @@
+[package]
+name = "wave"
+version = "0.3.5"
+description = "Wave music player"
+authors = []
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "wave_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-shell = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+
+# Audio — symphonia-all gives aac, mp3, flac, vorbis, wav codecs + isomp4/ogg/wav formats
+rodio = { version = "0.18", features = ["symphonia-all"] }
+# Explicit symphonia dep to add mkv format (WebM container, for future use)
+# Note: symphonia 0.5 has no Opus codec; we rely on m4a/AAC for YouTube streams
+symphonia = { version = "0.5", features = ["mkv"] }
+
+# Database
+rusqlite = { version = "0.31", features = ["bundled"] }
+r2d2 = "0.8"
+r2d2_sqlite = "0.24"
+
+# HTTP — blocking for yt-dlp resolver, async for audio download
+reqwest = { version = "0.12", features = ["blocking", "json", "stream", "rustls-tls"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4"] }
+
+rand = "0.8"
+discord-rich-presence = "0.2"
+
+futures-util = "0.3"
+thiserror = "1"
+log = "0.4"
+env_logger = "0.11"
+urlencoding = "2"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+[patch.crates-io]
+# Patched rodio: disable enable_gapless (triggers fMP4 seek bug) and convert
+# SeekError from unreachable!() to a proper DecoderError so YouTube m4a plays.
+rodio = { path = "vendor/rodio" }

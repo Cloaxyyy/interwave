@@ -1,0 +1,56 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# AI tooling — never commit
+.claude/
+.cursor/
+.aider*
+
+# Internal planning notes — local only
+docs/
+plans/
+notes/
+
+# Environment variables — never commit, use .env.example as a template
+.env
+.env.*
+!.env.example
+
+# Signing keys for the Tauri auto-updater — NEVER commit
+*.key
+*.key.pub
+interwave-updater.*
+
+# Crash logs (also written to %AppData% in production builds)
+interwave-crash.log
+
+# Build artifacts
+src-tauri/target/
+src-tauri/gen/
+
+# Local OS junk
+Thumbs.db
+*.swp
+supabase/

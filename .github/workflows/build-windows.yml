@@ -1,0 +1,94 @@
+name: Build Windows Installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    permissions:
+      contents: write   # tauri-action needs this to publish a Release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          v=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          echo "version=$v" >> $GITHUB_OUTPUT
+          echo "tag=v$v-build.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust build artifacts
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Download yt-dlp Windows binary
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "src-tauri/binaries"
+          Invoke-WebRequest `
+            -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" `
+            -OutFile "src-tauri/binaries/yt-dlp-x86_64-pc-windows-msvc.exe"
+
+      # ── Build + sign + publish a GitHub Release ───────────────────────
+      # tauri-action handles all of this when given a tagName:
+      #   - builds the NSIS installer
+      #   - generates the updater payload (.zip + .sig)
+      #   - creates a GitHub Release with all assets
+      #   - writes the latest.json manifest the updater plugin reads
+      - name: Build, sign, and release Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN:                       ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY:          ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Supabase project — set as repository secrets so the values
+          # don't live in the repo. The anon key is meant to be public
+          # (RLS protects all data) but the project URL is sensitive.
+          VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        with:
+          tagName:    ${{ steps.version.outputs.tag }}
+          releaseName: "Interwave v${{ steps.version.outputs.version }} (build ${{ github.run_number }})"
+          releaseBody: "Auto-built from `${{ github.sha }}`. Auto-update payload signed with the project key."
+          releaseDraft: false
+          prerelease:   false
+          # The "latest" release that the updater plugin polls — we always
+          # mark this build as the latest so installed apps see it.
+          updaterJsonPreferUniversal: true
+          args: --target x86_64-pc-windows-msvc --bundles nsis,updater
+
+      # Keep uploading the raw .exe as a workflow artifact too so the
+      # maintainer can grab it locally without going to releases.
+      - name: Upload NSIS installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave-windows-installer
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          if-no-files-found: error
+          retention-days: 7

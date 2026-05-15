@@ -6163,7 +6163,7 @@ dependencies = [
 
 [[package]]
 name = "wave"
-version = "0.7.3"
+version = "0.7.4"
 dependencies = [
  "discord-rich-presence",
  "env_logger",

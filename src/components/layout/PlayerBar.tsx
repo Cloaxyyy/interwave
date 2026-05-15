@@ -20,6 +20,7 @@ function InlineProgressBar() {
   const [dragging, setDragging] = React.useState(false);
   const [hovered, setHovered] = React.useState(false);
   const [dragFraction, setDragFraction] = React.useState<number | null>(null);
+  const [hoverFraction, setHoverFraction] = React.useState<number | null>(null);
   const barRef = React.useRef<HTMLDivElement>(null);
 
   const fractionAt = (clientX: number): number => {
@@ -32,6 +33,10 @@ function InlineProgressBar() {
     e.preventDefault();
     setDragging(true);
     setDragFraction(fractionAt(e.clientX));
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragging) setHoverFraction(fractionAt(e.clientX));
   };
 
   React.useEffect(() => {
@@ -71,8 +76,9 @@ function InlineProgressBar() {
       <div
         ref={barRef}
         onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseLeave={() => { setHovered(false); setHoverFraction(null); }}
         style={{
           flex: 1, position: 'relative',
           height: active ? 6 : 4,
@@ -97,6 +103,25 @@ function InlineProgressBar() {
             boxShadow: '0 0 0 4px color-mix(in oklch, var(--accent-live) 28%, transparent), 0 2px 6px rgba(0,0,0,0.4)',
             pointerEvents: 'none',
           }} />
+        )}
+        {hovered && hoverFraction !== null && duration > 0 && (
+          <div style={{
+            position: 'absolute',
+            bottom: 'calc(100% + 8px)',
+            left: `${hoverFraction * 100}%`,
+            transform: 'translateX(-50%)',
+            background: 'var(--bg-overlay)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--mono)', fontSize: 10.5,
+            fontVariantNumeric: 'tabular-nums',
+            padding: '4px 8px', borderRadius: 5,
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.45)',
+          }}>
+            {formatTime(hoverFraction * duration)}
+          </div>
         )}
       </div>
       <span style={{

@@ -574,7 +574,19 @@ fn emit_playback_started(
 
     tokio::spawn(async move {
         loop {
-            tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+            let live_pos = {
+                let snap = audio_p.snapshot();
+                match snap.playing_since_unix_ms {
+                    Some(started_ms) => {
+                        let elapsed = (unix_now_ms().saturating_sub(started_ms)) as f64 / 1000.0;
+                        snap.paused_at_secs + elapsed
+                    }
+                    None => snap.paused_at_secs,
+                }
+            };
+            let near_end = dur > 0.0 && (dur - live_pos) < 4.0;
+            let interval_ms = if near_end { 120 } else { 500 };
+            tokio::time::sleep(tokio::time::Duration::from_millis(interval_ms)).await;
             if pg.load(Ordering::SeqCst) != gen { break; }
             let snap = audio_p.snapshot();
             match snap.state {

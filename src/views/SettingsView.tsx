@@ -4,6 +4,9 @@ import ImportView from './ImportView';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
 import { setEqBand as setEqBandCmd, getEqBands, setEqPreset, listEqPresets, setCrossfade as setCrossfadeCmd, getCrossfade } from '../lib/tauri';
+import { getDiagnostics, clearCrashLog, crashCount } from '../lib/crashReporter';
+
+const APP_VERSION = '0.4.3';
 import { usePlayerStore } from '../stores/playerStore';
 import {
   ACTIONS, loadBindings, saveBindings, resetBindings,
@@ -211,6 +214,26 @@ function FsLyricsToggle() {
 
 function PrivacySection() {
   const [tog, setTog] = useState({ analytics: false, presence: false, recs: true });
+  const [count, setCount] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setCount(crashCount());
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(getDiagnostics(APP_VERSION));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {}
+  };
+
+  const handleClear = () => {
+    clearCrashLog();
+    setCount(0);
+  };
+
   return (
     <div>
       <h3 style={{ fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, margin: '0 0 4px', color: 'var(--text-primary)' }}>Privacy</h3>
@@ -224,6 +247,46 @@ function PrivacySection() {
       <SettingRow name="Recommendations from history" sub="Use your recent plays to tailor weekly mixes.">
         <Toggle on={tog.recs} onClick={() => setTog(t => ({...t, recs: !t.recs}))}/>
       </SettingRow>
+
+      <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
+          Diagnostics
+        </div>
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, maxWidth: 460, lineHeight: 1.5 }}>
+          {count === 0
+            ? 'No crashes recorded. If you hit a bug, the app captures the error here so you can copy a report.'
+            : `${count} ${count === 1 ? 'error' : 'errors'} captured locally. Copy them into a bug report if needed — never sent automatically.`}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleCopy}
+            style={{
+              padding: '7px 16px', borderRadius: 6,
+              border: '1px solid var(--border-default)',
+              background: copied ? 'rgba(200,255,87,0.1)' : 'transparent',
+              color: copied ? 'var(--accent)' : 'var(--text-secondary)',
+              fontFamily: 'var(--sans)', fontSize: 12, cursor: 'pointer',
+              transition: 'all 120ms',
+            }}
+          >
+            {copied ? '✓ Copied' : 'Copy diagnostics'}
+          </button>
+          {count > 0 && (
+            <button
+              onClick={handleClear}
+              style={{
+                padding: '7px 16px', borderRadius: 6,
+                border: '1px solid var(--border-subtle)',
+                background: 'transparent',
+                color: 'var(--text-muted)',
+                fontFamily: 'var(--sans)', fontSize: 12, cursor: 'pointer',
+              }}
+            >
+              Clear log
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

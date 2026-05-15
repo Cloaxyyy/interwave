@@ -141,38 +141,16 @@ export default function PlayerBar() {
   const isLoading = playbackState === 'loading';
 
   return (
-    <div
-      style={{
-        height: 92,
-
-        background: `
-          linear-gradient(180deg,
-            color-mix(in oklch, var(--accent-live) 4%, var(--bg-base)) 0%,
-            var(--bg-base) 100%
-          )
-        `,
-        backdropFilter: 'blur(28px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(150%)',
-        borderTop: 'none',
-        boxShadow: '0 -1px 0 0 color-mix(in oklch, var(--accent-live) 6%, transparent)',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 5,
-        transition: 'background 600ms ease, border-color 600ms ease',
-      }}
-    >
-      {}
+    <div className="iw-player" style={{ position: 'relative' }}>
       {isLoading && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0,
-          height: 2, background: 'var(--bg-overlay)', overflow: 'hidden',
+          height: 2, background: 'var(--bg-overlay)', overflow: 'hidden', zIndex: 2,
         }}>
           <div
             style={{
               height: '100%',
-              background: 'var(--grad-violet)',
+              background: 'linear-gradient(90deg, var(--accent), var(--accent-deep))',
               animation: 'playerLoadingBar 1.6s ease-in-out infinite',
             }}
           />
@@ -186,84 +164,47 @@ export default function PlayerBar() {
         </div>
       )}
 
-      <div style={{
-        flex: 1,
-        display: 'grid',
-        gridTemplateColumns: '300px 1fr 300px',
-        alignItems: 'center',
-        padding: '10px 22px',
-        gap: 18,
-        minHeight: 0,
-      }}>
-
-        {}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 8,
-            overflow: 'hidden', flexShrink: 0, position: 'relative',
-            background: url ? 'transparent' : 'var(--bg-overlay)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 14px -4px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)',
-          }}>
-            {url ? (
-              <img src={url} alt="" draggable={false}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <MusicNote size={20} weight="duotone" color="var(--text-muted)" />
-            )}
-            {isLoading && (
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'rgba(0,0,0,0.55)',
-                display: 'grid', placeItems: 'center',
-              }}>
-                <CircleNotch size={20} weight="bold" color="var(--accent)"
-                  style={{ animation: 'spin 0.9s linear infinite' }} />
-              </div>
-            )}
-          </div>
-          <div style={{ overflow: 'hidden', minWidth: 0, flex: 1 }}>
-            <p style={{
-              fontFamily: 'var(--sans)',
-              fontSize: 13, fontWeight: 600,
-              color: isLoading ? 'var(--accent)' : 'var(--text-primary)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              marginBottom: 2,
-              display: 'flex', alignItems: 'center', gap: 6,
+      {/* LEFT — now-playing meta */}
+      <div className="iw-now-meta">
+        <div className="iw-now-art" style={{ display: 'grid', placeItems: 'center', position: 'relative' }}>
+          {url ? (
+            <img src={url} alt="" draggable={false} />
+          ) : (
+            <MusicNote size={20} weight="duotone" color="var(--text-muted)" />
+          )}
+          {isLoading && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(0,0,0,0.55)',
+              display: 'grid', placeItems: 'center',
             }}>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {currentTrack ? cleanTrackTitle(currentTrack.title) : (isLoading ? 'Loading…' : 'Nothing playing')}
-              </span>
-              <OfflineBadge/>
-            </p>
-            <p style={{
-              fontFamily: 'var(--sans)', fontSize: 11,
-              color: 'var(--text-secondary)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {currentTrack?.artist ?? '—'}
-            </p>
+              <CircleNotch size={18} weight="bold" color="var(--accent)"
+                style={{ animation: 'spin 0.9s linear infinite' }} />
+            </div>
+          )}
+        </div>
+        <div className="iw-now-text">
+          <div className="iw-nt" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentTrack ? cleanTrackTitle(currentTrack.title) : (isLoading ? 'Loading…' : 'Nothing playing')}
+            </span>
+            <OfflineBadge/>
           </div>
+          <button className="iw-na">{currentTrack?.artist ?? '—'}</button>
         </div>
+      </div>
 
-        {}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          gap: 4, minWidth: 0,
-        }}>
-          <PlaybackControls variant="full" />
-          <InlineProgressBar />
-        </div>
+      {/* CENTER — transport + scrub */}
+      <div className="iw-player-center">
+        <PlaybackControls variant="full" />
+        <InlineProgressBar />
+      </div>
 
-        {}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-          gap: 10, minWidth: 0,
-        }}>
-          <LyricsButton />
-          <SleepTimer />
-          <VolumeControl />
-        </div>
+      {/* RIGHT — secondary controls */}
+      <div className="iw-player-right">
+        <LyricsButton />
+        <SleepTimer />
+        <VolumeControl />
       </div>
 
       {}

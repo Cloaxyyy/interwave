@@ -196,10 +196,22 @@ export default function App() {
   return (
     <div className="iw-room">
       <div className="iw-app-shell">
-        <Titlebar />
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-          {!libraryExpanded && <Sidebar />}
-          <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)', position: 'relative' }}>
+        <div style={{ gridColumn: '1 / -1', gridRow: 1, minWidth: 0 }}>
+          <Titlebar />
+        </div>
+        {!libraryExpanded && (
+          <div style={{ gridColumn: 1, gridRow: 2, display: 'flex', minHeight: 0 }}>
+            <Sidebar />
+          </div>
+        )}
+        <main style={{
+          gridColumn: libraryExpanded ? '1 / -1' : 2,
+          gridRow: 2,
+          display: 'flex', flexDirection: 'row',
+          overflow: 'hidden', background: 'var(--bg-base)', position: 'relative',
+          minWidth: 0, minHeight: 0,
+        }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', minWidth: 0 }}>
             <ErrorBoundary>
               <AnimatePresence mode="wait">
                 <PageTransition viewKey={libraryExpanded ? 'library' : activeView}>
@@ -209,11 +221,15 @@ export default function App() {
                 </PageTransition>
               </AnimatePresence>
             </ErrorBoundary>
-          </main>
+          </div>
           {!libraryExpanded && <NowPlayingPanel />}
+        </main>
+        <div style={{ gridColumn: '1 / -1', gridRow: 3, minWidth: 0 }}>
+          <PlayerBar />
         </div>
-        <PlayerBar />
-        <StreamBanner />
+        <div style={{ gridColumn: '1 / -1', gridRow: 4, minWidth: 0 }}>
+          <StreamBanner />
+        </div>
       </div>
       {}
       <CommandPalette />

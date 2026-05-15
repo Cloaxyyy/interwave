@@ -1,5 +1,3 @@
-// Full-screen overlay shown when the user is suspended or global
-// maintenance is on. Staff bypass the block and see a top banner instead.
 
 import { useEffect, useState } from 'react';
 import { ShieldWarning, Wrench } from '@phosphor-icons/react';
@@ -22,7 +20,6 @@ export default function AdminGate() {
   const suspension = useSuspension();
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
-  // Subscribe ONCE per logged-in user — pump everything into the shared store
   useEffect(() => {
     if (!userId) {
       setMaintenance([]);
@@ -38,12 +35,10 @@ export default function AdminGate() {
 
   const blocked = !isStaff && (!!suspension || !!globalMaintenance);
 
-  // Force-pause when blocked
   useEffect(() => {
     if (blocked && playbackState === 'playing') pause().catch(() => {});
   }, [blocked, playbackState]);
 
-  // Reset dismissal when state changes (so banner reappears if maint was off then on)
   useEffect(() => { setBannerDismissed(false); }, [globalMaintenance?.page, globalMaintenance?.enabled]);
 
   if (isStaff && globalMaintenance && !bannerDismissed) {

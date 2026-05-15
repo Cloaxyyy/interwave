@@ -1,4 +1,3 @@
-// Realtime announcement banner. Per-user dismissals stored in localStorage.
 
 import { useEffect, useState } from 'react';
 import { Megaphone, Warning, Sparkle, X } from '@phosphor-icons/react';

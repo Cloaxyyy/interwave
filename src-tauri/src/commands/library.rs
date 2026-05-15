@@ -56,11 +56,6 @@ pub fn add_track_to_playlist(
     state: State<'_, AppState>,
 ) -> Result<(), WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;
-    // Dedupe by youtube_id: if this song already exists under a different uuid
-    // (e.g. it was created when first played, but the user is now adding the
-    // search-result version which carries a fresh uuid), reuse the existing
-    // row's id. Otherwise the library accumulates duplicates and likes /
-    // play counts / playlist memberships get split across them.
     let target_id = match tracks::get_track_by_youtube_id(&conn, &track.youtube_id)? {
         Some(existing) => existing.id,
         None => {
@@ -125,10 +120,6 @@ pub fn delete_track(track_id: String, state: State<'_, AppState>) -> Result<(), 
     Ok(tracks::delete_track(&conn, &track_id)?)
 }
 
-/// Ensures a search result is saved in the library (upserts by youtube_id) and returns
-/// the full Track record. If the track already exists, the existing record is returned
-/// unchanged (preserving play_count, liked status, etc.). This lets the frontend like or
-/// add to a playlist without having to play the song first.
 #[tauri::command]
 pub fn save_track_from_search(
     youtube_id: String,
@@ -140,7 +131,6 @@ pub fn save_track_from_search(
 ) -> Result<tracks::Track, WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;
 
-    // Return the existing record if already saved (preserves play_count, liked, etc.)
     if let Some(existing) = tracks::get_track_by_youtube_id(&conn, &youtube_id)? {
         return Ok(existing);
     }
@@ -168,8 +158,6 @@ pub fn save_track_from_search(
     Ok(track)
 }
 
-/// Bulk-import tracks from the cloud into local SQLite.
-/// Skips tracks that already exist locally (preserves local play_count / liked).
 #[tauri::command]
 pub fn import_cloud_tracks(
     cloud_tracks: Vec<tracks::Track>,
@@ -178,7 +166,6 @@ pub fn import_cloud_tracks(
     let conn = state.db.get().map_err(WaveError::from)?;
     let mut imported = 0usize;
     for track in &cloud_tracks {
-        // Only insert if not already present — don't overwrite local listen history.
         if tracks::get_track_by_youtube_id(&conn, &track.youtube_id)?.is_none() {
             tracks::upsert_track(&conn, track)?;
             imported += 1;
@@ -187,7 +174,6 @@ pub fn import_cloud_tracks(
     Ok(imported)
 }
 
-/// Bulk-import playlists (and their tracks) from the cloud into local SQLite.
 #[tauri::command]
 pub fn import_cloud_playlists(
     cloud_playlists: Vec<playlists::Playlist>,
@@ -207,7 +193,6 @@ pub fn import_cloud_playlists(
     Ok(imported)
 }
 
-/// Add a playlist track from cloud (track must already be imported first).
 #[tauri::command]
 pub fn import_cloud_playlist_track(
     playlist_id: String,
@@ -215,7 +200,6 @@ pub fn import_cloud_playlist_track(
     state: State<'_, AppState>,
 ) -> Result<(), WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;
-    // Ignore error if track doesn't exist locally yet — sync handles ordering
     let _ = playlists::add_track_to_playlist(&conn, &playlist_id, &track_id);
     Ok(())
 }

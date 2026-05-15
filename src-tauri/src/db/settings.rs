@@ -8,12 +8,10 @@ pub struct Settings {
     pub crossfade_seconds: u8,
     pub performance_mode: bool,
     pub global_hotkeys: bool,
-    // New playback toggles
     pub crossfade_enabled: bool,
     pub gapless: bool,
     pub normalize: bool,
     pub hires_cellular: bool,
-    // New privacy toggles
     pub analytics: bool,
     pub presence: bool,
     pub recommendations: bool,
@@ -91,9 +89,6 @@ pub fn save_settings(conn: &Connection, s: &Settings) -> WaveResult<()> {
     Ok(())
 }
 
-/// Generic single-key setter — used by free-form preferences (hotkey
-/// bindings, accent colour overrides, etc.) that don't fit into the
-/// strongly-typed Settings struct.
 pub fn set_kv(conn: &Connection, key: &str, value: &str) -> WaveResult<()> {
     conn.execute(
         "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
@@ -102,7 +97,6 @@ pub fn set_kv(conn: &Connection, key: &str, value: &str) -> WaveResult<()> {
     Ok(())
 }
 
-/// Read a single key, returning None if not set or empty.
 pub fn get_kv(conn: &Connection, key: &str) -> WaveResult<Option<String>> {
     let row: rusqlite::Result<String> = conn.query_row(
         "SELECT value FROM settings WHERE key = ?1",
@@ -115,8 +109,6 @@ pub fn get_kv(conn: &Connection, key: &str) -> WaveResult<Option<String>> {
     }
 }
 
-/// List all (key, value) pairs whose key starts with `prefix`. Used to
-/// load every hotkey_* binding at startup.
 pub fn list_prefix(conn: &Connection, prefix: &str) -> WaveResult<Vec<(String, String)>> {
     let mut stmt = conn.prepare("SELECT key, value FROM settings WHERE key LIKE ?1")?;
     let pat = format!("{prefix}%");

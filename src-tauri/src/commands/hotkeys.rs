@@ -1,4 +1,3 @@
-//! Global hotkey commands. Bindings are persisted to the settings table.
 
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -8,7 +7,6 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use crate::error::WaveError;
 use crate::state::AppState;
 
-/// Action name → bound combo.
 pub type HotkeyMap = Mutex<HashMap<String, String>>;
 
 pub fn defaults() -> HashMap<String, String> {
@@ -59,7 +57,6 @@ pub async fn set_global_hotkey(
         )));
     }
 
-    // Persist + cache
     {
         let mut map = state.hotkeys.lock().map_err(|_| WaveError::Internal("hotkey map poisoned".into()))?;
         map.insert(action.clone(), trimmed.clone());
@@ -100,7 +97,6 @@ pub async fn reset_global_hotkeys(
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<HashMap<String, String>, WaveError> {
-    // Unregister everything first
     let prev: Vec<String> = {
         let map = state.hotkeys.lock().map_err(|_| WaveError::Internal("poisoned".into()))?;
         map.values().cloned().collect()
@@ -108,7 +104,6 @@ pub async fn reset_global_hotkeys(
     for p in prev {
         let _ = app.global_shortcut().unregister(p.as_str());
     }
-    // Set defaults & register them
     let defaults = defaults();
     {
         let mut map = state.hotkeys.lock().map_err(|_| WaveError::Internal("poisoned".into()))?;

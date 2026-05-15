@@ -70,7 +70,7 @@ function NavButton({ item, active, onClick }: NavButtonProps) {
         transition: 'color 150ms, background 150ms',
       }}
     >
-      {/* Animated active indicator pill */}
+      {}
       {active && (
         <motion.div
           layoutId="nav-pill-bg"
@@ -152,7 +152,7 @@ function LikedSongsButton({ onClick, active }: { onClick: () => void; active: bo
         textAlign: 'left',
       }}
     >
-      {/* Apple Music-style heart tile */}
+      {}
       <div style={{
         width: 32, height: 32, borderRadius: 6, flexShrink: 0,
         background: 'var(--grad-twilight)',
@@ -168,8 +168,6 @@ function LikedSongsButton({ onClick, active }: { onClick: () => void; active: bo
   );
 }
 
-// Playlist cover: shows the actual first track's thumbnail; falls back to a
-// hue-hashed gradient + initial letter (Apple Music style).
 function PlaylistCover({ name, thumbnail }: { name: string; thumbnail: string | null }) {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = ((h << 5) - h) + name.charCodeAt(i);
@@ -322,8 +320,6 @@ export default function Sidebar() {
       .catch(() => setPlaylists([]));
   }, [libraryVersion]);
 
-  // Lazy-fetch the first track thumbnail of each playlist for the cover art.
-  // We do this once per playlist set, not on every render.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -342,7 +338,7 @@ export default function Sidebar() {
       }
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [playlists]);
 
   const handleCreate = async () => {
@@ -387,10 +383,7 @@ export default function Sidebar() {
     <aside
       style={{
         width: 240,
-        // Same live-accent tint family as the panel + player bar so all
-        // three surfaces share one atmosphere. Subtle here (lower
-        // percentage) so the sidebar still reads as "less prominent
-        // chrome" than the actual now-playing surfaces.
+
         background: 'linear-gradient(180deg, var(--tint-8) 0%, var(--bg-surface) 35%)',
         borderRight: '1px solid var(--seam)',
         display: 'flex',
@@ -400,7 +393,7 @@ export default function Sidebar() {
         transition: 'background 600ms ease, border-color 600ms ease',
       }}
     >
-      {/* ── Top nav ───────────────────────────────────────────────── */}
+      {}
       <nav style={{ padding: '12px 8px 4px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         <AnimatePresence>
           {NAV_ITEMS.map((item) => (
@@ -417,7 +410,7 @@ export default function Sidebar() {
           active={activeView === 'settings'}
           onClick={() => setActiveView('settings' as View)}
         />
-        {/* Admin entry — only visible to moderator/developer/founder */}
+        {}
         {isStaff && (
           <NavButton
             item={{ id: 'admin' as View, label: 'Admin', icon: <ShieldStar size={17} weight="duotone" /> }}
@@ -427,10 +420,10 @@ export default function Sidebar() {
         )}
       </nav>
 
-      {/* Soft divider */}
+      {}
       <div style={{ height: 1, background: 'var(--border-subtle)', margin: '12px 16px 4px' }} />
 
-      {/* ── Library section ──────────────────────────────────────── */}
+      {}
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0 12px' }}>
         <LikedSongsButton
           active={activeView === 'liked'}
@@ -520,7 +513,7 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* ── Profile pill ───────────────────────────────────────── */}
+      {}
       <div
         onClick={() => setActiveView('profile' as View)}
         style={{

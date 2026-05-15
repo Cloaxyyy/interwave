@@ -17,8 +17,7 @@ function isInputFocused(): boolean {
 
 export function useKeyboardShortcuts() {
   const lastVolumeRef = useRef<number>(0.8);
-  // Re-read bindings on the iw:hotkeys-updated event so changes from
-  // SettingsView take effect without a reload.
+
   const [bindings, setBindings] = useState(() => loadBindings());
 
   useEffect(() => {
@@ -31,7 +30,6 @@ export function useKeyboardShortcuts() {
     const handler = (e: KeyboardEvent) => {
       if (isInputFocused()) return;
 
-      // Find first action whose binding matches this event
       const matched = (Object.entries(bindings) as Array<[HotkeyAction, string]>)
         .find(([, b]) => matchesBinding(e, b));
       if (!matched) return;
@@ -88,7 +86,7 @@ export function useKeyboardShortcuts() {
           break;
         }
         case 'palette':
-          // Re-emit a synthetic Cmd+K — the CommandPalette listener handles it
+
           window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
           break;
       }

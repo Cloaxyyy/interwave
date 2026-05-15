@@ -2,9 +2,8 @@ import { supabase } from './supabase';
 import { getLibrary, getAllPlaylists, getPlaylist, importCloudTracks, importCloudPlaylists, importCloudPlaylistTrack } from './tauri';
 import type { Track, Playlist } from './tauri';
 
-/** Push all local SQLite data to Supabase for the signed-in user. */
 export async function pushLocalDataToCloud(userId: string): Promise<void> {
-  // Push tracks
+
   const tracks = await getLibrary();
   if (tracks.length > 0) {
     const rows = tracks.map((t: Track) => ({
@@ -22,7 +21,6 @@ export async function pushLocalDataToCloud(userId: string): Promise<void> {
       created_at: t.created_at,
     }));
 
-    // Upsert in batches of 100 to avoid request size limits
     for (let i = 0; i < rows.length; i += 100) {
       const batch = rows.slice(i, i + 100);
       const { error } = await supabase
@@ -32,7 +30,6 @@ export async function pushLocalDataToCloud(userId: string): Promise<void> {
     }
   }
 
-  // Push playlists
   const playlists = await getAllPlaylists();
   if (playlists.length > 0) {
     const playlistRows = playlists.map((p: Playlist) => ({
@@ -48,7 +45,6 @@ export async function pushLocalDataToCloud(userId: string): Promise<void> {
       .upsert(playlistRows, { onConflict: 'id,user_id' });
     if (plErr) console.error('sync playlists error:', plErr);
 
-    // Push playlist tracks
     for (const pl of playlists) {
       const plTracks = await getPlaylist(pl.id);
       if (plTracks.length > 0) {
@@ -67,13 +63,8 @@ export async function pushLocalDataToCloud(userId: string): Promise<void> {
   }
 }
 
-/**
- * Pull all cloud data for a user into local SQLite.
- * Called on sign-in so a new device immediately has the user's library.
- * Safe to call multiple times — existing local records are never overwritten.
- */
 export async function pullCloudDataToLocal(userId: string): Promise<void> {
-  // 1. Pull tracks
+
   const { data: cloudTracks, error: tErr } = await supabase
     .from('user_tracks')
     .select('*')
@@ -96,13 +87,12 @@ export async function pullCloudDataToLocal(userId: string): Promise<void> {
       created_at: t.created_at ?? 0,
       local_path: null,
     }));
-    // Import in batches of 100
+
     for (let i = 0; i < tracks.length; i += 100) {
       await importCloudTracks(tracks.slice(i, i + 100));
     }
   }
 
-  // 2. Pull playlists
   const { data: cloudPlaylists, error: pErr } = await supabase
     .from('user_playlists')
     .select('*')
@@ -120,7 +110,6 @@ export async function pullCloudDataToLocal(userId: string): Promise<void> {
     }));
     await importCloudPlaylists(playlists);
 
-    // 3. Pull playlist tracks
     const { data: cloudPtracks, error: ptErr } = await supabase
       .from('user_playlist_tracks')
       .select('playlist_id, track_id, position')
@@ -137,7 +126,6 @@ export async function pullCloudDataToLocal(userId: string): Promise<void> {
   }
 }
 
-/** Pull cloud data summary (count of tracks, playlists) for a user. */
 export async function getCloudSummary(userId: string): Promise<{ tracks: number; playlists: number }> {
   const [{ count: tracks }, { count: playlists }] = await Promise.all([
     supabase.from('user_tracks').select('*', { count: 'exact', head: true }).eq('user_id', userId),

@@ -33,7 +33,6 @@ fn now_secs() -> i64 {
         .as_secs() as i64
 }
 
-/// Record a play session when a track starts playing. Non-fatal — callers should .ok() this.
 pub fn record_session(
     conn: &Connection,
     track_id: &str,

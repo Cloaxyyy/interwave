@@ -59,7 +59,7 @@ function QueueTrackRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Drop insertion line above this item */}
+      {}
       {showLineAbove && (
         <div
           style={{
@@ -75,7 +75,7 @@ function QueueTrackRow({
         />
       )}
 
-      {/* Drag handle / index */}
+      {}
       <span style={{ width: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         {hovered ? (
           <DotsSixVertical size={14} color="var(--text-muted)" style={{ cursor: 'grab' }} />
@@ -86,14 +86,14 @@ function QueueTrackRow({
         )}
       </span>
 
-      {/* Thumbnail */}
+      {}
       <div style={{ width: 36, height: 36, borderRadius: 4, overflow: 'hidden', background: 'var(--bg-overlay)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {track.thumbnail_url
           ? <img src={track.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
           : <MusicNote size={14} weight="duotone" color="var(--text-muted)" />}
       </div>
 
-      {/* Info */}
+      {}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontFamily: 'Syne, sans-serif', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {track.title}
@@ -103,7 +103,7 @@ function QueueTrackRow({
         </p>
       </div>
 
-      {/* Duration */}
+      {}
       {track.duration_seconds && (
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
           {formatDuration(track.duration_seconds)}
@@ -147,10 +147,8 @@ export default function QueueView() {
     const [item] = reordered.splice(from, 1);
     reordered.splice(targetIndex, 0, item);
 
-    // Immediate local update for visual feedback
     setQueueLocal(reordered);
 
-    // Persist to backend
     setQueue(reordered).catch(console.error);
 
     setDragIndex(null);
@@ -166,7 +164,7 @@ export default function QueueView() {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header */}
+      {}
       <div style={{ padding: '16px 20px 8px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
           Queue{queue.length > 0 && ` · ${queue.length} track${queue.length !== 1 ? 's' : ''}`}
@@ -184,7 +182,7 @@ export default function QueueView() {
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 4px' }}>
-        {/* Now Playing */}
+        {}
         {currentTrack && (
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontFamily: 'Syne, sans-serif', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: 'var(--text-muted)', padding: '0 16px 6px' }}>NOW PLAYING</p>
@@ -210,7 +208,7 @@ export default function QueueView() {
           </div>
         )}
 
-        {/* Up Next */}
+        {}
         {queue.length > 0 && (
           <>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 6px' }}>
@@ -240,7 +238,7 @@ export default function QueueView() {
           </>
         )}
 
-        {/* Empty */}
+        {}
         {!currentTrack && queue.length === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: 12 }}>
             <Queue size={32} color="var(--text-muted)" weight="duotone" />

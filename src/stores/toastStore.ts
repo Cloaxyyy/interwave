@@ -1,4 +1,3 @@
-// Global toast queue. Use the `toast` helper from anywhere.
 
 import { create } from 'zustand';
 
@@ -9,7 +8,7 @@ export interface ToastEntry {
   kind: ToastKind;
   title: string;
   body?: string;
-  /** ms before auto-dismiss; 0 means sticky */
+
   duration: number;
 }
 
@@ -34,7 +33,6 @@ export const useToastStore = create<ToastStore>((set, get) => ({
   dismiss: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
 }));
 
-// Convenience helpers
 export const toast = {
   success: (title: string, body?: string) =>
     useToastStore.getState().push({ kind: 'success', title, body, duration: 2800 }),

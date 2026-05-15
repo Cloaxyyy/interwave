@@ -1,4 +1,3 @@
-// Reusable empty-state card.
 
 import type { ReactNode } from 'react';
 

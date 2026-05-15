@@ -1,5 +1,3 @@
-// Cmd/Ctrl+K palette: fuzzy-jump to views, playlists, library tracks,
-// or YouTube search results.
 
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useUiStore } from '../../stores/uiStore';
@@ -18,7 +16,6 @@ type Action = {
   run: () => void | Promise<void>;
 };
 
-// Subsequence fuzzy match — lower score = better. undefined = no match.
 function fuzzyScore(text: string, query: string): number | undefined {
   if (!query) return 0;
   const t = text.toLowerCase();
@@ -28,7 +25,7 @@ function fuzzyScore(text: string, query: string): number | undefined {
     const ch = q[qi];
     while (ti < t.length && t[ti] !== ch) ti++;
     if (ti >= t.length) return undefined;
-    score += ti - lastHit; // gap penalty: contiguous = small score
+    score += ti - lastHit;
     lastHit = ti;
     ti++;
   }
@@ -48,7 +45,6 @@ export default function CommandPalette() {
   const setActivePlaylist = useUiStore((s) => s.setActivePlaylist);
   const libraryVersion = useUiStore((s) => s.libraryVersion);
 
-  // Toggle on Cmd/Ctrl+K from anywhere
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
@@ -63,7 +59,6 @@ export default function CommandPalette() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  // Reset when opened
   useEffect(() => {
     if (open) {
       setQuery('');
@@ -71,14 +66,12 @@ export default function CommandPalette() {
     }
   }, [open]);
 
-  // Refresh library/playlists when opening or when the library changes
   useEffect(() => {
     if (!open) return;
     getLibrary().then(setTracks).catch(() => {});
     getAllPlaylists().then(setPlaylists).catch(() => {});
   }, [open, libraryVersion]);
 
-  // Debounced YouTube search (350ms, 3+ chars).
   useEffect(() => {
     if (ytDebounce.current) clearTimeout(ytDebounce.current);
     const q = query.trim();
@@ -97,7 +90,6 @@ export default function CommandPalette() {
     return () => { if (ytDebounce.current) clearTimeout(ytDebounce.current); };
   }, [query]);
 
-  // Build the full action list.
   const allActions: Action[] = useMemo(() => {
     const views: Action[] = [
       { id: 'view:home',     kind: 'view', label: 'Go to Home',     hint: '↵', run: () => setActiveView('home') },
@@ -150,17 +142,16 @@ export default function CommandPalette() {
     return [...views, ...playlistActions, ...trackActions, ...youtubeActions];
   }, [tracks, playlists, ytResults, setActiveView, setActivePlaylist]);
 
-  // Filter + rank
   const filtered: Action[] = useMemo(() => {
     if (!query.trim()) {
-      // Empty query: just show all view shortcuts at the top
+
       return allActions.slice(0, 8);
     }
     const scored = allActions
       .map((a) => {
         const labelScore = fuzzyScore(a.label, query);
         const subScore = a.sublabel ? fuzzyScore(a.sublabel, query) : undefined;
-        // Best of label/sublabel, but label match preferred
+
         const score = labelScore !== undefined && subScore !== undefined
           ? Math.min(labelScore, subScore + 5)
           : labelScore ?? subScore;
@@ -171,7 +162,6 @@ export default function CommandPalette() {
     return scored.slice(0, 30).map((x) => x.a);
   }, [allActions, query]);
 
-  // Keep highlight in range when filtered list changes
   useEffect(() => {
     if (highlight >= filtered.length) setHighlight(0);
   }, [filtered.length, highlight]);

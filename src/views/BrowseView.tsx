@@ -1,4 +1,3 @@
-// Browse — trending YouTube queries laid out as card grids.
 
 import { useEffect, useState } from 'react';
 import { Play } from '@phosphor-icons/react';
@@ -26,7 +25,7 @@ const SECTIONS: Section[] = [
 export default function BrowseView() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header */}
+      {}
       <div style={{
         flexShrink: 0,
         padding: '24px 28px 18px',
@@ -54,7 +53,7 @@ export default function BrowseView() {
         </p>
       </div>
 
-      {/* Sections */}
+      {}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 56px' }}>
         {SECTIONS.map((s) => (
           <BrowseSection key={s.id} section={s}/>

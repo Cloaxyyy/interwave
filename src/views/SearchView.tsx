@@ -12,7 +12,6 @@ type Filter = 'all' | 'songs' | 'artists';
 
 const DEBOUNCE_MS = 500;
 
-// Keyframe hoisted to module scope — avoids duplicate <style> injection on each spinner mount
 const SPIN_KEYFRAME = `@keyframes spin { to { transform: rotate(360deg); } }`;
 
 export default function SearchView() {
@@ -23,7 +22,6 @@ export default function SearchView() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
 
-  // Derived: unique artists from current results, sorted by appearance count
   const uniqueArtists = useMemo(() => {
     const counts = new Map<string, { name: string; count: number; firstResult: SearchResult }>();
     for (const r of results) {
@@ -36,19 +34,16 @@ export default function SearchView() {
     return [...counts.values()].sort((a, b) => b.count - a.count);
   }, [results]);
 
-  // Filtered results for the chosen tab
   const visibleResults = filter === 'artists' ? [] : results;
 
-  // Load recent searches on mount, focus the input
   useEffect(() => {
     getSearchHistory()
       .then(setRecentSearches)
       .catch(() => {});
-    // Auto-focus so the user can start typing immediately on view enter
+
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [setRecentSearches]);
 
-  // Debounced search when query changes
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -65,7 +60,7 @@ export default function SearchView() {
         setResults(data);
         setStatus('done');
         setError(null);
-        // Refresh recent searches after successful search
+
         const recents = await getSearchHistory();
         setRecentSearches(recents);
       } catch (err) {
@@ -80,7 +75,7 @@ export default function SearchView() {
   }, [query, setResults, setStatus, setError, setRecentSearches]);
 
   const handlePlay = async (result: SearchResult): Promise<void> => {
-    // Build a Track-shaped list from results so context queuing works
+
     const idx = results.findIndex((r) => r.youtube_id === result.youtube_id);
     const after = results.slice(idx + 1).map((r) => ({
       id: r.youtube_id,
@@ -121,7 +116,7 @@ export default function SearchView() {
         overflow: 'hidden',
       }}
     >
-      {/* Header — big serif title + the actual search field */}
+      {}
       <div
         style={{
           padding: '24px 28px 18px',
@@ -139,7 +134,7 @@ export default function SearchView() {
           Search
         </h1>
 
-        {/* Search input — auto-focused, big, hard to miss */}
+        {}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           background: 'var(--bg-elevated)',
@@ -182,7 +177,7 @@ export default function SearchView() {
           )}
         </div>
 
-        {/* Status chip beneath the input */}
+        {}
         {query.trim() && (
           <p style={{
             fontFamily: 'var(--mono)', fontSize: 11,
@@ -199,7 +194,7 @@ export default function SearchView() {
           </p>
         )}
 
-        {/* Filter tabs — only visible once a search has resolved */}
+        {}
         {status === 'done' && results.length > 0 && (
           <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
             {([
@@ -230,9 +225,9 @@ export default function SearchView() {
         )}
       </div>
 
-      {/* Body */}
+      {}
       <div style={{ flex: 1, overflow: 'hidden auto' }}>
-        {/* Loading */}
+        {}
         <style>{SPIN_KEYFRAME}</style>
         {status === 'loading' && (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
@@ -245,7 +240,7 @@ export default function SearchView() {
           </div>
         )}
 
-        {/* Error */}
+        {}
         {status === 'error' && (
           <div style={{ padding: '24px 20px' }}>
             <div style={{
@@ -263,7 +258,7 @@ export default function SearchView() {
           </div>
         )}
 
-        {/* Results */}
+        {}
         {status === 'done' && results.length === 0 && (
           <div style={{ padding: '48px 24px', textAlign: 'center' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: 13, fontFamily: 'Syne' }}>
@@ -292,7 +287,7 @@ export default function SearchView() {
           </div>
         )}
 
-        {/* Artists tab — derived from result list, click to jump to artist page */}
+        {}
         {status === 'done' && filter === 'artists' && (
           <div style={{
             padding: '20px 24px',
@@ -350,7 +345,7 @@ export default function SearchView() {
           </div>
         )}
 
-        {/* Idle — show recent searches */}
+        {}
         {status === 'idle' && (
           <RecentSearches onSelect={handleRecentSelect} />
         )}

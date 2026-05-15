@@ -1,4 +1,3 @@
-// Bottom-left toast stack, fed by toastStore.
 
 import { CheckCircle, Info, Warning, XCircle, X } from '@phosphor-icons/react';
 import { useToastStore, type ToastKind } from '../../stores/toastStore';
@@ -28,7 +27,7 @@ export default function ToastStack() {
   return (
     <div style={{
       position: 'fixed',
-      bottom: 110,             // above the 92px player bar
+      bottom: 110,
       left: 22,
       zIndex: 8200,
       display: 'flex', flexDirection: 'column-reverse', gap: 8,

@@ -70,11 +70,9 @@ pub fn initialize(conn: &Connection) -> WaveResult<()> {
         CREATE INDEX IF NOT EXISTS idx_sessions_artist ON listening_sessions(artist);
     "#)?;
 
-    // Add local_path column if it doesn't exist (migration-safe)
     let _ = conn.execute_batch(
         "ALTER TABLE tracks ADD COLUMN local_path TEXT;"
     );
-    // ^ intentionally ignoring error — SQLite returns error if column already exists
 
     conn.execute_batch(r#"
         INSERT OR IGNORE INTO settings(key, value) VALUES ('volume', '0.8');

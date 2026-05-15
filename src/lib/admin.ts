@@ -1,4 +1,3 @@
-// Typed Supabase client for admin / moderation operations.
 
 import { supabase, isSupabaseConfigured } from './supabase';
 
@@ -29,7 +28,7 @@ export interface IpBanRow {
 }
 
 export interface MaintenanceRow {
-  page: string;            // 'global' or a specific page id
+  page: string;
   enabled: boolean;
   message: string;
   updated_at: string;
@@ -43,8 +42,6 @@ export interface AuditRow {
   details: Record<string, unknown> | null;
   created_at: string;
 }
-
-// ── Role lookup ────────────────────────────────────────────────────────────
 
 export async function getMyRole(): Promise<AppRole> {
   if (!isSupabaseConfigured) return 'user';
@@ -63,9 +60,6 @@ export function isStaff(role: AppRole): boolean {
   return role === 'founder' || role === 'developer' || role === 'moderator';
 }
 
-// ── Suspensions ────────────────────────────────────────────────────────────
-
-/** Returns the active suspension for the current user, or null. */
 export async function getMyActiveSuspension(): Promise<SuspensionRow | null> {
   if (!isSupabaseConfigured) return null;
   const { data: session } = await supabase.auth.getSession();
@@ -101,8 +95,6 @@ export async function liftSuspension(suspensionId: string) {
   await audit('lift_suspension', suspensionId, {});
 }
 
-// ── IP bans ────────────────────────────────────────────────────────────────
-
 export async function listIpBans(): Promise<IpBanRow[]> {
   const { data } = await supabase.from('ip_bans').select('*').order('created_at', { ascending: false });
   return (data as IpBanRow[]) ?? [];
@@ -120,8 +112,6 @@ export async function unbanIp(ip: string) {
   await audit('unban_ip', ip, {});
 }
 
-// ── Maintenance ────────────────────────────────────────────────────────────
-
 export async function getMaintenance(): Promise<MaintenanceRow[]> {
   const { data } = await supabase.from('maintenance').select('*');
   return (data as MaintenanceRow[]) ?? [];
@@ -138,9 +128,6 @@ export async function setMaintenance(page: string, enabled: boolean, message: st
   await audit(enabled ? 'maintenance_on' : 'maintenance_off', page, { message });
 }
 
-// ── Realtime subscription helpers ─────────────────────────────────────────
-
-/** Subscribe to maintenance + own-suspension updates. Returns unsub. */
 export function subscribeAdminState(
   myUserId: string,
   cb: (state: { maintenance: MaintenanceRow[]; suspension: SuspensionRow | null }) => void,
@@ -174,8 +161,6 @@ export function subscribeAdminState(
   return () => { supabase.removeChannel(ch); };
 }
 
-// ── Users (admin) ─────────────────────────────────────────────────────────
-
 export interface AdminUserRow {
   user_id: string;
   email: string;
@@ -204,11 +189,10 @@ export interface AdminUserDetail {
   }>;
 }
 
-/** All users with role + IP + suspension status. */
 export async function listUsers(): Promise<AdminUserRow[]> {
   const { data, error } = await supabase.rpc('staff_list_users');
   if (error) {
-    // RPC missing — fall back to the simple roles list.
+
     console.warn('[admin] staff_list_users RPC failed; falling back:', error.message);
     const { data: roles } = await supabase
       .from('user_roles').select('user_id, role').order('granted_at', { ascending: false });
@@ -237,7 +221,6 @@ export async function setRole(userId: string, role: AppRole) {
   await audit('set_role', userId, { role });
 }
 
-/** Record this client's IP via inet_client_addr() in the SECURITY DEFINER fn. */
 export async function logLogin() {
   if (!isSupabaseConfigured) return;
   try {
@@ -247,8 +230,6 @@ export async function logLogin() {
     console.warn('[admin] log_login failed:', e);
   }
 }
-
-// ── Broadcast announcements ───────────────────────────────────────────────
 
 export interface AnnouncementRow {
   id: string;
@@ -274,7 +255,7 @@ export async function activeAnnouncements(): Promise<AnnouncementRow[]> {
     .select('*')
     .eq('active', true)
     .order('created_at', { ascending: false });
-  // Filter expired client-side so we don't need a server-side cron
+
   const now = Date.now();
   return ((data as AnnouncementRow[]) ?? [])
     .filter((a) => !a.expires_at || new Date(a.expires_at).getTime() > now);
@@ -312,8 +293,6 @@ export function subscribeAnnouncements(
     .subscribe();
   return () => { supabase.removeChannel(ch); };
 }
-
-// ── Audit log helpers ─────────────────────────────────────────────────────
 
 async function audit(action: string, target: string, details: Record<string, unknown>) {
   if (!isSupabaseConfigured) return;

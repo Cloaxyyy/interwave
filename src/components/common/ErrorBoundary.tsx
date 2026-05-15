@@ -10,10 +10,6 @@ interface State {
   error: Error | null;
 }
 
-/**
- * Catches rendering errors in child components and shows a recovery UI
- * instead of crashing the entire app to a blank screen.
- */
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);

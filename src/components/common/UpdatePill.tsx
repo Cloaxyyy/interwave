@@ -1,10 +1,9 @@
-// "Update available — Restart" pill, bottom-right.
 
 import { useState, useEffect } from 'react';
 import { Download, ArrowClockwise, X } from '@phosphor-icons/react';
 import { useUpdateStore, applyUpdate, checkForUpdate } from '../../lib/updater';
 
-const APP_VERSION = '0.3.5';
+const APP_VERSION = '0.3.6';
 
 export default function UpdatePill() {
   const status = useUpdateStore((s) => s.status);
@@ -12,14 +11,12 @@ export default function UpdatePill() {
   const error = useUpdateStore((s) => s.error);
   const [dismissed, setDismissed] = useState(false);
 
-  // Check on mount + every 5 min.
   useEffect(() => {
     checkForUpdate().catch(() => {});
     const id = setInterval(() => checkForUpdate().catch(() => {}), 5 * 60 * 1000);
     return () => clearInterval(id);
   }, []);
 
-  // Re-show pill if a NEW version becomes available after dismissal
   useEffect(() => { setDismissed(false); }, [newVersion]);
 
   if (status !== 'available' && status !== 'installing') return null;
@@ -28,7 +25,7 @@ export default function UpdatePill() {
   return (
     <div style={{
       position: 'fixed',
-      bottom: 110,                 // above the 92 px player bar with margin
+      bottom: 110,
       right: 22,
       zIndex: 8000,
       background: 'var(--bg-elevated)',

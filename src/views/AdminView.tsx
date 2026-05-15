@@ -1,4 +1,3 @@
-// Staff control panel: maintenance, users, IP bans, announcements, audit log.
 
 import { useEffect, useState } from 'react';
 import {
@@ -460,7 +459,7 @@ function UsersPanel() {
         ))}
       </div>
 
-      {/* Detail modal */}
+      {}
       {selectedId && (
         <UserDetailModal
           userId={selectedId}
@@ -560,7 +559,6 @@ function UserDetailModal({
   };
   useEffect(refresh, [userId]);
 
-  // Esc to close
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
@@ -615,7 +613,7 @@ function UserDetailModal({
           <Skeleton/>
         ) : (
           <>
-            {/* Header */}
+            {}
             <div style={{
               padding: '20px 24px',
               borderBottom: '1px solid var(--border-subtle)',
@@ -644,7 +642,7 @@ function UserDetailModal({
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
-              {/* Role change */}
+              {}
               <DetailSection title="Role">
                 <div style={{ display: 'flex', gap: 6 }}>
                   <select value={newRole} onChange={(e) => setNewRole(e.target.value as AppRole)} style={selectStyle}>
@@ -661,7 +659,7 @@ function UserDetailModal({
                 </div>
               </DetailSection>
 
-              {/* Suspend / lift */}
+              {}
               <DetailSection title="Suspensions">
                 {detail.suspensions.length === 0 && (
                   <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>No suspension history.</p>
@@ -708,7 +706,7 @@ function UserDetailModal({
                 </div>
               </DetailSection>
 
-              {/* IP history */}
+              {}
               <DetailSection title={`Recent IPs (${detail.recent_ips.length})`}>
                 {detail.recent_ips.length === 0 && (
                   <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>
@@ -739,7 +737,7 @@ function UserDetailModal({
                 ))}
               </DetailSection>
 
-              {/* Audit / debug */}
+              {}
               <DetailSection title="Identity">
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--mono)', wordBreak: 'break-all' }}>
                   UID: {detail.user.id}
@@ -773,8 +771,6 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
     </div>
   );
 }
-
-// ── IP bans ──────────────────────────────────────────────────────────────────
 
 function IpBansPanel() {
   const [bans, setBans] = useState<IpBanRow[]>([]);
@@ -865,8 +861,6 @@ function IpBansPanel() {
   );
 }
 
-// ── Audit ────────────────────────────────────────────────────────────────────
-
 function AuditPanel() {
   const [rows, setRows] = useState<AuditRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -917,8 +911,6 @@ function AuditPanel() {
     </div>
   );
 }
-
-// ── Shared bits ──────────────────────────────────────────────────────────────
 
 function SectionHeader({ title, sub }: { title: string; sub: string }) {
   return (

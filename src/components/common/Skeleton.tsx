@@ -1,4 +1,3 @@
-// Pulsing placeholder rectangle.
 
 import type { CSSProperties } from 'react';
 

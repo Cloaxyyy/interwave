@@ -1,4 +1,3 @@
-// In-app hotkey config. Format: "Modifier+Modifier+KeyboardEvent.code".
 
 export type HotkeyAction =
   | 'play-pause'
@@ -64,14 +63,13 @@ export function resetBindings() {
   window.dispatchEvent(new CustomEvent('iw:hotkeys-updated'));
 }
 
-/** Compose a normalised binding string from a KeyboardEvent. */
 export function bindingFromEvent(e: KeyboardEvent): string {
   const parts: string[] = [];
   if (e.ctrlKey)  parts.push('Ctrl');
   if (e.shiftKey) parts.push('Shift');
   if (e.altKey)   parts.push('Alt');
   if (e.metaKey)  parts.push('Meta');
-  // Skip pure modifier key presses
+
   if (e.code === 'ControlLeft' || e.code === 'ControlRight'
       || e.code === 'ShiftLeft' || e.code === 'ShiftRight'
       || e.code === 'AltLeft' || e.code === 'AltRight'
@@ -82,13 +80,11 @@ export function bindingFromEvent(e: KeyboardEvent): string {
   return parts.join('+');
 }
 
-/** Test whether a KeyboardEvent matches a given binding string. */
 export function matchesBinding(e: KeyboardEvent, binding: string): boolean {
   if (!binding) return false;
   return bindingFromEvent(e) === binding;
 }
 
-/** Pretty-print a binding for the UI. e.g. "Ctrl+KeyK" → "Ctrl + K" */
 export function prettyBinding(b: string): string {
   if (!b) return '—';
   const map: Record<string, string> = {

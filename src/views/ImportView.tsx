@@ -23,7 +23,6 @@ export default function ImportView() {
 
   const [spotifyUrl, setSpotifyUrl] = useState('');
 
-  // Subscribe to import events
   useEffect(() => {
     const cleanups: Array<() => void> = [];
 
@@ -53,7 +52,7 @@ export default function ImportView() {
     setImportStatus('importing');
     try {
       await spotifyImportFile(filePath);
-      // completion handled by import://complete event
+
     } catch (err) {
       const msg = err instanceof Error ? err.message :
         typeof err === 'object' && err !== null ?
@@ -70,7 +69,7 @@ export default function ImportView() {
     setImportStatus('importing');
     try {
       await importSpotifyUrl(trimmed);
-      // completion handled by import://complete event
+
     } catch (err) {
       const msg = err instanceof Error ? err.message :
         typeof err === 'object' && err !== null ?
@@ -86,7 +85,7 @@ export default function ImportView() {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <style>{SPIN_KEYFRAME}</style>
 
-      {/* Header */}
+      {}
       <div
         style={{
           padding: '16px 20px 8px',
@@ -99,10 +98,10 @@ export default function ImportView() {
         </h2>
       </div>
 
-      {/* Body */}
+      {}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px', maxWidth: 480 }}>
 
-        {/* Instructions card */}
+        {}
         <div
           style={{
             background: 'var(--bg-surface)',
@@ -134,7 +133,7 @@ export default function ImportView() {
           </ol>
         </div>
 
-        {/* File picker button */}
+        {}
         <button
           onClick={handlePickFile}
           disabled={isImporting}
@@ -160,7 +159,7 @@ export default function ImportView() {
           Select Spotify export file…
         </button>
 
-        {/* URL import section */}
+        {}
         <div
           style={{
             background: 'var(--bg-surface)',
@@ -222,7 +221,7 @@ export default function ImportView() {
           </div>
         </div>
 
-        {/* Importing — starting (no progress yet) */}
+        {}
         {isImporting && !importProgress && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0' }}>
             <CircleNotch size={18} color="var(--accent)" weight="bold" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }} />
@@ -232,17 +231,17 @@ export default function ImportView() {
           </div>
         )}
 
-        {/* Importing — with progress */}
+        {}
         {isImporting && importProgress && (
           <ProgressPanel progress={importProgress} />
         )}
 
-        {/* Done */}
+        {}
         {importStatus === 'done' && importResult && (
           <ResultPanel result={importResult} onDismiss={resetImport} />
         )}
 
-        {/* Error */}
+        {}
         {importStatus === 'error' && importError && (
           <div
             style={{
@@ -330,7 +329,7 @@ function ResultPanel({ result, onDismiss }: { result: ImportCompleteEvent; onDis
         </button>
       </div>
 
-      {/* Truncation warning — Spotify capped the URL import */}
+      {}
       {result.truncated && (
         <div style={{
           background: 'rgba(255,180,60,0.08)',

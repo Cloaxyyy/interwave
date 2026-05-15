@@ -25,7 +25,6 @@ function formatDate(ts: number | null): string {
   });
 }
 
-/** Animated equalizer bars for the currently playing track */
 function NowPlayingBars({ paused = false }: { paused?: boolean }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, width: 12, height: 12 }}>
@@ -130,7 +129,7 @@ function TrackTableRow({
         cursor: 'default',
       }}
     >
-      {/* # / play indicator */}
+      {}
       <td style={{ width: 40, textAlign: 'right', paddingRight: 16, paddingLeft: 8, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
         {isPlaying && !hovered ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -143,7 +142,7 @@ function TrackTableRow({
         )}
       </td>
 
-      {/* Thumbnail + Title + Artist */}
+      {}
       <td style={{ paddingRight: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
@@ -203,7 +202,7 @@ function TrackTableRow({
         </div>
       </td>
 
-      {/* Album */}
+      {}
       {showAlbum && (
         <td style={{ paddingRight: 12 }}>
           <span
@@ -223,7 +222,7 @@ function TrackTableRow({
         </td>
       )}
 
-      {/* Date Added */}
+      {}
       {showDateAdded && (
         <td style={{ paddingRight: 12 }}>
           <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 12, color: 'var(--text-secondary)' }}>
@@ -232,7 +231,7 @@ function TrackTableRow({
         </td>
       )}
 
-      {/* Actions + Duration */}
+      {}
       <td style={{ width: 140, paddingRight: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
           {hovered ? (
@@ -291,7 +290,7 @@ export default function TrackTable({
 
   const handleTableContextMenu = (e: React.MouseEvent<HTMLTableElement>) => {
     e.preventDefault();
-    // Walk up from the target to find a <tr> with data-track-id
+
     let el = e.target as HTMLElement | null;
     while (el && el.tagName !== 'TR') el = el.parentElement;
     if (!el) return;
@@ -308,7 +307,7 @@ export default function TrackTable({
         style={{ width: '100%', borderCollapse: 'collapse' }}
         onContextMenu={handleTableContextMenu}
       >
-        {/* Header */}
+        {}
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             <th style={{ width: 40, textAlign: 'right', paddingRight: 16, paddingLeft: 8, paddingBottom: 8 }}>

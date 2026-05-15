@@ -10,7 +10,6 @@ import { saveResumeState, clearResumeState } from '../lib/crashResume';
 import type { PlaybackState } from '../stores/playerStore';
 import { getLastContext } from '../lib/playContext';
 
-// Convert a YouTube SearchResult into a queued Track.
 function recToTrack(r: SearchResult): Track {
   return {
     id: crypto.randomUUID(),
@@ -39,21 +38,17 @@ export function useTauriEvents() {
   useEffect(() => {
     const cleanups: Array<() => void> = [];
 
-    // ── Recommendations cache ─────────────────────────────────────────────────
-    // Pre-fetched in the background as soon as a track starts so when the
-    // current track ends we can instantly autoplay the first recommendation
-    // (no awkward silence). Also surfaced to the UI as "Up Next".
     let cachedRecs: Track[] = [];
     let cachedRecsForId = '';
 
     function prefetchRecs(track: Track) {
       cachedRecs = [];
       cachedRecsForId = track.youtube_id;
-      // Clear UI immediately so the previous recs don't linger
+
       setRecommendations([]);
       getRecommendations(track.youtube_id)
         .then((recs) => {
-          if (cachedRecsForId !== track.youtube_id) return; // track changed
+          if (cachedRecsForId !== track.youtube_id) return;
           const filtered = recs
             .filter((r) => r.youtube_id !== track.youtube_id)
             .slice(0, 12)
@@ -66,14 +61,12 @@ export function useTauriEvents() {
         });
     }
 
-    // ── playback://state ──────────────────────────────────────────────────────
     listen<{ state: string }>('playback://state', (event) => {
       const newState = event.payload.state as PlaybackState;
       setPlaybackState(newState);
 
       if (newState === 'ended' || newState === 'stopped') {
-        // Track ended cleanly — wipe resume state so we don't suggest
-        // resuming a song the user just heard end naturally.
+
         clearResumeState();
       }
       if (newState === 'ended') {
@@ -81,13 +74,6 @@ export function useTauriEvents() {
       }
     }).then((u) => cleanups.push(u));
 
-    // ── End-of-track decision tree ────────────────────────────────────────
-    // Priority:
-    //   1. Repeat-one → restart same track
-    //   2. Explicit queue has items → skip_next (Rust handles it)
-    //   3. Repeat-all + play context → re-queue & skip
-    //   4. Cached recs → autoplay (with sync fetch retry if cache is empty)
-    //   5. Random library track → so the music never just dies
     async function handleTrackEnded() {
       const autoplayOn = localStorage.getItem('interwave_autoplay') !== 'false';
       const { queue, repeat, currentTrack, shuffle } = usePlayerStore.getState();
@@ -114,7 +100,6 @@ export function useTauriEvents() {
       }
       if (!autoplayOn) return;
 
-      // Try cached recs; if empty, fetch synchronously now.
       let recs = cachedRecs;
       if (recs.length === 0 && currentTrack) {
         try {
@@ -135,8 +120,6 @@ export function useTauriEvents() {
         return;
       }
 
-      // Last-resort fallback: pick a random track from the library so the
-      // music doesn't just dead-end on the same song.
       try {
         const lib = await getLibrary();
         const candidates = lib.filter((t) => t.id !== currentTrack?.id);
@@ -155,9 +138,6 @@ export function useTauriEvents() {
       }
     }
 
-    // ── playback://position ───────────────────────────────────────────────────
-    // Throttle the resume-state save to once per ~3s so we're not slamming
-    // localStorage on every position event (they fire every 500 ms).
     let lastSaveAt = 0;
     listen<{ position: number; duration: number }>('playback://position', (event) => {
       setPosition(event.payload.position, event.payload.duration);
@@ -169,33 +149,27 @@ export function useTauriEvents() {
       }
     }).then((u) => cleanups.push(u));
 
-    // ── playback://track ──────────────────────────────────────────────────────
     listen<{ track: Track }>('playback://track', (event) => {
       setCurrentTrack(event.payload.track);
       setPlaybackError(null);
       storeSetWaveform([]);
-      // Pre-fetch recommendations so we have something to autoplay if the queue
-      // is empty when the track ends, AND so the "Up Next" UI shows them.
+
       prefetchRecs(event.payload.track);
     }).then((u) => cleanups.push(u));
 
-    // ── playback://queue ──────────────────────────────────────────────────────
     listen<{ queue: Track[] }>('playback://queue', (event) => {
       storeSetQueue(event.payload.queue);
     }).then((u) => cleanups.push(u));
 
-    // ── playback://waveform ───────────────────────────────────────────────────
     listen<{ bars: number[] }>('playback://waveform', (event) => {
       storeSetWaveform(event.payload.bars);
     }).then((u) => cleanups.push(u));
 
-    // ── playback://error ──────────────────────────────────────────────────────
     listen<{ message: string }>('playback://error', (event) => {
       setPlaybackError(event.payload.message);
       setPlaybackState('stopped');
     }).then((u) => cleanups.push(u));
 
-    // ── hotkeys ───────────────────────────────────────────────────────────────
     listen<void>('hotkey://play-pause', () => {
       const state = usePlayerStore.getState().playbackState;
       if (state === 'playing') pause().catch(console.error);

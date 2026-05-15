@@ -114,7 +114,7 @@ export default function LibraryView() {
         )}
       </div>
 
-      {/* Playlist picker modal */}
+      {}
       {trackToAdd && (
         <PlaylistPickerModal track={trackToAdd} onClose={() => setTrackToAdd(null)} />
       )}

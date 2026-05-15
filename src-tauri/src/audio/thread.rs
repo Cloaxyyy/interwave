@@ -7,8 +7,6 @@ use std::time::{Duration, Instant};
 use crate::db::tracks::Track;
 use crate::error::WaveError;
 
-// rodio Source over Arc<Vec<i16>> with a shared Arc<AtomicUsize> cursor.
-// Seeking = atomic store on `pos`; no Sink/CPAL teardown.
 use std::sync::atomic::AtomicUsize;
 
 pub struct AtomicSeekSource {
@@ -61,15 +59,6 @@ fn unix_now_ms() -> u64 {
         .as_millis() as u64
 }
 
-// ── Direct symphonia decode (bypasses rodio's Decoder probe) ──────────────────
-//
-// rodio's Decoder uses `symphonia::default::get_probe()` which only sees the
-// features compiled into the vendored rodio crate.  When we call symphonia
-// from wave's own code the full feature set (mkv + opus, declared in wave's
-// Cargo.toml) is active, so WebM/Opus is always recognised here.
-
-/// Decode audio bytes to raw i16 samples, returning (samples, sample_rate, channels).
-/// This is the canonical decoder used by both PlayBuffered and PlayDecoded paths.
 pub fn decode_raw(bytes: Vec<u8>) -> Result<(Vec<i16>, u32, u16), WaveError> {
     use symphonia::core::{
         audio::SampleBuffer,
@@ -119,7 +108,6 @@ pub fn decode_raw(bytes: Vec<u8>) -> Result<(Vec<i16>, u32, u16), WaveError> {
         match decoder.decode(&packet) {
             Ok(decoded) => {
                 let spec = decoded.spec();
-                // Guard against degenerate specs that would panic SamplesBuffer::new
                 if spec.rate == 0 || spec.channels.count() == 0 {
                     log::warn!("Skipping frame with invalid spec: rate={} ch={}", spec.rate, spec.channels.count());
                     continue;
@@ -130,7 +118,7 @@ pub fn decode_raw(bytes: Vec<u8>) -> Result<(Vec<i16>, u32, u16), WaveError> {
                 buf.copy_interleaved_ref(decoded);
                 samples.extend_from_slice(buf.samples());
             }
-            Err(SE::DecodeError(_)) => continue, // skip bad frame
+            Err(SE::DecodeError(_)) => continue,
             Err(e) => { log::warn!("decode frame error: {e}"); break; }
         }
     }
@@ -138,36 +126,24 @@ pub fn decode_raw(bytes: Vec<u8>) -> Result<(Vec<i16>, u32, u16), WaveError> {
     if samples.is_empty() {
         return Err(WaveError::Audio("decoded 0 samples".into()));
     }
-    // Final guard: if sr/ch are still the codec defaults (48000/2) but look wrong, clamp.
     let sr = sr.max(1);
     let ch = ch.max(1);
     log::info!("direct-symphonia decoded {} samples sr={sr} ch={ch}", samples.len());
     Ok((samples, sr, ch))
 }
 
-/// Decode audio bytes to a rodio SamplesBuffer (convenience wrapper around decode_raw).
 fn decode_with_symphonia(bytes: Vec<u8>) -> Result<rodio::buffer::SamplesBuffer<i16>, WaveError> {
     let (mut samples, sr, ch) = decode_raw(bytes)?;
     normalize_samples(&mut samples);
     Ok(rodio::buffer::SamplesBuffer::new(ch, sr, samples))
 }
 
-// ── Commands sent from Tauri commands → audio thread ──────────────────────────
-// The audio thread never touches the network. Callers download bytes first
-// (in tokio async context) and pass them here already buffered.
-
 pub enum AudioCommand {
-    /// Play fully-buffered bytes downloaded via parallel Range requests.
-    /// This is the ONLY play command — audio is always fully downloaded before
-    /// being handed to rodio's Sink, so the CPAL callback never blocks on I/O.
     PlayBuffered {
         audio_bytes: Vec<u8>,
         track: Track,
         result_tx: std::sync::mpsc::SyncSender<Result<(), WaveError>>,
     },
-    /// Play pre-decoded PCM samples directly (skips in-thread decode).
-    /// Used by the progressive-download path so the first chunk can start
-    /// playing while the rest of the file is still downloading.
     PlayDecoded {
         samples: Vec<i16>,
         sample_rate: u32,
@@ -175,9 +151,6 @@ pub enum AudioCommand {
         track: Track,
         result_tx: std::sync::mpsc::SyncSender<Result<(), WaveError>>,
     },
-    /// Append more decoded audio to the currently-playing sink without
-    /// interrupting playback.  Used by the progressive-download path to
-    /// queue the tail of the song while the first chunk is already playing.
     AppendChunk {
         samples: Vec<i16>,
         sample_rate: u32,
@@ -200,12 +173,10 @@ pub enum AudioCommand {
         result_tx: std::sync::mpsc::SyncSender<Option<Track>>,
     },
     SetShuffle(bool),
-    SetRepeat(String), // "off" | "one" | "all"
+    SetRepeat(String),
     SetQueue(Vec<Track>),
     SetSpeed(f32),
 }
-
-// ── Shared readable state ──────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -216,8 +187,6 @@ pub enum PlaybackState {
     Stopped,
 }
 
-/// Compute a normalized waveform as N RMS amplitude values in [0.0, 1.0].
-/// Used to render the waveform behind the seek bar.
 pub fn compute_waveform(samples: &[i16], n_bars: usize) -> Vec<f32> {
     if samples.is_empty() || n_bars == 0 {
         return vec![0.0; n_bars];
@@ -234,12 +203,10 @@ pub fn compute_waveform(samples: &[i16], n_bars: usize) -> Vec<f32> {
             .sqrt() as f32;
         bars.push(rms);
     }
-    // Pad if needed
     while bars.len() < n_bars {
         bars.push(0.0);
     }
 
-    // Normalize to [0.0, 1.0]
     let max = bars.iter().cloned().fold(0.0_f32, f32::max);
     if max > 0.001 {
         for b in &mut bars {
@@ -254,9 +221,7 @@ pub struct AudioStateSnapshot {
     pub current_track: Option<Track>,
     pub state: PlaybackState,
     pub position_secs: f64,
-    /// Unix ms timestamp when playback last resumed; None if paused/stopped.
     pub playing_since_unix_ms: Option<u64>,
-    /// Accumulated position at last pause/seek (does not include currently-playing elapsed time).
     pub paused_at_secs: f64,
     pub queue: Vec<Track>,
     pub volume: f32,
@@ -264,8 +229,6 @@ pub struct AudioStateSnapshot {
     pub shuffle: bool,
     pub repeat: String,
 }
-
-// ── Handle given to AppState ───────────────────────────────────────────────────
 
 #[derive(Clone)]
 pub struct AudioHandle {
@@ -275,7 +238,6 @@ pub struct AudioHandle {
 }
 
 impl AudioHandle {
-    /// Returns true if the command was accepted, false if the audio thread is dead.
     pub fn send(&self, cmd: AudioCommand) -> bool {
         match self.cmd_tx.try_send(cmd) {
             Ok(()) => true,
@@ -291,9 +253,6 @@ impl AudioHandle {
     }
 
     pub fn snapshot(&self) -> AudioStateSnapshot {
-        // Use poison-safe lock: if the audio thread panicked while holding this
-        // mutex the lock is poisoned, but `into_inner()` recovers the data so we
-        // never propagate a panic back to Tauri command handlers.
         match self.shared.lock() {
             Ok(guard) => guard.clone(),
             Err(poisoned) => {
@@ -316,8 +275,6 @@ impl AudioHandle {
     }
 }
 
-// ── Spawn the audio thread ─────────────────────────────────────────────────────
-
 pub fn spawn_audio_thread() -> AudioHandle {
     let (cmd_tx, cmd_rx) = std::sync::mpsc::sync_channel::<AudioCommand>(64);
 
@@ -339,8 +296,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
     let alive_clone = alive.clone();
 
     std::thread::spawn(move || {
-        // OutputStream must live on this thread for its entire lifetime.
-        // It is NOT Send, so it cannot leave this thread.
         let (_stream, stream_handle) = match OutputStream::try_default() {
             Ok(pair) => pair,
             Err(e) => {
@@ -361,9 +316,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
         let mut repeat_mode: String = "off".to_string();
         let mut playback_started_at: Option<Instant> = None;
         let mut paused_position: f64 = 0.0;
-        // Cached PCM of the currently-playing track. Lives only as long as the
-        // current track does (cleared on Stop / next PlayDecoded). Used by Seek
-        // to spawn a fresh Sink at the new offset without touching try_seek.
         let mut current_pcm: Option<Arc<Vec<i16>>> = None;
         let mut current_pos: Option<Arc<AtomicUsize>> = None;
         let mut current_sr: u32 = 48000;
@@ -387,9 +339,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                         }
 
                         let play_source: Result<PlaySource, WaveError> = {
-                            // Use the M4a hint so symphonia's isomp4 prober runs first.
-                            // Without a hint, wrong-format probers run before isomp4 and
-                            // can return errors that fail the probe entirely.
                             let rodio_result = std::panic::catch_unwind(
                                 std::panic::AssertUnwindSafe(|| {
                                     Decoder::new_mp4(
@@ -431,7 +380,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                                 let _ = result_tx.send(Err(e));
                             }
                             Ok(source) => {
-                                // PlayBuffered: seek not supported on this path (fallback only).
                                 match source {
                                     PlaySource::Rodio(dec) => start_sink(dec, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx),
                                     PlaySource::Pcm(buf)   => start_sink(buf, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx),
@@ -449,8 +397,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                         normalize_samples(&mut samples);
                         let sr = sample_rate.max(1);
                         let ch = channels.max(1);
-                        // Cache the PCM + atomic cursor so Seek can move the
-                        // playhead without touching the Sink at all.
                         let arc_samples = Arc::new(samples);
                         let pos = Arc::new(AtomicUsize::new(0));
                         current_pcm = Some(arc_samples.clone());
@@ -463,8 +409,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                     }
 
                     AudioCommand::AppendChunk { samples, sample_rate, channels } => {
-                        // Append tail samples to the current sink without interrupting playback.
-                        // If the sink is gone (user stopped/skipped), silently discard.
                         if let Some(ref s) = sink {
                             let sr = sample_rate.max(1);
                             let ch = channels.max(1);
@@ -552,7 +496,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                     }
 
                     AudioCommand::Seek(mut position_secs) => {
-                        // Drain any queued seeks — only the latest matters.
                         while let Ok(AudioCommand::Seek(newer)) = cmd_rx.try_recv() {
                             position_secs = newer;
                         }
@@ -564,14 +507,11 @@ pub fn spawn_audio_thread() -> AudioHandle {
                         let sr = current_sr.max(1);
                         let ch = current_ch.max(1);
 
-                        // Compute the target sample index, frame-aligned.
                         let (total_samples, target) = match current_pcm.as_ref() {
                             Some(pcm) => {
                                 let frame_idx = (position_secs * sr as f64) as usize;
                                 let sample_idx = (frame_idx * ch as usize).min(pcm.len());
                                 let aligned = (sample_idx / ch as usize) * ch as usize;
-                                // Clamp to leave at least one frame so the source
-                                // doesn't immediately return None on next iter.
                                 let safe = if pcm.len() > ch as usize {
                                     aligned.min(pcm.len() - ch as usize)
                                 } else { 0 };
@@ -590,8 +530,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                         };
                         pos.store(target, Ordering::Relaxed);
 
-                        // If the source already finished, the sink won't resume
-                        // from the new cursor — recreate it.
                         let sink_finished = sink.as_ref()
                             .map(|s| s.empty())
                             .unwrap_or(true);
@@ -619,7 +557,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                             log::info!("Seek (atomic) → {clamped_secs:.2}s");
                         }
 
-                        // Update bookkeeping so the UI position tracker is accurate.
                         let now_playing = sink.as_ref()
                             .map(|s| !s.is_paused() && !s.empty())
                             .unwrap_or(was_playing_before);
@@ -740,8 +677,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                     }
                 }
                 Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-                    // Detect natural end-of-song so the polling loop in
-                    // playback.rs can fire the "ended" event for autoplay.
                     let live = current_sink_state(&sink);
                     let cached = shared_clone.lock()
                         .map(|s| s.state.clone())
@@ -756,7 +691,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
                                 history.push_back(t);
                                 if history.len() > 50 { history.pop_front(); }
                             }
-                            // Clear PCM/cursor so a stray Seek doesn't revive it.
                             current_pcm = None;
                             current_pos = None;
                             playback_started_at = None;
@@ -774,8 +708,6 @@ pub fn spawn_audio_thread() -> AudioHandle {
     AudioHandle { cmd_tx, shared, alive }
 }
 
-// ── Audio thread helpers ───────────────────────────────────────────────────────
-
 fn prepare_playback(
     current_track: &mut Option<Track>,
     sink: &mut Option<Sink>,
@@ -786,8 +718,7 @@ fn prepare_playback(
     queue: &[Track],
     volume: f32,
 ) {
-    // Note: caller is responsible for pushing current_track to history first.
-    let _ = current_track.take(); // ensure it's cleared (caller may have already done this)
+    let _ = current_track.take();
     if let Some(s) = sink.take() { s.stop(); }
     *playback_started_at = None;
     *paused_position = 0.0;
@@ -859,16 +790,14 @@ fn set_stopped(shared: &Arc<Mutex<AudioStateSnapshot>>, queue: &[Track], volume:
     }
 }
 
-/// Normalize PCM samples to approximately -14 LUFS (target RMS ~0.20).
-/// Applies a gain capped at 3x to avoid severe clipping on already-loud tracks.
 pub fn normalize_samples(samples: &mut Vec<i16>) {
     if samples.is_empty() { return; }
     let sum_sq: f64 = samples.iter().map(|&s| (s as f64 / 32768.0).powi(2)).sum();
     let rms = (sum_sq / samples.len() as f64).sqrt();
-    if rms < 0.0001 { return; } // silence — skip normalization
+    if rms < 0.0001 { return; }
 
     const TARGET_RMS: f64 = 0.20;
-    let gain = (TARGET_RMS / rms).min(3.0); // cap at 3x to avoid clipping
+    let gain = (TARGET_RMS / rms).min(3.0);
 
     for s in samples.iter_mut() {
         *s = ((*s as f64) * gain).clamp(-32768.0, 32767.0) as i16;

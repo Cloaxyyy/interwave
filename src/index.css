@@ -1,54 +1,37 @@
-/* ── Fonts ─────────────────────────────────────────────────────────────────── */
+
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 
-/* ── Tailwind v4 ─────────────────────────────────────────────────────────────── */
 @import "tailwindcss";
 
-/* ──────────────────────────────────────────────────────────────────────────────
-   Design tokens — Interwave
-   ──────────────────────────────────────────────────────────────────────────────
-   Palette: deep violet-purple + warm-tinted blacks. The accent is saturated
-   enough to feel intentional (Spotify-bold) but stays in the violet family
-   for a calm, editorial Apple-Music vibe. Multiple shades of purple let
-   surfaces glow without screaming.
-*/
 :root {
-  /* ── Surfaces — warm-tinted blacks at hue 300 (violet) ───────────────── */
-  --bg-base:      oklch(0.13 0.014 295);   /* almost black, faint violet tint */
-  --bg-surface:   oklch(0.16 0.018 295);   /* sidebar, cards */
-  --bg-elevated:  oklch(0.20 0.022 295);   /* hover, raised */
-  --bg-overlay:   oklch(0.25 0.025 295);   /* hover-elevated, modals */
 
-  /* Translucent surfaces for backdrop-blur stacks */
+  --bg-base:      oklch(0.13 0.014 295);
+  --bg-surface:   oklch(0.16 0.018 295);
+  --bg-elevated:  oklch(0.20 0.022 295);
+  --bg-overlay:   oklch(0.25 0.025 295);
+
   --bg-glass:     color-mix(in oklch, var(--bg-elevated) 70%, transparent);
 
   --border-subtle:  oklch(0.22 0.018 295);
   --border-default: oklch(0.30 0.022 295);
   --border-strong:  oklch(0.38 0.026 295);
 
-  /* ── Text ──────────────────────────────────────────────────────────── */
   --text-primary:   oklch(0.97 0.005 295);
   --text-secondary: oklch(0.78 0.012 295);
   --text-muted:     oklch(0.58 0.016 295);
   --text-disabled:  oklch(0.42 0.018 295);
 
-  /* ── Accent — saturated violet, the "Spotify-purple" Wave is built on ── */
-  --accent:        oklch(0.72 0.18 295);   /* primary CTA, active states */
-  --accent-2:      oklch(0.62 0.20 295);   /* slightly deeper, for shadows */
-  --accent-deep:   oklch(0.50 0.22 295);   /* darkest violet, gradient ends */
-  --accent-soft:   oklch(0.85 0.10 295);   /* light tint for subtle hover */
+  --accent:        oklch(0.72 0.18 295);
+  --accent-2:      oklch(0.62 0.20 295);
+  --accent-deep:   oklch(0.50 0.22 295);
+  --accent-soft:   oklch(0.85 0.10 295);
   --accent-dim:    color-mix(in oklch, var(--accent) 14%, transparent);
   --accent-glow:   color-mix(in oklch, var(--accent) 22%, transparent);
   --accent-haze:   color-mix(in oklch, var(--accent) 6%,  transparent);
-  --accent-ink:    oklch(0.10 0.02 295);   /* text-on-accent */
+  --accent-ink:    oklch(0.10 0.02 295);
 
-  /* ── Live accent — overwritten by the playerStore on every track change.
-       Every surface (player bar, panel, sidebar, hero) reads from this
-       SAME variable, so they always tint to the same colour at the same
-       time and the seams between sections vanish. */
   --accent-live:   var(--accent);
-  /* Pre-baked tint amounts so the surfaces blend into each other instead
-     of each component picking its own color-mix percentage. */
+
   --tint-2:  color-mix(in oklch, var(--accent-live)  2%, var(--bg-base));
   --tint-4:  color-mix(in oklch, var(--accent-live)  4%, var(--bg-surface));
   --tint-8:  color-mix(in oklch, var(--accent-live)  8%, var(--bg-surface));
@@ -56,13 +39,11 @@
   --tint-18: color-mix(in oklch, var(--accent-live) 18%, var(--bg-elevated));
   --seam:    color-mix(in oklch, var(--accent-live) 22%, var(--border-subtle));
 
-  /* Spotify/Apple-Music inspired gradient stops */
   --grad-violet:   linear-gradient(135deg, oklch(0.72 0.18 295) 0%, oklch(0.45 0.22 285) 100%);
   --grad-twilight: linear-gradient(135deg, oklch(0.65 0.20 305) 0%, oklch(0.38 0.18 270) 100%);
   --grad-aurora:   linear-gradient(135deg, oklch(0.75 0.16 305) 0%, oklch(0.42 0.20 245) 100%);
   --grad-night:    linear-gradient(180deg, oklch(0.20 0.025 295) 0%, oklch(0.13 0.014 295) 100%);
 
-  /* ── Aliases (kept for legacy components) ────────────────────────────── */
   --bg-0: var(--bg-base);
   --bg-1: var(--bg-surface);
   --bg-2: var(--bg-elevated);
@@ -74,12 +55,10 @@
   --line: var(--border-default);
   --line-soft: var(--border-subtle);
 
-  /* ── Type families ─────────────────────────────────────────────────── */
   --serif:  'Instrument Serif', 'Times New Roman', serif;
   --sans:   'Geist', -apple-system, system-ui, sans-serif;
   --mono:   'Geist Mono', ui-monospace, monospace;
 
-  /* ── Radii ─────────────────────────────────────────────────────────── */
   --r-xs: 4px;
   --r-sm: 6px;
   --r-md: 10px;
@@ -87,7 +66,6 @@
   --r-xl: 20px;
   --r-2xl: 28px;
 
-  /* ── Elevation shadows (purple-tinted) ───────────────────────────── */
   --shadow-sm: 0 2px 6px -2px rgba(20, 8, 40, 0.45);
   --shadow-md: 0 8px 24px -8px rgba(20, 8, 40, 0.55);
   --shadow-lg: 0 24px 64px -16px rgba(20, 8, 40, 0.65);
@@ -97,7 +75,6 @@
   --success:     oklch(0.75 0.15 155);
 }
 
-/* ── Reset ──────────────────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -116,7 +93,6 @@ html, body, #root {
   user-select: none;
 }
 
-/* ── Scrollbar ───────────────────────────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border-default) transparent;
@@ -131,7 +107,6 @@ html, body, #root {
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
 ::-webkit-scrollbar-corner { background: transparent; }
 
-/* ── Font utility classes ───────────────────────────────────────────────────── */
 .font-display { font-family: var(--serif); }
 .font-body    { font-family: var(--sans); }
 .font-mono    { font-family: var(--mono); }
@@ -139,7 +114,6 @@ html, body, #root {
 .mono  { font-family: var(--mono);  font-feature-settings: "tnum" 1; }
 .sans  { font-family: var(--sans); }
 
-/* ── Animated equalizer bars ────────────────────────────────────────────── */
 .eq-bars {
   display: inline-flex; align-items: flex-end; gap: 2px; height: 12px;
 }
@@ -154,17 +128,14 @@ html, body, #root {
 .eq-bars span:nth-child(5) { height: 60%; animation-delay: 0.6s; }
 @keyframes eqpulse { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
 
-/* ── Spinning vinyl disc ─────────────────────────────────────────────────── */
 @keyframes vinyl-spin { to { transform: rotate(360deg); } }
 .vinyl-spin { animation: vinyl-spin 20s linear infinite; }
 .vinyl-spin-paused { animation-play-state: paused; }
 
-/* ── Button transitions ──────────────────────────────────────────────────── */
 button, [role="button"] {
   transition: opacity 120ms, background 120ms, color 120ms, transform 120ms;
 }
 
-/* ── Reusable card hover ────────────────────────────────────────────────── */
 .card-hover {
   transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1), background 200ms;
 }
@@ -172,14 +143,12 @@ button, [role="button"] {
   transform: translateY(-2px);
 }
 
-/* ── Glass surface (Apple-Music style backdrop-blur) ────────────────────── */
 .glass {
   background: var(--bg-glass);
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
 
-/* ── Spotify-style giant pill button (used on hero rows) ────────────────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;

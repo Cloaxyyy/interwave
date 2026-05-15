@@ -15,7 +15,6 @@ function formatTime(secs: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// Inline progress bar (Apple Music puts it visibly under the mini player).
 function InlineProgressBar() {
   const { position, duration } = usePlayerStore();
   const [dragging, setDragging] = React.useState(false);
@@ -120,9 +119,7 @@ export default function PlayerBar() {
     <div
       style={{
         height: 92,
-        // Tinted from the SHARED --accent-live var so this matches the
-        // sidebar / panel / hero exactly. No more "each component picks
-        // its own accent percentage" mismatch.
+
         background: `
           linear-gradient(180deg, var(--tint-12) 0%, var(--bg-glass) 100%)
         `,
@@ -137,7 +134,7 @@ export default function PlayerBar() {
         transition: 'background 600ms ease, border-color 600ms ease',
       }}
     >
-      {/* Loading shimmer */}
+      {}
       {isLoading && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0,
@@ -170,7 +167,7 @@ export default function PlayerBar() {
         minHeight: 0,
       }}>
 
-        {/* ── Left: mini-art + info ─────────────────────────── */}
+        {}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <div style={{
             width: 56, height: 56, borderRadius: 8,
@@ -220,7 +217,7 @@ export default function PlayerBar() {
           </div>
         </div>
 
-        {/* ── Center: controls + inline progress ────────────── */}
+        {}
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           gap: 4, minWidth: 0,
@@ -229,7 +226,7 @@ export default function PlayerBar() {
           <InlineProgressBar />
         </div>
 
-        {/* ── Right: lyrics fullscreen + sleep + volume ──────── */}
+        {}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
           gap: 10, minWidth: 0,
@@ -240,7 +237,7 @@ export default function PlayerBar() {
         </div>
       </div>
 
-      {/* Playback error toast — slides above */}
+      {}
       {playbackError && (
         <div style={{
           position: 'absolute',
@@ -273,9 +270,6 @@ export default function PlayerBar() {
   );
 }
 
-// Tiny "Offline" pill — appears next to the track title when the network
-// is down. Lets the user know why playback is stuttering instead of
-// cryptic errors.
 function OfflineBadge() {
   const online = useOnlineStore((s) => s.online);
   if (online) return null;
@@ -295,10 +289,6 @@ function OfflineBadge() {
   );
 }
 
-// Toggle button for the fullscreen karaoke-lyrics overlay.
-// Mic icon, sits between SleepTimer and VolumeControl in the player bar.
-// Can be hidden via Settings → Sound → "Show fullscreen lyrics button" toggle
-// (saved to iw_show_fs_lyrics_btn) for users who only want the panel mini-view.
 function LyricsButton() {
   const lyricsFs = useUiStore((s) => s.lyricsFullscreen);
   const setLyricsFs = useUiStore((s) => s.setLyricsFullscreen);

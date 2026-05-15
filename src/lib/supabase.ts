@@ -3,8 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? '';
 const key = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? '';
 
-// True only when real (non-placeholder) credentials are provided.
-// When false the app runs in local-only mode — no login screen is shown.
 export const isSupabaseConfigured =
   Boolean(url) &&
   Boolean(key) &&
@@ -12,8 +10,6 @@ export const isSupabaseConfigured =
   !key.includes('placeholder') &&
   url.startsWith('https://');
 
-// Always create the client (safe — no network calls on construction).
-// Operations will simply fail gracefully if credentials are invalid.
 export const supabase = createClient(
   url || 'https://placeholder.supabase.co',
   key || 'placeholder',
@@ -25,8 +21,6 @@ export const supabase = createClient(
     },
   }
 );
-
-// ── Database row types (mirror Supabase schema) ────────────────────────────────
 
 export interface DbUserProfile {
   id: string;

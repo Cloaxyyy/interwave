@@ -1,4 +1,3 @@
-// Resume banner — appears on launch if the previous session has a saved track.
 
 import { useEffect, useState } from 'react';
 import { ArrowCounterClockwise, X } from '@phosphor-icons/react';
@@ -14,7 +13,6 @@ export default function ResumeBanner() {
     setState(loadResumeState());
   }, []);
 
-  // If a track started playing for any reason, hide the banner.
   useEffect(() => {
     if (currentTrack) setState(null);
   }, [currentTrack]);
@@ -34,7 +32,7 @@ export default function ResumeBanner() {
         duration_seconds: track.duration_seconds,
         thumbnail_url: track.thumbnail_url,
       });
-      // Wait a beat for the track to actually start, then seek.
+
       setTimeout(() => seek(position).catch(() => {}), 1500);
     } catch (e) { console.error('[resume] playTrack failed:', e); }
     finally { clearResumeState(); setState(null); }

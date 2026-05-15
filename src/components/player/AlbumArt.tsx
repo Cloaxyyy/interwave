@@ -18,12 +18,10 @@ export default function AlbumArt({ size = 220 }: AlbumArtProps) {
   const rafRef = useRef<number | null>(null);
   const isPlayingRef = useRef<boolean>(isPlaying);
 
-  // Keep ref in sync with state so the rAF loop sees current value
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  // Start/stop animation loop
   useEffect(() => {
     if (!url) return;
 
@@ -47,7 +45,6 @@ export default function AlbumArt({ size = 220 }: AlbumArtProps) {
     };
   }, [url]);
 
-  // Reset rotation when track changes
   useEffect(() => {
     rotationRef.current = 0;
     if (imgRef.current) {
@@ -57,7 +54,7 @@ export default function AlbumArt({ size = 220 }: AlbumArtProps) {
 
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0, overflow: 'hidden' }}>
-      {/* Ambient glow */}
+      {}
       {url && (
         <div
           style={{
@@ -74,7 +71,7 @@ export default function AlbumArt({ size = 220 }: AlbumArtProps) {
         />
       )}
 
-      {/* Crossfade image */}
+      {}
       <AnimatePresence mode="wait">
         <motion.div
           key={url ?? 'placeholder'}
@@ -111,8 +108,7 @@ export default function AlbumArt({ size = 220 }: AlbumArtProps) {
               }}
               draggable={false}
               onLoad={() => {
-                // If the user pinned a custom accent in Settings, honor it.
-                // Otherwise pull a colour from the cover.
+
                 const pinned = (() => {
                   try { return localStorage.getItem('iw_accent_override') || ''; } catch { return ''; }
                 })();

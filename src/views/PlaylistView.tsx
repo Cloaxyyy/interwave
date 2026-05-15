@@ -97,7 +97,6 @@ export default function PlaylistView() {
   const [isStartingPlay, setIsStartingPlay] = useState(false);
   const [filter, setFilter] = useState('');
 
-  // Reset filter on playlist change
   useEffect(() => { setFilter(''); }, [activePlaylistId]);
 
   useEffect(() => {
@@ -177,8 +176,6 @@ export default function PlaylistView() {
     );
   }
 
-  // Pick a hue for the hero bloom by hashing the playlist name — gives every
-  // playlist a slightly different colour without needing real color extraction.
   const hue = (() => {
     const name = activePlaylistName ?? 'playlist';
     let h = 0; for (let i = 0; i < name.length; i++) h = ((h << 5) - h) + name.charCodeAt(i);
@@ -208,7 +205,7 @@ export default function PlaylistView() {
         )}
         {!loading && tracks.length > 0 && (
           <>
-            {/* In-playlist search */}
+            {}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
               margin: '0 12px 12px',

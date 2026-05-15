@@ -14,7 +14,7 @@ export default function PlaylistPickerModal({ track, onClose }: PlaylistPickerMo
   const bumpLibraryVersion = useUiStore((s) => s.bumpLibraryVersion);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState<string | null>(null); // playlist id being added
+  const [adding, setAdding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function PlaylistPickerModal({ track, onClose }: PlaylistPickerMo
   };
 
   return (
-    // Backdrop
+
     <div
       style={{
         position: 'fixed',
@@ -53,7 +53,7 @@ export default function PlaylistPickerModal({ track, onClose }: PlaylistPickerMo
       }}
       onClick={onClose}
     >
-      {/* Modal panel */}
+      {}
       <div
         style={{
           background: 'var(--bg-elevated)',
@@ -67,7 +67,7 @@ export default function PlaylistPickerModal({ track, onClose }: PlaylistPickerMo
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {}
         <div
           style={{
             display: 'flex',
@@ -119,7 +119,7 @@ export default function PlaylistPickerModal({ track, onClose }: PlaylistPickerMo
           </button>
         </div>
 
-        {/* Error banner */}
+        {}
         {error && (
           <div
             style={{
@@ -135,7 +135,7 @@ export default function PlaylistPickerModal({ track, onClose }: PlaylistPickerMo
           </div>
         )}
 
-        {/* Playlist list */}
+        {}
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {loading && (
             <p

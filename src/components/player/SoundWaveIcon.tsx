@@ -15,7 +15,6 @@ function ensureKeyframes() {
   document.head.appendChild(style);
 }
 
-// Call at module scope — runs once on import, before any component mounts
 ensureKeyframes();
 
 export default function SoundWaveIcon({ size = 14 }: { size?: number }) {

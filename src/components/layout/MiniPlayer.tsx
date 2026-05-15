@@ -3,7 +3,6 @@ import { usePlayerStore } from '../../stores/playerStore';
 import { pause, resume, skipNext, setMiniPlayer } from '../../lib/tauri';
 import { useUiStore } from '../../stores/uiStore';
 
-// Tauri drag region is a non-standard CSS property; cast helpers keep TSC happy
 const drag: React.CSSProperties = { WebkitAppRegion: 'drag' } as React.CSSProperties;
 const noDrag: React.CSSProperties = { WebkitAppRegion: 'no-drag' } as React.CSSProperties;
 
@@ -28,7 +27,7 @@ export default function MiniPlayer() {
       overflow: 'hidden',
       ...drag,
     }}>
-      {/* Album art */}
+      {}
       {currentTrack?.thumbnail_url ? (
         <img
           src={currentTrack.thumbnail_url}
@@ -46,7 +45,7 @@ export default function MiniPlayer() {
         }} />
       )}
 
-      {/* Track info */}
+      {}
       <div style={{ flex: 1, minWidth: 0, ...noDrag }}>
         <p style={{
           fontFamily: 'Syne', fontSize: 13, fontWeight: 600,
@@ -66,7 +65,7 @@ export default function MiniPlayer() {
         </p>
       </div>
 
-      {/* Controls */}
+      {}
       <div style={{ display: 'flex', gap: 4, flexShrink: 0, ...noDrag }}>
         <MiniBtn onClick={() => isPlaying ? pause() : resume()}>
           {isPlaying ? '⏸' : '▶'}

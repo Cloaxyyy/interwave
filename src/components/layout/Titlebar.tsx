@@ -41,11 +41,9 @@ function WindowButton({ icon, action, label, danger = false }: WinBtnProps) {
   );
 }
 
-// Central pill that mimics Spotify's "What do you want to listen to?" but
-// also doubles as the discoverability hint for the ⌘K command palette.
 function CmdKHint() {
   const [hovered, setHovered] = useState(false);
-  // Open the palette by dispatching a synthetic Cmd+K
+
   const trigger = () => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
   };
@@ -92,9 +90,7 @@ export default function Titlebar() {
       data-tauri-drag-region
       style={{
         height: 48,
-        // Mirrors the player bar's tint so the app's top and bottom chrome
-        // share the same atmosphere — frames the content rather than
-        // floating disconnected colors.
+
         background: 'linear-gradient(180deg, var(--tint-12) 0%, var(--tint-4) 100%)',
         borderBottom: '1px solid var(--seam)',
         display: 'flex',
@@ -106,7 +102,7 @@ export default function Titlebar() {
         transition: 'background 600ms ease, border-color 600ms ease',
       }}
     >
-      {/* Logo */}
+      {}
       <div
         onClick={() => setActiveView('home')}
         style={{ cursor: 'pointer', padding: '0 8px', display: 'flex', alignItems: 'center' }}
@@ -119,18 +115,18 @@ export default function Titlebar() {
         />
       </div>
 
-      {/* Spacer */}
+      {}
       <div style={{ flex: 1 }} data-tauri-drag-region />
 
-      {/* Cmd+K hint pill */}
+      {}
       <div onMouseDown={(e) => e.stopPropagation()}>
         <CmdKHint />
       </div>
 
-      {/* Spacer */}
+      {}
       <div style={{ flex: 1 }} data-tauri-drag-region />
 
-      {/* Window controls */}
+      {}
       <div style={{ display: 'flex', gap: 4 }} onMouseDown={(e) => e.stopPropagation()}>
         <WindowButton icon={<Minus size={13} weight="bold" />} action={() => appWindow.minimize()} label="Minimize" />
         <WindowButton icon={<Square size={11} weight="bold" />} action={() => appWindow.toggleMaximize()} label="Maximize" />

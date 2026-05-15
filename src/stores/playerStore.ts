@@ -17,9 +17,8 @@ interface PlayerStore {
   playbackError: string | null;
   accentColor: string;
   waveform: number[];
-  eqBands: number[]; // 5 values, dB each, default all 0
-  /// YouTube recommendations for the currently playing track.
-  /// Pre-fetched on track-change so "Up Next" shows them immediately.
+  eqBands: number[];
+
   recommendations: Track[];
 
   setCurrentTrack: (track: Track | null) => void;
@@ -70,13 +69,10 @@ export const usePlayerStore = create<PlayerStore>((set) => ({
   setPlaybackError: (msg) => set({ playbackError: msg }),
   setAccentColor: (color) => {
     set({ accentColor: color });
-    // Push the live accent into a CSS variable on <html> so EVERY surface
-    // (sidebar, hero, player bar, panel, banners) re-tints in unison.
-    // Without this each component computes its own colour and the seams
-    // between them visibly mismatch.
+
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      // If the value is a CSS var reference, resolve it to the current accent.
+
       const resolved = color.startsWith('var(') ? 'oklch(0.72 0.18 295)' : color;
       root.style.setProperty('--accent-live', resolved);
     }

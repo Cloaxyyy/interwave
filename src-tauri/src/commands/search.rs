@@ -5,7 +5,6 @@ use crate::db::search_history;
 use crate::error::WaveError;
 use crate::state::AppState;
 
-/// A single YouTube search result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchResult {
     pub youtube_id: String,
@@ -15,7 +14,6 @@ pub struct SearchResult {
     pub thumbnail_url: Option<String>,
 }
 
-/// Searches YouTube via the innertube API — no subprocess, ~200 ms vs 3–8 s with yt-dlp.
 #[tauri::command]
 pub async fn search_youtube(
     query: String,
@@ -69,7 +67,6 @@ pub async fn search_youtube(
 
     let mut results: Vec<SearchResult> = Vec::new();
 
-    // Walk the innertube response tree to find itemSectionRenderer contents
     let items = find_video_items(&data);
 
     for video in items {
@@ -84,12 +81,10 @@ pub async fn search_youtube(
             .unwrap_or("Unknown")
             .to_string();
 
-        // Filter out YouTube Shorts by title
         let title_lower = title.to_lowercase();
         if title_lower.contains("#shorts") {
             continue;
         }
-        // Filter "shorts" as a word (space before it, or starts with it)
         if title_lower.contains(" shorts") || title_lower.starts_with("shorts") {
             continue;
         }
@@ -101,7 +96,6 @@ pub async fn search_youtube(
             .unwrap_or("Unknown")
             .to_string();
 
-        // Duration comes as "3:45" or "1:23:45"
         let duration_seconds = video
             .pointer("/lengthText/simpleText")
             .and_then(|v| v.as_str())
@@ -112,14 +106,12 @@ pub async fn search_youtube(
             })
             .map(parse_duration_str);
 
-        // Filter out shorts by duration (< 60 seconds)
         if let Some(d) = duration_seconds {
             if d < 60 {
                 continue;
             }
         }
 
-        // Use the highest-resolution thumbnail available
         let thumbnail_url = video
             .pointer("/thumbnail/thumbnails")
             .and_then(|v| v.as_array())
@@ -140,7 +132,6 @@ pub async fn search_youtube(
         }
     }
 
-    // Save query to history (non-critical)
     if !results.is_empty() {
         if let Ok(conn) = state.db.get() {
             let _ = search_history::save_query(&conn, &query);
@@ -150,10 +141,7 @@ pub async fn search_youtube(
     Ok(results)
 }
 
-/// Recursively hunts for videoRenderer objects inside the innertube JSON.
-/// The response structure shifts between YouTube versions so we walk it generically.
 fn find_video_items(data: &serde_json::Value) -> Vec<serde_json::Value> {
-    // Primary path: standard web search response
     let primary = data
         .pointer("/contents/twoColumnSearchResultsRenderer/primaryContents/sectionListRenderer/contents")
         .and_then(|v| v.as_array());
@@ -177,7 +165,6 @@ fn find_video_items(data: &serde_json::Value) -> Vec<serde_json::Value> {
         }
     }
 
-    // Fallback: walk entire JSON tree looking for videoRenderer keys
     collect_video_renderers(data)
 }
 
@@ -187,7 +174,7 @@ fn collect_video_renderers(val: &serde_json::Value) -> Vec<serde_json::Value> {
         serde_json::Value::Object(map) => {
             if map.contains_key("videoId") && map.contains_key("title") {
                 out.push(val.clone());
-                return out; // don't recurse into the renderer itself
+                return out;
             }
             for v in map.values() {
                 out.extend(collect_video_renderers(v));
@@ -209,7 +196,6 @@ fn collect_video_renderers(val: &serde_json::Value) -> Vec<serde_json::Value> {
     out
 }
 
-/// Parses "3:45" or "1:23:45" into total seconds.
 fn parse_duration_str(s: &str) -> i64 {
     let parts: Vec<i64> = s
         .split(':')
@@ -223,7 +209,6 @@ fn parse_duration_str(s: &str) -> i64 {
     }
 }
 
-/// Get YouTube recommended/related videos for a given video ID using InnerTube.
 #[tauri::command]
 pub async fn get_recommendations(
     youtube_id: String,
@@ -266,7 +251,6 @@ pub async fn get_recommendations(
 
     let mut results = Vec::new();
 
-    // Try to find compactVideoRenderer items in the watch next results
     if let Some(contents) = json
         .pointer("/contents/twoColumnWatchNextResults/secondaryResults/secondaryResults/results")
         .and_then(|v| v.as_array())
@@ -338,14 +322,12 @@ fn parse_duration_text(s: &str) -> Option<i64> {
     }
 }
 
-/// Returns the 20 most recent search queries, newest first.
 #[tauri::command]
 pub fn get_search_history(state: State<'_, AppState>) -> Result<Vec<String>, WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;
     Ok(search_history::get_recent(&conn)?)
 }
 
-/// Clears all search history.
 #[tauri::command]
 pub fn clear_search_history(state: State<'_, AppState>) -> Result<(), WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;

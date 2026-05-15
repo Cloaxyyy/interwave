@@ -7,26 +7,26 @@ interface UiStore {
   setActiveView: (view: View) => void;
   searchFocused: boolean;
   setSearchFocused: (v: boolean) => void;
-  /** ID of the playlist currently shown in PlaylistView (null when not in playlist view) */
+
   activePlaylistId: string | null;
-  /** Name of the playlist currently shown in PlaylistView */
+
   activePlaylistName: string | null;
-  /** Navigate to a specific playlist — sets id, name, and activeView atomically */
+
   setActivePlaylist: (id: string, name: string) => void;
-  /** Currently shown artist's name (for ArtistView). */
+
   activeArtist: string | null;
   setActiveArtist: (name: string) => void;
   libraryVersion: number;
   bumpLibraryVersion: () => void;
   miniPlayer: boolean;
   setMiniPlayer: (v: boolean) => void;
-  /** Right-hand Now Playing panel collapsed to a thin rail */
+
   rightPanelCollapsed: boolean;
   setRightPanelCollapsed: (v: boolean) => void;
-  /** Right-hand Now Playing panel width in px (when expanded). Persisted. */
+
   rightPanelWidth: number;
   setRightPanelWidth: (px: number) => void;
-  /** Fullscreen lyrics overlay shown */
+
   lyricsFullscreen: boolean;
   setLyricsFullscreen: (v: boolean) => void;
 }

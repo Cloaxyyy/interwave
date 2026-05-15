@@ -17,11 +17,7 @@ export default function PageTransition({ viewKey, children }: Props) {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        // overflow-y auto so views without an internal scroll container
-        // (Settings, Profile, Import, etc.) scroll naturally. Views that DO
-        // manage their own scroll (Library, Playlist, Liked, Search, Home)
-        // are flex column with bounded children, so they fit perfectly inside
-        // and this won't trigger double-scrollbars.
+
         overflowY: 'auto',
         overflowX: 'hidden',
       }}

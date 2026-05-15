@@ -19,8 +19,6 @@ fn now_secs() -> i64 {
         .as_secs() as i64
 }
 
-/// Create a playlist with a specific ID (used when importing from cloud).
-/// INSERT OR IGNORE so it's idempotent.
 pub fn create_playlist_with_id(conn: &Connection, id: &str, name: &str) -> WaveResult<Playlist> {
     let now = now_secs();
     conn.execute(
@@ -100,9 +98,6 @@ pub fn get_playlist_tracks(conn: &Connection, playlist_id: &str) -> WaveResult<V
     Ok(tracks)
 }
 
-/// Returns `true` if the track was newly added, `false` if it was already in
-/// the playlist (INSERT OR IGNORE swallowed the conflict). Lets callers
-/// surface "added X new, skipped Y already-present" messaging to the user.
 pub fn add_track_to_playlist(
     conn: &Connection,
     playlist_id: &str,

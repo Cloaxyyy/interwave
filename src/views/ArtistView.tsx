@@ -1,4 +1,3 @@
-// Artist page — library tracks + top YouTube results.
 
 import { useEffect, useState, useMemo } from 'react';
 import { Play } from '@phosphor-icons/react';
@@ -22,7 +21,6 @@ export default function ArtistView() {
   const [loading, setLoading] = useState(true);
   const [topLoading, setTopLoading] = useState(true);
 
-  // Pull library + run a YouTube search for "{artist} top tracks"
   useEffect(() => {
     if (!artist) return;
     setLoading(true); setTopLoading(true);
@@ -32,7 +30,6 @@ export default function ArtistView() {
       .finally(() => setTopLoading(false));
   }, [artist]);
 
-  // Filter library to only tracks by this artist (case-insensitive substring)
   const myTracks = useMemo(() => {
     if (!artist) return [];
     const q = artist.toLowerCase();
@@ -86,7 +83,7 @@ export default function ArtistView() {
       />
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 8px 32px' }}>
-        {/* In your library */}
+        {}
         <SectionHeader title={`In your library (${myTracks.length})`}/>
         {loading ? (
           <TrackListSkeleton count={4}/>

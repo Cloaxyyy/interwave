@@ -34,7 +34,7 @@ export default function ProfileView() {
     getStats().then(setStats).catch(console.error);
     getTopArtists().then(setTopArtists).catch(console.error);
     getRecentlyPlayed().then((r) => setRecent(r.slice(0, 6))).catch(console.error);
-  }, [libraryVersion]); // re-fetch whenever library changes (like/unlike, playlist add/delete)
+  }, [libraryVersion]);
 
   const statCards = stats ? [
     { label: 'Songs in library', value: stats.total_tracks.toLocaleString() },
@@ -51,7 +51,7 @@ export default function ProfileView() {
   return (
     <div style={{ padding: '0 0 56px', overflowY: 'auto', height: '100%' }}>
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {}
       <div style={{
         position: 'relative', height: 320,
         borderRadius: 'var(--r-xl)', overflow: 'hidden',
@@ -67,7 +67,7 @@ export default function ProfileView() {
           background: 'linear-gradient(to top, var(--bg-base) 0%, transparent 65%)',
         }}/>
         <div style={{ position: 'relative', zIndex: 2, display: 'flex', gap: 28, alignItems: 'flex-end', width: '100%' }}>
-          {/* Avatar */}
+          {}
           <div style={{
             width: 160, height: 160, borderRadius: '50%', flexShrink: 0,
             background: 'linear-gradient(135deg, oklch(0.78 0.09 300), oklch(0.55 0.11 280))',
@@ -85,7 +85,7 @@ export default function ProfileView() {
               {displayName ?? user?.email?.split('@')[0] ?? 'Listener'}
             </h1>
             {user?.email && <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{user.email}</p>}
-            {/* Role badge + UID for support / debugging */}
+            {}
             {user && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
                 <span style={{
@@ -140,7 +140,7 @@ export default function ProfileView() {
 
       <div style={{ padding: '0 36px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
 
-        {/* Top Artists */}
+        {}
         <section>
           <h2 style={{ fontFamily: 'var(--serif)', fontSize: 22, marginBottom: 16, color: 'var(--text-primary)' }}>
             Top Artists
@@ -178,7 +178,7 @@ export default function ProfileView() {
           )}
         </section>
 
-        {/* Recent Activity */}
+        {}
         <section>
           <h2 style={{ fontFamily: 'var(--serif)', fontSize: 22, marginBottom: 16, color: 'var(--text-primary)' }}>
             Recent Activity

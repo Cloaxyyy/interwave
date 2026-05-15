@@ -1,4 +1,3 @@
-// Per-page maintenance block. Staff bypass; non-staff see a block screen.
 
 import { Wrench } from '@phosphor-icons/react';
 import { useAuthStore } from '../../stores/authStore';
@@ -52,7 +51,6 @@ export default function MaintenanceWall({ children }: Props) {
 
   if (!m) return <>{children}</>;
 
-  // Non-staff blocked view
   return (
     <div style={{
       flex: 1,

@@ -1,7 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
 
-// ── Shared types (snake_case matches Rust serde output) ───────────────────────
-
 export interface Track {
   id: string;
   youtube_id: string;
@@ -40,10 +38,6 @@ export interface SearchResult {
   thumbnail_url: string | null;
 }
 
-// ── Playback ───────────────────────────────────────────────────────────────────
-// NOTE: Tauri 2 maps JS camelCase → Rust snake_case for TOP-LEVEL command params.
-// Nested struct fields (Track, Settings) are deserialized by serde as snake_case.
-
 export interface PlayTrackParams {
   video_id: string;
   title: string;
@@ -75,15 +69,11 @@ export const skipPrev = () => invoke<void>('skip_prev');
 export const seek = (positionSecs: number) =>
   invoke<void>('seek', { positionSecs });
 
-// ── Library ────────────────────────────────────────────────────────────────────
-
 export const getLibrary = () => invoke<Track[]>('get_library');
 export const likeTrack = (trackId: string) => invoke<void>('like_track', { trackId });
 export const unlikeTrack = (trackId: string) => invoke<void>('unlike_track', { trackId });
 export const getLikedTracks = () => invoke<Track[]>('get_liked_tracks');
 export const deleteTrack = (trackId: string) => invoke<void>('delete_track', { trackId });
-
-// ── Playlists ──────────────────────────────────────────────────────────────────
 
 export const getAllPlaylists = () => invoke<Playlist[]>('get_all_playlists');
 export const createPlaylist = (name: string) =>
@@ -98,20 +88,14 @@ export const deletePlaylist = (playlistId: string) =>
 export const renamePlaylist = (playlistId: string, name: string) =>
   invoke<void>('rename_playlist', { playlistId, name });
 
-// ── Settings ───────────────────────────────────────────────────────────────────
-
 export const getSettings = () => invoke<Settings>('get_settings');
 export const updateSettings = (settingsVal: Settings) =>
   invoke<void>('update_settings', { settingsVal });
-
-// ── Search ─────────────────────────────────────────────────────────────────────
 
 export const searchYoutube = (query: string) =>
   invoke<SearchResult[]>('search_youtube', { query });
 export const getSearchHistory = () => invoke<string[]>('get_search_history');
 export const clearSearchHistory = () => invoke<void>('clear_search_history');
-
-// ── Save track from search (for like/playlist without playing first) ───────────
 
 export const saveTrackFromSearch = (
   youtubeId: string,
@@ -128,8 +112,6 @@ export const saveTrackFromSearch = (
     thumbnailUrl,
   });
 
-// ── Spotify file import ────────────────────────────────────────────────────────
-
 export interface ImportProgressEvent {
   current: number;
   total: number;
@@ -140,13 +122,11 @@ export interface ImportProgressEvent {
 export interface ImportCompleteEvent {
   imported: number;
   failed: number;
-  /** True if Spotify returned fewer tracks than the playlist actually has
-   *  (the public embed page truncates large playlists to ~100). */
+
   truncated?: boolean;
-  /** Spotify's reported total track count, when available. 0 = unknown. */
+
   spotify_total?: number;
-  /** When re-importing the same Spotify playlist, how many tracks were already
-   *  in the local playlist and got skipped (no duplicates). */
+
   already_present?: number;
 }
 
@@ -165,8 +145,6 @@ export const setRepeatCmd = (mode: 'off' | 'one' | 'all') =>
 export const setSpeed = (speed: number) => invoke<void>('set_speed', { speed });
 export const setCrossfade = (secs: number) => invoke<void>('set_crossfade', { secs });
 export const getCrossfade = () => invoke<number>('get_crossfade');
-
-// ── Stats ──────────────────────────────────────────────────────────────────────
 
 export interface ListeningStats {
   total_tracks: number;
@@ -193,8 +171,6 @@ export const getStats = () => invoke<ListeningStats>('get_stats');
 export const getTopArtists = () => invoke<TopArtist[]>('get_top_artists');
 export const getRecentlyPlayed = () => invoke<RecentTrack[]>('get_recently_played');
 
-// ── Cloud sync helpers ─────────────────────────────────────────────────────────
-
 export const importCloudTracks = (cloudTracks: Track[]) =>
   invoke<number>('import_cloud_tracks', { cloudTracks });
 
@@ -203,8 +179,6 @@ export const importCloudPlaylists = (cloudPlaylists: Playlist[]) =>
 
 export const importCloudPlaylistTrack = (playlistId: string, trackId: string) =>
   invoke<void>('import_cloud_playlist_track', { playlistId, trackId });
-
-// ── Lyrics ─────────────────────────────────────────────────────────────────────
 
 export interface LyricLine {
   time_ms: number;
@@ -224,29 +198,19 @@ export const getLyrics = (title: string, artist: string, durationSecs: number | 
     durationSecs,
   });
 
-// ── Recommendations ────────────────────────────────────────────────────────────
-
 export const getRecommendations = (youtubeId: string) =>
   invoke<SearchResult[]>('get_recommendations', { youtubeId });
-
-// ── Window management ──────────────────────────────────────────────────────────
 
 export const setMiniPlayer = (enabled: boolean) =>
   invoke<void>('set_mini_player', { enabled });
 
-// ── Download ───────────────────────────────────────────────────────────────────
-
 export const downloadTrack = (trackId: string, youtubeId: string) =>
   invoke<string>('download_track', { trackId, youtubeId });
-
-// ── Equalizer ──────────────────────────────────────────────────────────────────
 
 export const setEqBand = (band: number, db: number) =>
   invoke<void>('set_eq_band', { band, db });
 export const getEqBands = () => invoke<number[]>('get_eq_bands');
 
-// ── Global hotkeys ──────────────────────────────────────────────────────────────
-// Registered system-wide; remapping persists to settings table.
 export const setGlobalHotkey = (action: string, combo: string) =>
   invoke<void>('set_global_hotkey', { action, combo });
 export const clearGlobalHotkey = (action: string) =>

@@ -1,4 +1,3 @@
-// Three-line karaoke lyrics for the right panel. Click to expand.
 
 import { useEffect, useRef, useState } from 'react';
 import { MicrophoneStage } from '@phosphor-icons/react';
@@ -13,7 +12,6 @@ export default function MiniLyrics() {
   const [loading, setLoading] = useState(false);
   const cancelledRef = useRef(false);
 
-  // Re-fetch when track changes
   useEffect(() => {
     if (!currentTrack) { setLyrics(null); return; }
     cancelledRef.current = false;
@@ -40,8 +38,7 @@ export default function MiniLyrics() {
   }
 
   if (!lyrics?.has_synced) {
-    // No synced lyrics — give the user a clear way to open fullscreen anyway
-    // (since plain lyrics still render there).
+
     return (
       <Shell onClick={() => setLyricsFullscreen(true)}>
         <p style={{
@@ -54,7 +51,6 @@ export default function MiniLyrics() {
     );
   }
 
-  // Find active line
   const synced = lyrics.synced;
   const posMs = position * 1000;
   let activeIdx = 0;
@@ -66,7 +62,6 @@ export default function MiniLyrics() {
   const cur  = synced[activeIdx];
   const next = synced[activeIdx + 1];
 
-  // Per-word reveal on the active line (same approach as fullscreen)
   const renderActive = () => {
     if (!cur) return null;
     const lineStartMs = cur.time_ms;
@@ -179,12 +174,10 @@ function Shell({
         e.currentTarget.style.background = 'color-mix(in oklch, var(--accent-live) 6%, var(--bg-overlay))';
       } : undefined}
     >
-      {/* Seek-to-line clicks would go here in a future iteration; for now,
-          tapping anywhere opens the fullscreen view. */}
+      {}
       {children}
     </div>
   );
 }
 
-// Click-to-seek helper kept here for future use
 export const lyricSeek = (ms: number) => seek(ms / 1000).catch(console.error);

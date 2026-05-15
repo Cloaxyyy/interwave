@@ -72,7 +72,7 @@ export default function VolumeControl() {
           : <SpeakerSimpleHigh size={16} weight="duotone" />}
       </button>
 
-      {/* Custom volume bar */}
+      {}
       <div
         ref={barRef}
         onMouseDown={handleMouseDown}

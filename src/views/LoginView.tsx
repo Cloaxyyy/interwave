@@ -30,7 +30,7 @@ export default function LoginView() {
         });
         if (err) throw err;
         if (data.session) {
-          // UPSERT so this works whether or not the DB trigger ran
+
           await supabase
             .from('user_profiles')
             .upsert({ id: data.session.user.id, display_name: resolvedName })
@@ -45,7 +45,7 @@ export default function LoginView() {
         const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
         if (data.session) {
-          // Fetch display name from user_profiles after sign-in
+
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('display_name')
@@ -89,7 +89,7 @@ export default function LoginView() {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Background radial bloom */}
+      {}
       <div style={{
         position: 'absolute',
         width: 600,
@@ -107,7 +107,7 @@ export default function LoginView() {
         position: 'relative',
         zIndex: 1,
       }}>
-        {/* Wordmark */}
+        {}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <h1 style={{
             fontFamily: 'Syne, sans-serif',
@@ -125,7 +125,7 @@ export default function LoginView() {
           </p>
         </div>
 
-        {/* Mode tabs */}
+        {}
         <div style={{
           display: 'flex',
           background: 'var(--bg-surface)',
@@ -156,7 +156,7 @@ export default function LoginView() {
           ))}
         </div>
 
-        {/* Form */}
+        {}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {mode === 'register' && (
             <div>
@@ -236,8 +236,7 @@ export default function LoginView() {
           </button>
         </form>
 
-        {/* "Continue without account" was removed — Interwave requires sign-in
-            so moderation, sync, and per-user features all work. */}
+        {}
       </div>
     </div>
   );

@@ -1,12 +1,3 @@
-//! 5-band parametric equalizer using biquad peaking filters.
-//! Each band boosts or cuts by up to ±12 dB around its center frequency.
-//!
-//! Bands:
-//!   0 – Sub-bass  60 Hz
-//!   1 – Bass     250 Hz
-//!   2 – Mid     1000 Hz
-//!   3 – High-mid 4000 Hz
-//!   4 – Presence 8000 Hz
 
 use std::sync::{Arc, Mutex};
 use rodio::Source;
@@ -14,8 +5,6 @@ use rodio::Source;
 pub const BAND_FREQS: [f32; 5] = [60.0, 250.0, 1000.0, 4000.0, 8000.0];
 pub const BAND_NAMES: [&str; 5] = ["Sub", "Bass", "Mid", "Hi-Mid", "Air"];
 
-/// Shared EQ gains (dB, -12 to +12 per band). Written by command handler,
-/// read by the DSP filter on the audio thread.
 #[derive(Clone)]
 pub struct EqSettings {
     inner: Arc<Mutex<[f32; 5]>>,
@@ -37,13 +26,11 @@ impl EqSettings {
     }
 }
 
-/// Biquad state for one channel.
 #[derive(Clone, Copy, Default)]
 struct BiquadState {
     x1: f32, x2: f32, y1: f32, y2: f32,
 }
 
-/// Coefficients for a peaking EQ biquad filter.
 #[derive(Clone, Copy)]
 struct BiquadCoeffs {
     b0: f32, b1: f32, b2: f32, a1: f32, a2: f32,
@@ -75,18 +62,10 @@ impl BiquadCoeffs {
     }
 }
 
-/// rodio Source wrapper that applies 5-band EQ to each sample.
-///
-/// TODO: Wire EqSource into the audio pipeline (thread.rs PlayDecoded /
-/// PlayBuffered / PlayStreamUrl paths).  Currently EQ gains are stored in
-/// AppState and persisted through commands but not yet applied to audio output.
-/// This requires converting the pipeline to use f32 samples throughout and
-/// wrapping the source before appending it to the sink.
 pub struct EqSource<S> {
     inner: S,
     settings: EqSettings,
-    /// Per-channel biquad states: [band][channel]
-    states: Vec<Vec<BiquadState>>,   // [5 bands][channels]
+    states: Vec<Vec<BiquadState>>,
     channel_idx: usize,
 }
 

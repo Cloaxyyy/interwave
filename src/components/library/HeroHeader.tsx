@@ -1,24 +1,20 @@
-// Hero header with cover art, gradient bloom, Play + Shuffle buttons.
 
 import { Play, Shuffle } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 
 interface HeroHeaderProps {
-  /** Tiny eyebrow label above the title (e.g. "Playlist", "Liked Songs"). */
+
   eyebrow: string;
   title: string;
-  /** Image URL or null. When null, `coverFallback` is rendered instead. */
+
   coverUrl?: string | null;
-  /** When no cover image is available, render this in the cover slot
-   *  (gradient + glyph, etc.). */
+
   coverFallback?: ReactNode;
-  /** Subtitle line under the title (e.g. "12 songs · 42 min"). */
+
   subtitle?: string;
-  /** Optional secondary line below subtitle (e.g. extra meta). */
+
   meta?: string;
 
-  /** Deprecated — hero now uses the global live accent instead. Kept on
-   *  the props to keep callers compiling. */
   hue?: number;
 
   onPlay?: () => void;
@@ -31,9 +27,7 @@ export default function HeroHeader({
   eyebrow, title, coverUrl, coverFallback, subtitle, meta,
   onPlay, onShuffle, loading = false, isStartingPlay = false,
 }: HeroHeaderProps) {
-  // Same accent family as the rest of the app — uses the live var, so the
-  // hero bloom matches the sidebar / panel / player bar atmosphere. No
-  // more "the hero is a different purple than the chrome around it".
+
   const bg = `
     radial-gradient(ellipse 80% 100% at 25% 0%,
       color-mix(in oklch, var(--accent-live) 30%, transparent) 0%,
@@ -51,7 +45,7 @@ export default function HeroHeader({
         position: 'relative',
       }}
     >
-      {/* Subtle texture overlay for depth */}
+      {}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 6px)',
@@ -61,7 +55,7 @@ export default function HeroHeader({
         display: 'flex', alignItems: 'flex-end', gap: 28,
         position: 'relative',
       }}>
-        {/* Cover */}
+        {}
         <div
           style={{
             width: 200, height: 200, borderRadius: 10, flexShrink: 0,
@@ -118,7 +112,7 @@ export default function HeroHeader({
         </div>
       </div>
 
-      {/* Action row */}
+      {}
       {!loading && onPlay && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 22, position: 'relative' }}>
           <button

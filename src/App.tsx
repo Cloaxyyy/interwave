@@ -83,10 +83,6 @@ export default function App() {
     );
   }
 
-  // Account required. Skip-login mode was removed at the user's request —
-  // the app needs an authenticated identity to enforce moderation, sync to
-  // the cloud, and show the Admin panel to the right people.
-  // We also clear any stale skip-login flag from older builds.
   try { localStorage.removeItem('interwave_skip_login'); } catch {}
   if (!isSupabaseConfigured) {
     return (
@@ -131,22 +127,21 @@ export default function App() {
         <NowPlayingPanel />
       </div>
       <PlayerBar />
-      {/* ⌘K / Ctrl+K from anywhere */}
+      {}
       <CommandPalette />
-      {/* Fullscreen karaoke lyrics — mic button in PlayerBar toggles */}
+      {}
       <LyricsFullscreen />
-      {/* Toast notifications (anywhere in the app calls toast.success/etc) */}
+      {}
       <ToastStack />
-      {/* Staff broadcast — top banner above everything */}
+      {}
       <AnnouncementBanner />
-      {/* Block screen for suspended users + global maintenance */}
+      {}
       <AdminGate />
-      {/* "Update available" pill — checks GitHub Releases on launch */}
+      {}
       <UpdatePill />
-      {/* "Resume where you left off?" banner — appears if last session
-          ended with a song mid-play */}
+      {}
       <ResumeBanner />
-      {/* Invisible edge handles for resizing the frameless window */}
+      {}
       <ResizeHandles />
     </div>
   );

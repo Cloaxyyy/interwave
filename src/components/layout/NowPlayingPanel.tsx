@@ -10,7 +10,7 @@ import SoundWaveIcon from '../player/SoundWaveIcon';
 import PlaybackControls from '../player/PlaybackControls';
 import MiniLyrics from '../player/MiniLyrics';
 
-const HANDLE_WIDTH = 6; // grab-zone for resize
+const HANDLE_WIDTH = 6;
 
 export default function NowPlayingPanel() {
   const { currentTrack, playbackState, setCurrentTrack, recommendations } = usePlayerStore();
@@ -19,10 +19,6 @@ export default function NowPlayingPanel() {
   const [handleHover, setHandleHover] = useState(false);
   const [resizing, setResizing] = useState(false);
 
-  // Drag-to-resize: mouse-down on the left edge starts a global mousemove
-  // listener that updates the width until mouseup. The drag handle is
-  // invisible until hovered, so it never gets in the user's way — but
-  // the cursor still flips to ew-resize when you approach the edge.
   useEffect(() => {
     if (!resizing) return;
     const onMove = (e: MouseEvent) => {
@@ -79,10 +75,7 @@ export default function NowPlayingPanel() {
         transition: resizing ? 'none' : 'background 600ms ease, border-color 600ms ease',
       }}
     >
-      {/* ── Hover-to-show drag handle on the LEFT EDGE ───────────────────
-           Default: invisible 6px hot-zone with ew-resize cursor.
-           Hover: a 2px accent line fades in (Spotify-style).
-           MouseDown anywhere in this strip starts the drag. */}
+      {}
       <div
         onMouseEnter={() => setHandleHover(true)}
         onMouseLeave={() => setHandleHover(false)}
@@ -109,7 +102,7 @@ export default function NowPlayingPanel() {
         }}/>
       </div>
 
-      {/* ── Panel content ─────────────────────────────────────────────── */}
+      {}
       <div
         style={{
           flex: 1,
@@ -123,7 +116,7 @@ export default function NowPlayingPanel() {
         }}>
             <AlbumArt size={240} />
 
-            {/* Track info */}
+            {}
             <div style={{ width: '100%', textAlign: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 {isPlaying && <SoundWaveIcon size={13} />}
@@ -143,14 +136,10 @@ export default function NowPlayingPanel() {
               </p>
             </div>
 
-            {/* Inline mini-lyrics — sits at the TOP of the panel (right
-                after track info, before the controls) so it's always
-                visible without scrolling. Click anywhere to expand to
-                fullscreen. Hidden when there's no synced lyrics. */}
+            {}
             {currentTrack && <MiniLyrics />}
 
-            {/* Like + Lyrics + playback controls
-                (seek + volume live in the PlayerBar — no duplicates here) */}
+            {}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <button
                 onClick={handleLike}
@@ -186,11 +175,9 @@ export default function NowPlayingPanel() {
             </div>
             <PlaybackControls variant="full" />
 
-            {/* Lyrics tab + content removed — fullscreen lyrics (mic button
-                in PlayerBar) is the single way to view lyrics. Less clutter
-                in the panel, more vertical space for recommendations. */}
+            {}
 
-            {/* Recommended row (Spotify-style) */}
+            {}
             {currentTrack && recommendations.length > 0 && (
               <div style={{
                 width: '100%', flexShrink: 0,
@@ -269,4 +256,3 @@ export default function NowPlayingPanel() {
     </aside>
   );
 }
-

@@ -12,16 +12,15 @@ function formatRemaining(seconds: number): string {
 
 export default function SleepTimer() {
   const [open, setOpen] = useState(false);
-  // null = no timer; number = Unix timestamp (ms) when timer fires; 'end-of-song' = flag
+
   const [timerMode, setTimerMode] = useState<TimerOption>('off');
-  const [endsAt, setEndsAt] = useState<number | null>(null); // ms timestamp
-  const [remaining, setRemaining] = useState<number | null>(null); // seconds
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const endOfSongFiredRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const playbackState = usePlayerStore((s) => s.playbackState);
 
-  // Countdown tick
   useEffect(() => {
     if (timerMode === 'off' || timerMode === 'end-of-song' || endsAt === null) return;
 
@@ -42,7 +41,6 @@ export default function SleepTimer() {
     return () => clearInterval(id);
   }, [timerMode, endsAt]);
 
-  // End-of-song: fire pause when track ends
   useEffect(() => {
     if (timerMode !== 'end-of-song') {
       endOfSongFiredRef.current = false;
@@ -55,7 +53,6 @@ export default function SleepTimer() {
     }
   }, [timerMode, playbackState]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {

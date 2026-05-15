@@ -1,4 +1,3 @@
-// Fullscreen karaoke lyrics overlay.
 
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -29,7 +28,6 @@ export default function LyricsFullscreen() {
     return () => { cancelled = true; };
   }, [open, currentTrack?.id]);
 
-  // Esc to close
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
@@ -37,7 +35,6 @@ export default function LyricsFullscreen() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, setOpen]);
 
-  // Auto-scroll active line into view
   const synced = lyrics?.has_synced ? lyrics.synced : null;
   let activeIdx = 0;
   if (synced) {
@@ -60,8 +57,7 @@ export default function LyricsFullscreen() {
           transition={{ duration: 0.18 }}
           style={{
             position: 'fixed',
-            // ACTUAL fullscreen — cover the titlebar too. Only leave the
-            // player bar at the bottom so audio controls stay reachable.
+
             top: 0, left: 0, right: 0,
             bottom: 92,
             zIndex: 9500,
@@ -77,7 +73,7 @@ export default function LyricsFullscreen() {
             overflow: 'hidden',
           }}
         >
-          {/* Header — drag-region so window can still be moved */}
+          {}
           <div data-tauri-drag-region style={{
             width: '100%', maxWidth: 1100,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -130,8 +126,7 @@ export default function LyricsFullscreen() {
             </div>
           </div>
 
-          {/* Lyrics content — bigger, more breathing room, no visible
-              scrollbar (auto-scrolls to keep active line centred). */}
+          {}
           <div
             className="iw-lyrics-scroll"
             style={{
@@ -161,13 +156,6 @@ export default function LyricsFullscreen() {
               const dist = Math.abs(i - activeIdx);
               const opacity = isActive ? 1 : Math.max(0.14, 1 - dist * 0.16);
 
-              // Per-word reveal for the ACTIVE line only.
-              // LRC providers don't include word-level timestamps, so we
-              // interpolate: split the line into words, weight each by its
-              // character length, and reveal as time-progress crosses each
-              // word's cumulative fraction of the line. This gives the
-              // Apple-Music "the words fill in as they're sung" feel without
-              // needing data we don't have.
               if (isActive && line.text) {
                 const lineStartMs = line.time_ms;
                 const lineEndMs = synced[i + 1]?.time_ms ?? lineStartMs + 4000;
@@ -175,7 +163,7 @@ export default function LyricsFullscreen() {
                 const elapsed = Math.max(0, Math.min(lineDur, position * 1000 - lineStartMs));
                 const progress = elapsed / lineDur;
 
-                const words = line.text.split(/(\s+)/); // keep spaces as their own tokens
+                const words = line.text.split(/(\s+)/);
                 const charLengths = words.map((w) => Math.max(1, w.length));
                 const totalChars = charLengths.reduce((a, b) => a + b, 0);
                 let cum = 0;
@@ -209,8 +197,7 @@ export default function LyricsFullscreen() {
                       const isSpace = /^\s+$/.test(w);
                       if (isSpace) return <span key={wi}>{w}</span>;
                       const start = wordStarts[wi];
-                      // Smooth lead-in: fade each word over a small fraction of
-                      // its slot rather than snapping when reached.
+
                       const leadIn = 0.05;
                       const wordProgress = Math.max(0, Math.min(1, (progress - start) / leadIn));
                       const reached = progress >= start;
@@ -236,7 +223,6 @@ export default function LyricsFullscreen() {
                 );
               }
 
-              // Inactive lines — flat, faded
               return (
                 <p
                   key={i}

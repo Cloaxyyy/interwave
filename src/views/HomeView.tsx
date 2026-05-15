@@ -68,7 +68,7 @@ export default function HomeView() {
     }}>
     <div style={{ padding: '20px 28px 56px', maxWidth: 1280 }}>
 
-      {/* ── Greeting + jump-back-in strip ───────────────────────── */}
+      {}
       <div style={{
         display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
         marginBottom: 18,
@@ -116,7 +116,7 @@ export default function HomeView() {
         )}
       </div>
 
-      {/* ── Spotify-style 3×2 quick-jump grid ───────────────────── */}
+      {}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
@@ -159,7 +159,7 @@ export default function HomeView() {
         ))}
       </div>
 
-      {/* ── Recently Played (Apple-Music style row) ─────────────── */}
+      {}
       <Section title="Recently played" actionLabel="See all" onAction={() => setActiveView('library')}>
         {recent.length > 0 ? (
           <div style={{
@@ -188,7 +188,7 @@ export default function HomeView() {
         )}
       </Section>
 
-      {/* ── Your playlists ─────────────────────────────────────── */}
+      {}
       {playlists.length > 0 && (
         <Section title="Your playlists" actionLabel="Library" onAction={() => setActiveView('library')}>
           <div style={{
@@ -211,7 +211,7 @@ export default function HomeView() {
         </Section>
       )}
 
-      {/* ── Tiny stats footer (low-key, not a giant card) ─────── */}
+      {}
       {stats && (
         <div style={{
           marginTop: 32, paddingTop: 18,
@@ -229,8 +229,6 @@ export default function HomeView() {
     </div>
   );
 }
-
-// ── Reusable Section + Card primitives ─────────────────────────────────────────
 
 function Section({
   title, actionLabel, onAction, children,
@@ -282,7 +280,7 @@ function Card({
   onPlay: () => void;
   onClick?: () => void;
 }) {
-  // Gradient fallback by hashing a stable string
+
   let h = 0;
   const src = gradientHash ?? title;
   for (let i = 0; i < src.length; i++) h = ((h << 5) - h) + src.charCodeAt(i);

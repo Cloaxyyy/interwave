@@ -16,7 +16,7 @@ export default function ProgressBar({ variant = 'full', onSeek }: ProgressBarPro
   const { position, duration, waveform } = usePlayerStore();
   const [dragging, setDragging] = React.useState(false);
   const [hovered, setHovered] = React.useState(false);
-  // Local drag fraction (0–1) for visual feedback; seek fires only on mouseup.
+
   const [dragFraction, setDragFraction] = React.useState<number | null>(null);
   const barRef = React.useRef<HTMLDivElement>(null);
 
@@ -36,7 +36,7 @@ export default function ProgressBar({ variant = 'full', onSeek }: ProgressBarPro
   React.useEffect(() => {
     if (!dragging) return;
     const onMove = (e: MouseEvent) => {
-      // Visual feedback only — no seek command on every pixel.
+
       setDragFraction(fractionAt(e.clientX));
     };
     const onUp = (e: MouseEvent) => {
@@ -80,7 +80,7 @@ export default function ProgressBar({ variant = 'full', onSeek }: ProgressBarPro
           overflow: 'hidden',
         }}
       >
-        {/* Waveform visualization */}
+        {}
         {hasWaveform && (
           <div style={{
             position: 'absolute', inset: 0,
@@ -109,7 +109,7 @@ export default function ProgressBar({ variant = 'full', onSeek }: ProgressBarPro
           </div>
         )}
 
-        {/* Progress fill (shown only when no waveform) */}
+        {}
         {!hasWaveform && (
           <div
             style={{
@@ -122,7 +122,7 @@ export default function ProgressBar({ variant = 'full', onSeek }: ProgressBarPro
           />
         )}
 
-        {/* Handle dot */}
+        {}
         {active && onSeek && duration > 0 && (
           <div style={{
             position: 'absolute',

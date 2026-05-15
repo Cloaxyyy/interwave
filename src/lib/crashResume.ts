@@ -1,9 +1,8 @@
-// Persist current track + position to localStorage for crash recovery.
 
 import type { Track } from './tauri';
 
 const KEY = 'iw_resume_v1';
-const STALE_MS = 24 * 60 * 60 * 1000; // 24h — older than this, ignore
+const STALE_MS = 24 * 60 * 60 * 1000;
 
 export interface ResumeState {
   track: Track;

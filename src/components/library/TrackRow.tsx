@@ -15,7 +15,6 @@ function formatDuration(seconds: number | null): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-/** Animated "equaliser bars" shown on the currently playing track */
 function NowPlayingBars({ paused = false }: { paused?: boolean }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, width: 14, height: 14 }}>
@@ -111,7 +110,7 @@ export default function TrackRow({
         cursor: 'default',
       }}
     >
-      {/* Thumbnail / play overlay */}
+      {}
       <div
         style={{
           width: 40,
@@ -139,14 +138,14 @@ export default function TrackRow({
           <MusicNote size={16} weight="duotone" color="var(--text-muted)" />
         )}
 
-        {/* Playing indicator overlay */}
+        {}
         {isPlaying && !hovered && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <NowPlayingBars paused={isPaused} />
           </div>
         )}
 
-        {/* Hover overlay */}
+        {}
         {hovered && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Play size={16} weight="fill" color="var(--accent)" />
@@ -154,7 +153,7 @@ export default function TrackRow({
         )}
       </div>
 
-      {/* Text */}
+      {}
       <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => onPlay(track)}>
         <p
           style={{
@@ -186,14 +185,14 @@ export default function TrackRow({
         </p>
       </div>
 
-      {/* Duration (hidden on hover) */}
+      {}
       {!hovered && track.duration_seconds !== null && (
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
           {formatDuration(track.duration_seconds)}
         </span>
       )}
 
-      {/* Actions — hover only */}
+      {}
       {hovered && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
           <ActionButton title={track.liked ? 'Unlike' : 'Like'} active={track.liked} onClick={() => onLikeToggle(track)}>

@@ -25,12 +25,10 @@ pub struct LyricsResult {
 fn parse_lrc(lrc: &str) -> Vec<LyricLine> {
     let mut lines = Vec::new();
     for line in lrc.lines() {
-        // Match [mm:ss.xx] text
         if let Some(rest) = line.strip_prefix('[') {
             if let Some(bracket_end) = rest.find(']') {
                 let time_str = &rest[..bracket_end];
                 let text = rest[bracket_end + 1..].trim().to_string();
-                // Parse mm:ss.xx or mm:ss.xxx
                 let parts: Vec<&str> = time_str.splitn(2, ':').collect();
                 if parts.len() == 2 {
                     if let (Ok(mins), Ok(secs)) = (
@@ -50,10 +48,7 @@ fn parse_lrc(lrc: &str) -> Vec<LyricLine> {
     lines
 }
 
-/// Strip YouTube-style suffixes from track titles so LRClib can match them.
-/// E.g. "Blinding Lights (Official Video)" → "Blinding Lights"
 fn clean_title(raw: &str) -> String {
-    // Patterns to remove (case-insensitive, in parentheses or brackets)
     let bracket_patterns: &[&str] = &[
         "official video", "official music video", "official audio",
         "official lyric video", "official visualizer", "official",
@@ -66,7 +61,6 @@ fn clean_title(raw: &str) -> String {
 
     let mut s = raw.trim().to_string();
 
-    // Remove (...) and [...] blocks whose content matches a known pattern
     for open in &['(', '['] {
         let close = if *open == '(' { ')' } else { ']' };
         loop {
@@ -85,15 +79,12 @@ fn clean_title(raw: &str) -> String {
         }
     }
 
-    // Remove "feat." / "ft." and everything after it
     for marker in &[" (feat.", " [feat.", " feat.", " ft."] {
         if let Some(pos) = s.to_lowercase().find(marker) {
-            // Only strip if in parentheses or at end — don't strip mid-title
             s = s[..pos].trim_end().to_string();
         }
     }
 
-    // Remove " - Topic" suffix (YouTube auto-generated channels)
     if let Some(pos) = s.to_lowercase().find(" - topic") {
         s = s[..pos].trim_end().to_string();
     }
@@ -101,22 +92,18 @@ fn clean_title(raw: &str) -> String {
     s.trim().to_string()
 }
 
-/// Strip YouTube channel suffixes from artist names.
 fn clean_artist(raw: &str) -> String {
     let s = raw.trim();
-    // Remove "VEVO" suffix (case-insensitive)
     let lower = s.to_lowercase();
     if lower.ends_with("vevo") {
         return s[..s.len() - 4].trim().to_string();
     }
-    // Remove " - Topic" suffix
     if let Some(pos) = lower.find(" - topic") {
         return s[..pos].trim().to_string();
     }
     s.to_string()
 }
 
-/// Try one LRClib search URL and return the best lyrics found, or None.
 async fn try_lrclib(client: &reqwest::Client, url: &str) -> Option<LyricsResult> {
     let resp = client.get(url).send().await.ok()?;
     if !resp.status().is_success() {
@@ -125,7 +112,6 @@ async fn try_lrclib(client: &reqwest::Client, url: &str) -> Option<LyricsResult>
     let body: serde_json::Value = resp.json().await.ok()?;
 
     if body.is_array() {
-        // Search endpoint — pick the first result that has any lyrics
         for item in body.as_array()? {
             if let Ok(r) = extract_lyrics(item) {
                 if r.has_synced || !r.plain.is_empty() {
@@ -135,7 +121,6 @@ async fn try_lrclib(client: &reqwest::Client, url: &str) -> Option<LyricsResult>
         }
         None
     } else {
-        // Get endpoint — single object
         extract_lyrics(&body).ok().filter(|r| r.has_synced || !r.plain.is_empty())
     }
 }
@@ -165,10 +150,8 @@ pub async fn get_lyrics(
     let clean_t = clean_title(&title);
     let clean_a = clean_artist(&artist);
 
-    // Build a list of candidate search URLs in priority order
     let mut urls: Vec<String> = Vec::new();
 
-    // 1. Exact match with cleaned title + artist + duration
     if let Some(dur) = duration_secs {
         urls.push(format!(
             "https://lrclib.net/api/get?track_name={}&artist_name={}&duration={}",
@@ -178,14 +161,12 @@ pub async fn get_lyrics(
         ));
     }
 
-    // 2. Search with cleaned title + cleaned artist
     urls.push(format!(
         "https://lrclib.net/api/search?track_name={}&artist_name={}",
         urlencoding::encode(&clean_t),
         urlencoding::encode(&clean_a),
     ));
 
-    // 3. Search with raw title + raw artist (in case cleaning was too aggressive)
     if clean_t != title.trim() || clean_a != artist.trim() {
         urls.push(format!(
             "https://lrclib.net/api/search?track_name={}&artist_name={}",
@@ -194,19 +175,16 @@ pub async fn get_lyrics(
         ));
     }
 
-    // 4. Search with cleaned title + artist as combined q= query
     urls.push(format!(
         "https://lrclib.net/api/search?q={}",
         urlencoding::encode(&format!("{} {}", clean_t, clean_a)),
     ));
 
-    // 5. Search with cleaned title only (broadest — catches tracks where artist differs)
     urls.push(format!(
         "https://lrclib.net/api/search?q={}",
         urlencoding::encode(&clean_t),
     ));
 
-    // Try each URL in order, return the first one that has lyrics
     for url in &urls {
         if let Some(result) = try_lrclib(&client, url).await {
             if let Ok(mut cache) = get_cache().lock() {
@@ -216,9 +194,6 @@ pub async fn get_lyrics(
         }
     }
 
-    // Nothing found — do NOT cache empty results so the user can retry.
-    // (Only successful results get cached to avoid stale failures from
-    // temporary network errors or cold-start timeouts.)
     log::info!("get_lyrics: no results for '{}' by '{}'", clean_t, clean_a);
     Ok(LyricsResult { synced: vec![], plain: String::new(), has_synced: false })
 }

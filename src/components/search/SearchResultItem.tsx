@@ -1,8 +1,5 @@
 import { useState } from 'react';
 
-/** Extract a readable message from whatever Tauri throws.
- *  Tauri errors arrive as plain objects: { kind: "YtDlp", message: "..." }
- *  not as JS Error instances, so instanceof Error is always false. */
 function tauriErrMsg(err: unknown): string {
   if (err instanceof Error) return err.message;
   if (typeof err === 'object' && err !== null) {
@@ -10,7 +7,7 @@ function tauriErrMsg(err: unknown): string {
     if (typeof o.message === 'string') return o.message;
     if (typeof o.kind === 'string' && typeof o.message !== 'undefined')
       return `${o.kind}: ${o.message}`;
-    try { return JSON.stringify(err); } catch { /* fall through */ }
+    try { return JSON.stringify(err); } catch {  }
   }
   return String(err);
 }
@@ -34,7 +31,7 @@ interface SearchResultItemProps {
   result: SearchResult;
   onPlay: (result: SearchResult) => Promise<void>;
   isPlaying: boolean;
-  isLoading: boolean; // true while this specific track is loading
+  isLoading: boolean;
 }
 
 export default function SearchResultItem({ result, onPlay, isPlaying, isLoading }: SearchResultItemProps) {
@@ -132,7 +129,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
           transition: 'background 120ms',
         }}
       >
-        {/* Thumbnail */}
+        {}
         <div
           style={{
             width: 48,
@@ -158,7 +155,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
             <MusicNote size={20} weight="duotone" color="var(--text-muted)" />
           )}
 
-          {/* Overlay: spinner while loading, play icon on hover */}
+          {}
           {(busy || hovered) && (
             <div
               style={{
@@ -184,7 +181,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
           )}
         </div>
 
-        {/* Text */}
+        {}
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
             style={{
@@ -223,7 +220,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
           </span>
         )}
 
-        {/* Action buttons — always visible (hover-only was hard to discover) */}
+        {}
         {!busy && (
           <div
             style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}
@@ -258,7 +255,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
         )}
       </div>
 
-      {/* Play error shown below the row */}
+      {}
       {playError && (
         <div style={{
           padding: '4px 16px 6px',
@@ -272,7 +269,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
         </div>
       )}
 
-      {/* Action error (like / add to playlist) */}
+      {}
       {actionError && (
         <div style={{
           padding: '4px 16px 6px',
@@ -286,7 +283,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
         </div>
       )}
 
-      {/* Playlist picker modal — rendered outside the row so it's not clipped */}
+      {}
       {trackForPlaylist && (
         <PlaylistPickerModal
           track={trackForPlaylist}
@@ -294,7 +291,7 @@ export default function SearchResultItem({ result, onPlay, isPlaying, isLoading 
         />
       )}
 
-      {/* Spin keyframe (scoped) */}
+      {}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </>
   );

@@ -1,7 +1,6 @@
 use serde::Deserialize;
 use crate::error::WaveError;
 
-/// A track extracted from either YourLibrary.json or a Playlist file.
 #[derive(Debug, Clone)]
 pub struct ParsedTrack {
     pub title: String,
@@ -9,14 +8,11 @@ pub struct ParsedTrack {
     pub album: String,
 }
 
-/// A playlist extracted from Playlist*.json.
 #[derive(Debug, Clone)]
 pub struct ParsedPlaylist {
     pub name: String,
     pub tracks: Vec<ParsedTrack>,
 }
-
-// ── Internal serde types for YourLibrary.json ─────────────────────────────────
 
 #[derive(Deserialize)]
 struct LibraryFile {
@@ -29,8 +25,6 @@ struct LibraryTrack {
     artist: Option<String>,
     album: Option<String>,
 }
-
-// ── Internal serde types for Playlist*.json ───────────────────────────────────
 
 #[derive(Deserialize)]
 struct PlaylistFile {
@@ -56,14 +50,9 @@ struct PlaylistTrackObj {
     album_name: Option<String>,
 }
 
-// ── Public parse functions ────────────────────────────────────────────────────
-
-/// Detects file type and parses either YourLibrary.json or Playlist*.json.
-/// Returns (saved_tracks, playlists).
 pub fn parse_spotify_export(
     json: &str,
 ) -> Result<(Vec<ParsedTrack>, Vec<ParsedPlaylist>), WaveError> {
-    // Try YourLibrary.json format first
     if let Ok(lib) = serde_json::from_str::<LibraryFile>(json) {
         if let Some(tracks) = lib.tracks {
             let parsed: Vec<ParsedTrack> = tracks
@@ -80,7 +69,6 @@ pub fn parse_spotify_export(
         }
     }
 
-    // Try Playlist*.json format
     if let Ok(pf) = serde_json::from_str::<PlaylistFile>(json) {
         if let Some(playlists) = pf.playlists {
             let parsed: Vec<ParsedPlaylist> = playlists

@@ -1,4 +1,3 @@
-// Singleton store for live maintenance + suspension state.
 
 import { create } from 'zustand';
 import type { MaintenanceRow, SuspensionRow } from '../lib/admin';
@@ -17,13 +16,11 @@ export const useMaintenanceStore = create<MaintenanceStore>((set) => ({
   setSuspension: (suspension) => set({ suspension }),
 }));
 
-/** Returns the maintenance row for a specific page, or null. */
 export function useMaintenanceFor(page: string): MaintenanceRow | null {
   const rows = useMaintenanceStore((s) => s.maintenance);
   return rows.find((r) => r.page === page && r.enabled) ?? null;
 }
 
-/** Global maintenance — covers the entire app. */
 export function useGlobalMaintenance(): MaintenanceRow | null {
   return useMaintenanceFor('global');
 }

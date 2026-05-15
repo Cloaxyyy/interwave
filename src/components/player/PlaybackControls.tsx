@@ -13,7 +13,7 @@ import { pause as tauriPause, resume as tauriResume, skipNext, skipPrev, setShuf
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 interface PlaybackControlsProps {
-  /** 'full' shows all controls; 'compact' shows only play/pause */
+
   variant?: 'full' | 'compact';
 }
 
@@ -76,7 +76,7 @@ export default function PlaybackControls({ variant = 'full' }: PlaybackControlsP
     const next = !shuffle;
     setShuffle(next);
     await setShuffleCmd(next);
-    // When turning shuffle on, also push the now-reshuffled queue to the backend
+
     if (next) {
       const newQueue = usePlayerStore.getState().queue;
       if (newQueue.length > 0) {
@@ -105,7 +105,7 @@ export default function PlaybackControls({ variant = 'full' }: PlaybackControlsP
       {variant === 'full' && <IconButton icon={<Shuffle size={16} />} action={() => { handleShuffle().catch(console.error); }} active={shuffle} title="Shuffle" />}
       {variant === 'full' && <IconButton icon={<SkipBack size={20} weight="fill" />} action={() => { skipPrev().catch(console.error); }} title="Previous" />}
 
-      {/* Play / Pause */}
+      {}
       <button
         onClick={handlePlayPause}
         disabled={isLoading || playbackState === 'stopped'}

@@ -12,8 +12,6 @@ import {
   setGlobalHotkey, clearGlobalHotkey, getGlobalHotkeys, resetGlobalHotkeys,
 } from '../lib/tauri';
 
-// Five top-level sections, each rendering one or more sub-panels grouped
-// together. Was nine, which felt cluttered — now you scan a short menu.
 type Section = 'account' | 'sound' | 'library' | 'shortcuts' | 'about';
 
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
@@ -108,7 +106,7 @@ function AudioSection() {
       try {
         localStorage.removeItem('iw_accent_override');
       } catch {}
-      // Fallback to default; the next track-change will re-extract from art.
+
       usePlayerStore.getState().setAccentColor('var(--accent)');
     }
   };
@@ -138,7 +136,7 @@ function AudioSection() {
         <Toggle on={hires} onClick={() => setHires(v => !v)}/>
       </SettingRow>
 
-      {/* Accent colour override — pin a specific colour or let it pull from album art */}
+      {}
       <SettingRow
         name="Accent colour"
         sub={accentMode === 'auto'
@@ -190,8 +188,6 @@ function AudioSection() {
   );
 }
 
-// Toggle for the fullscreen-lyrics mic button in the player bar.
-// Per user request: people who don't want fullscreen lyrics shouldn't see it.
 function FsLyricsToggle() {
   const [on, setOn] = useState(() => {
     try { return localStorage.getItem('iw_show_fs_lyrics_btn') !== '0'; } catch { return true; }
@@ -322,22 +318,20 @@ function AccountSection() {
   );
 }
 
-// One row per binding. `scope` distinguishes "in-app" (only when Interwave
-// is focused) from "global" (system-wide, fires even in games).
 type RowDef = {
-  action: string;          // matches HotkeyAction or a global action name
+  action: string;
   label: string;
   description: string;
   scope: 'in-app' | 'global';
 };
 
 const SHORTCUT_ROWS: RowDef[] = [
-  // In-app
+
   ...ACTIONS.map((a) => ({
     action: a.id, label: a.label, description: a.description,
     scope: 'in-app' as const,
   })),
-  // Global (system-wide chords)
+
   { action: 'play-pause',  label: 'Play / Pause (global)',  description: 'Works even when another app or game is focused.', scope: 'global' },
   { action: 'skip-next',   label: 'Next track (global)',    description: 'System-wide skip-forward.', scope: 'global' },
   { action: 'skip-prev',   label: 'Previous track (global)', description: 'System-wide skip-back.', scope: 'global' },
@@ -345,9 +339,8 @@ const SHORTCUT_ROWS: RowDef[] = [
   { action: 'volume-down', label: 'Volume down (global)',   description: '-5%', scope: 'global' },
 ];
 
-// Translate a captured browser keydown to a Tauri global-shortcut combo.
 function bindingToGlobalCombo(b: string): string {
-  // Our format: "Ctrl+Shift+KeyK" → Tauri wants "CommandOrControl+Shift+K"
+
   return b.split('+').map((p) => {
     if (p === 'Ctrl' || p === 'Meta') return 'CommandOrControl';
     if (p === 'Shift') return 'Shift';
@@ -373,7 +366,6 @@ function ShortcutsSection() {
     getGlobalHotkeys().then(setGlobalBindings).catch(() => {});
   }, []);
 
-  // Listen for the recording key
   useEffect(() => {
     if (!recordingFor) return;
     const onKey = async (e: KeyboardEvent) => {
@@ -390,7 +382,7 @@ function ShortcutsSection() {
         setRecordingFor(null);
         setError(null);
       } else {
-        // Global: ask Tauri to register the new combo
+
         const combo = bindingToGlobalCombo(newBinding);
         try {
           await setGlobalHotkey(recordingFor.action, combo);
@@ -580,8 +572,8 @@ function EqualizerSection() {
         setLocalBands(bands);
         bands.forEach((db, i) => setEqBandStore(i, db));
       })
-      .catch(() => {/* ignore — backend may not be ready yet */});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch(() => {});
+
   }, []);
 
   const handleBandChange = (band: number, db: number) => {
@@ -618,7 +610,7 @@ function EqualizerSection() {
           const db = localBands[i] ?? 0;
           return (
             <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
-              {/* dB readout */}
+              {}
               <div style={{
                 fontFamily: 'var(--mono)', fontSize: 11,
                 color: db !== 0 ? 'var(--accent)' : 'var(--text-muted)',
@@ -628,7 +620,7 @@ function EqualizerSection() {
                 {formatDb(db)}
               </div>
 
-              {/* Vertical slider via transform trick */}
+              {}
               <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <input
                   type="range"
@@ -647,7 +639,7 @@ function EqualizerSection() {
                 />
               </div>
 
-              {/* Band name + freq */}
+              {}
               <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>{name}</div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)' }}>{EQ_BAND_FREQS[i]}</div>
             </div>
@@ -716,7 +708,7 @@ export default function SettingsView() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 40 }}>
-        {/* Sidebar nav */}
+        {}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {SECTIONS.map(({ id, label, icon }) => (
             <button
@@ -739,7 +731,7 @@ export default function SettingsView() {
           ))}
         </nav>
 
-        {/* Content panel */}
+        {}
         <div>{renderSection(section)}</div>
       </div>
     </div>

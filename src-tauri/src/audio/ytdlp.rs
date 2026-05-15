@@ -3,8 +3,6 @@ use std::path::PathBuf;
 
 const YTDLP_TIMEOUT_SECS: u64 = 30;
 
-// ── Format extraction ─────────────────────────────────────────────────────────
-
 #[derive(Debug, Clone, PartialEq)]
 enum AudioKind { Webm, M4a }
 
@@ -14,17 +12,7 @@ struct AudioCandidate {
     url:     String,
 }
 
-/// Extract the best audio URL from an InnerTube player response.
-///
-/// **Preference order:**
-/// 1. audio/mp4 (m4a / AAC) — isomp4 + aac codecs available in symphonia-all.
-/// 2. audio/webm (Opus) — fallback; requires our direct-symphonia decoder path.
-///
-/// Both require a plain `url` field (no signatureCipher — we can't decrypt those).
-/// Checks both `adaptiveFormats` (desktop/embedded clients) and `formats`
-/// (some mobile clients return audio+video together under `formats`).
 fn extract_audio_url(json: &serde_json::Value) -> WaveResult<String> {
-    // Bail early on non-OK playability
     if let Some(status) = json["playabilityStatus"]["status"].as_str() {
         if status != "OK" {
             let reason = json["playabilityStatus"]["reason"]
@@ -39,8 +27,6 @@ fn extract_audio_url(json: &serde_json::Value) -> WaveResult<String> {
         return Err(WaveError::YtDlp("no streamingData in response".into()));
     }
 
-    // Some clients (e.g. iOS) return formats under `formats`; most use `adaptiveFormats`.
-    // Combine both arrays so we never miss an audio track.
     let empty = serde_json::Value::Array(vec![]);
     let adaptive = streaming["adaptiveFormats"].as_array().unwrap_or_else(|| {
         empty.as_array().unwrap()
@@ -60,7 +46,6 @@ fn extract_audio_url(json: &serde_json::Value) -> WaveResult<String> {
     for fmt in all_formats {
         let mime = fmt["mimeType"].as_str().unwrap_or("");
 
-        // Only want audio tracks (skip video-only and combined video+audio for separate dl)
         let kind = if mime.starts_with("audio/webm") {
             AudioKind::Webm
         } else if mime.starts_with("audio/mp4") {
@@ -69,7 +54,6 @@ fn extract_audio_url(json: &serde_json::Value) -> WaveResult<String> {
             continue;
         };
 
-        // Must have a plain url field (not signatureCipher)
         let url = match fmt["url"].as_str() {
             Some(u) if !u.is_empty() => u.to_string(),
             _ => continue,
@@ -80,9 +64,6 @@ fn extract_audio_url(json: &serde_json::Value) -> WaveResult<String> {
         let better = match &best {
             None => true,
             Some(b) => {
-                // Prefer m4a/AAC — symphonia-all decodes it natively.
-                // WebM/Opus is collected as a fallback but symphonia 0.5 has no
-                // Opus codec, so webm URLs are dropped by the caller if m4a wins.
                 (kind == AudioKind::M4a && b.kind == AudioKind::Webm)
                     || (kind == b.kind && bitrate > b.bitrate)
             }
@@ -104,8 +85,6 @@ fn extract_audio_url(json: &serde_json::Value) -> WaveResult<String> {
     );
     Ok(candidate.url)
 }
-
-// ── InnerTube async helper ────────────────────────────────────────────────────
 
 async fn innertube_request(
     client: &reqwest::Client,
@@ -140,13 +119,6 @@ async fn innertube_request(
     extract_audio_url(&json)
 }
 
-// ── Public async resolver ─────────────────────────────────────────────────────
-
-/// Resolve a YouTube video ID to a direct audio URL via InnerTube.
-///
-/// Fires **five clients simultaneously** and waits for ALL of them.
-/// Prefers m4a/AAC — symphonia 0.5 has no Opus codec so WebM is unusable.
-/// Our patched rodio handles fMP4/AAC correctly via the SeekError fallback.
 pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> {
     let client = reqwest::Client::builder()
         .connect_timeout(std::time::Duration::from_secs(8))
@@ -156,8 +128,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
 
     let (tx, mut rx) = tokio::sync::mpsc::channel::<WaveResult<String>>(10);
 
-    // ── ANDROID (current production version) ──────────────────────────────────
-    // Most reliable source of direct audio URLs as of 2024-2025.
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -182,7 +152,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
         });
     }
 
-    // ── IOS (current production version) ─────────────────────────────────────
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -210,7 +179,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
         });
     }
 
-    // ── ANDROID_VR (Oculus client — often bypasses restrictions) ─────────────
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -236,7 +204,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
         });
     }
 
-    // ── MWEB (mobile web — current version) ──────────────────────────────────
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -258,7 +225,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
         });
     }
 
-    // ── WEB_EMBEDDED_PLAYER (embedded iframe client) ──────────────────────────
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -283,7 +249,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
         });
     }
 
-    // ── TVHTML5 (Smart TV — often returns direct URLs) ────────────────────────
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -306,8 +271,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
         });
     }
 
-    // ── ANDROID_MUSIC (YouTube Music Android) ────────────────────────────────
-    // Uses the music app client which often has fewer restrictions.
     {
         let c = client.clone();
         let vid = video_id.to_string();
@@ -332,9 +295,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
 
     drop(tx);
 
-    // Return the FIRST m4a URL we receive — no need to wait for all 5 clients.
-    // Symphonia 0.5 has no Opus codec so WebM is unusable; m4a wins immediately.
-    // Keep a WebM fallback in case no client returns m4a (unlikely but possible).
     let mut webm_fallback: Option<String> = None;
 
     while let Some(result) = rx.recv().await {
@@ -344,18 +304,12 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
             if is_webm {
                 webm_fallback.get_or_insert(url);
             } else {
-                // m4a — return immediately; drop rx so remaining tasks resolve in bg
                 log::info!("InnerTube got m4a URL for {video_id}");
                 return Ok(url);
             }
         }
     }
 
-    // All clients responded with only WebM or errors.
-    // We intentionally do NOT return the webm URL here: symphonia 0.5.5 has no
-    // Opus codec so it would always fail with "Unrecognized format".  Instead we
-    // return an error so resolve_url() falls through to yt-dlp (format filter
-    // forces m4a/AAC which symphonia-isomp4 handles natively).
     if webm_fallback.is_some() {
         log::warn!(
             "InnerTube: only WebM/Opus URLs available for {video_id} — \
@@ -368,15 +322,6 @@ pub async fn resolve_stream_url_innertube(video_id: &str) -> WaveResult<String> 
     ))
 }
 
-// ── Piped API resolver (fastest — handles n-param, returns direct m4a URLs) ───
-
-/// Resolve via Piped API (open-source YouTube frontend).
-///
-/// Tries three public Piped instances **concurrently** and returns the first
-/// working m4a URL.  Piped decodes YouTube's throttle `n` parameter, so the
-/// resulting URL downloads at full CDN speed without any extra steps.
-///
-/// Typical latency: 0.5–2 s  (vs 5–10 s for yt-dlp on first call).
 pub async fn resolve_stream_url_piped(video_id: &str) -> WaveResult<String> {
     const INSTANCES: &[&str] = &[
         "https://pipedapi.kavin.rocks",
@@ -425,7 +370,6 @@ pub async fn resolve_stream_url_piped(video_id: &str) -> WaveResult<String> {
                     .await
                     .map_err(|e| WaveError::Network(e.to_string()))?;
 
-                // audioStreams[] — pick highest-bitrate M4A
                 let audio_url = json["audioStreams"]
                     .as_array()
                     .and_then(|streams| {
@@ -471,10 +415,6 @@ pub async fn resolve_stream_url_piped(video_id: &str) -> WaveResult<String> {
     )))
 }
 
-// ── yt-dlp fallback (blocking, run via spawn_blocking) ────────────────────────
-
-/// Resolve via yt-dlp — slow (5–10 s) but always works.
-/// Forces m4a/AAC (itag 140).  Skip DASH/HLS processing for speed.
 pub fn resolve_stream_url(video_id: &str) -> WaveResult<String> {
     let url = format!("https://www.youtube.com/watch?v={video_id}");
     let binary = find_ytdlp_binary()?;
@@ -483,8 +423,6 @@ pub fn resolve_stream_url(video_id: &str) -> WaveResult<String> {
     cmd.args([
             "--no-playlist",
             "--get-url",
-            // itag 140 = YouTube's standard 128 kbps m4a/AAC audio track.
-            // Using the specific itag avoids format-selection overhead.
             "-f", "140/bestaudio[ext=m4a]/bestaudio[acodec=mp4a.40.2]",
             "--no-warnings",
             "--no-check-certificates",
@@ -493,7 +431,6 @@ pub fn resolve_stream_url(video_id: &str) -> WaveResult<String> {
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
 
-    // On Windows, prevent a console window from briefly flashing.
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::process::CommandExt;
@@ -543,12 +480,7 @@ pub fn resolve_stream_url(video_id: &str) -> WaveResult<String> {
     Ok(trimmed.lines().next().unwrap_or(trimmed).trim().to_string())
 }
 
-/// Finds the yt-dlp sidecar binary next to the exe (production) or in
-/// src-tauri/binaries/ (development).
 pub fn find_ytdlp_binary() -> WaveResult<PathBuf> {
-    // Primary name includes target triple (used in dev and by Tauri's externalBin bundling).
-    // On Windows we also check for plain "yt-dlp.exe" since some installers / manual
-    // placements omit the triple.
     #[cfg(target_os = "windows")]
     let candidates: &[&str] = &[
         "yt-dlp-x86_64-pc-windows-msvc.exe",
@@ -563,7 +495,6 @@ pub fn find_ytdlp_binary() -> WaveResult<PathBuf> {
     #[cfg(target_os = "linux")]
     let candidates: &[&str] = &["yt-dlp-x86_64-unknown-linux-gnu", "yt-dlp"];
 
-    // 1. Next to the running exe (production install).
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
             for name in candidates {
@@ -573,7 +504,6 @@ pub fn find_ytdlp_binary() -> WaveResult<PathBuf> {
                     return Ok(p);
                 }
             }
-            // Also check a "resources" subdirectory (some Tauri NSIS layouts use it).
             let res = dir.join("resources");
             for name in candidates {
                 let p = res.join(name);
@@ -585,7 +515,6 @@ pub fn find_ytdlp_binary() -> WaveResult<PathBuf> {
         }
     }
 
-    // 2. Walk up from cwd — catches dev runs from the project root.
     let mut dir = std::env::current_dir().unwrap_or_default();
     for _ in 0..8 {
         for name in candidates {

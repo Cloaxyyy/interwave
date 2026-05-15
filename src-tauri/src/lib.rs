@@ -22,7 +22,6 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .setup(|app| {
-            // Determine app data directory
             let app_dir = app
                 .path()
                 .app_data_dir()
@@ -30,9 +29,6 @@ pub fn run() {
             std::fs::create_dir_all(&app_dir)
                 .expect("Failed to create app data directory");
 
-            // ── Crash log: every panic is appended to interwave-crash.log ──
-            // The user can find this file at  %AppData%\app.interwave.player\
-            // and send it back so we can see what actually died.
             {
                 let crash_log_path = app_dir.join("interwave-crash.log");
                 let path_for_log = crash_log_path.clone();
@@ -59,20 +55,15 @@ pub fn run() {
                 log::info!("Crash log: {}", crash_log_path.display());
             }
 
-            // Initialize SQLite connection pool
             let db_path = app_dir.join("wave.db");
             let manager = SqliteConnectionManager::file(&db_path);
             let pool = r2d2::Pool::new(manager)
                 .expect("Failed to create DB connection pool");
 
-            // Run schema migrations on first launch
             {
                 let conn = pool.get().expect("Failed to get DB connection for schema init");
                 db::schema::initialize(&conn).expect("Failed to initialize DB schema");
 
-                // One-time migration: clear URL cache entries that may have been
-                // resolved via InnerTube (throttled n-param URLs).  Setting
-                // url_cache_v=2 acts as a run-once flag.
                 let cache_v: Option<String> = conn
                     .query_row(
                         "SELECT value FROM settings WHERE key='url_cache_v'",
@@ -92,17 +83,12 @@ pub fn run() {
                 }
             }
 
-            // Initialize 5-band EQ settings (gains stored here; DSP wiring is a follow-up)
             let eq = audio::eq::EqSettings::new();
 
-            // Spawn the dedicated audio thread
             let audio = audio::thread::spawn_audio_thread();
 
-            // Spawn the Discord Rich Presence thread
             let discord = discord::spawn();
 
-            // Pre-warm the in-memory URL cache from SQLite (4-hour TTL).
-            // This means tracks played in a previous session start instantly.
             let url_cache = {
                 let conn = pool.get().expect("DB connection for url_cache load");
                 let persisted = db::url_cache::load_all(&conn, state::URL_CACHE_TTL_SECS)
@@ -111,8 +97,6 @@ pub fn run() {
                 std::sync::Arc::new(std::sync::Mutex::new(persisted))
             };
 
-            // Load any persisted hotkey overrides from settings (key prefix "hotkey_")
-            // into the in-memory map. Defaults fill in any missing actions.
             let hotkey_map = {
                 let mut map = commands::hotkeys::defaults();
                 if let Ok(conn) = pool.get() {
@@ -138,16 +122,6 @@ pub fn run() {
                 hotkeys: hotkey_map,
             });
 
-            // ── Global hotkeys ─────────────────────────────────────────────
-            //
-            // Two registration passes:
-            //   1. Hardware media keys — fire-and-forget, no conflict risk.
-            //   2. Whatever's currently in the AppState hotkeys map (loaded
-            //      from settings above; defaults fill in anything missing).
-            //
-            // The map is the source of truth. Remapping at runtime via the
-            // commands::hotkeys::set_global_hotkey command unregisters and
-            // re-registers in place.
             {
                 let h_pp = app.handle().clone();
                 let _ = app.handle().global_shortcut().on_shortcut("MediaPlayPause", move |_, _, _| {
@@ -162,7 +136,6 @@ pub fn run() {
                     let _ = h_pv.emit("hotkey://skip-prev", ());
                 });
 
-                // Pull the live map and register everything currently in it.
                 use tauri::Manager;
                 let state = app.handle().state::<state::AppState>();
                 let bindings: Vec<(String, String)> = state.hotkeys.lock()
@@ -187,7 +160,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            // Playback
             commands::playback::play_track,
             commands::playback::skip_next,
             commands::playback::skip_prev,
@@ -207,12 +179,10 @@ pub fn run() {
             commands::playback::get_eq_bands,
             commands::playback::set_crossfade,
             commands::playback::get_crossfade,
-            // Hotkeys
             commands::hotkeys::set_global_hotkey,
             commands::hotkeys::clear_global_hotkey,
             commands::hotkeys::get_global_hotkeys,
             commands::hotkeys::reset_global_hotkeys,
-            // Library
             commands::library::get_library,
             commands::library::like_track,
             commands::library::unlike_track,
@@ -234,17 +204,13 @@ pub fn run() {
             commands::library::import_cloud_tracks,
             commands::library::import_cloud_playlists,
             commands::library::import_cloud_playlist_track,
-            // Search
             commands::search::search_youtube,
             commands::search::get_search_history,
             commands::search::clear_search_history,
             commands::search::get_recommendations,
-            // Lyrics
             commands::lyrics::get_lyrics,
-            // Spotify file import + URL import
             commands::spotify::spotify_import_file,
             commands::spotify::import_spotify_url,
-            // Window management
             commands::window::set_mini_player,
         ])
         .run(tauri::generate_context!())

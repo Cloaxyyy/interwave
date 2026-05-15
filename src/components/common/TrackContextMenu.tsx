@@ -23,9 +23,8 @@ export default function TrackContextMenu({
 }: TrackContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Clamp so menu doesn't overflow viewport
   const clampedX = x + MENU_WIDTH > window.innerWidth ? x - MENU_WIDTH : x;
-  // Approximate total menu height: 7 items + 2 dividers = ~7*32 + 2*9 = 242px
+
   const estimatedH = 7 * ITEM_HEIGHT + 2 * 9;
   const clampedY = y + estimatedH > window.innerHeight ? y - estimatedH : y;
 

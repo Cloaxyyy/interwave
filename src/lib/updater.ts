@@ -1,4 +1,3 @@
-// Tauri auto-updater wrapper + Zustand store for the UpdatePill.
 
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
@@ -24,7 +23,6 @@ export const useUpdateStore = create<UpdateStore>((set) => ({
   setError: (error) => set({ error }),
 }));
 
-/** Check the GitHub Releases manifest. Silent — no dialogs. */
 export async function checkForUpdate(): Promise<void> {
   const store = useUpdateStore.getState();
   if (store.status === 'checking' || store.status === 'installing') return;
@@ -47,7 +45,6 @@ export async function checkForUpdate(): Promise<void> {
   }
 }
 
-/** Download, install, and relaunch. Caller should not await past the relaunch. */
 export async function applyUpdate(): Promise<void> {
   const store = useUpdateStore.getState();
   const update = store.update;
@@ -55,8 +52,7 @@ export async function applyUpdate(): Promise<void> {
   store.setStatus('installing');
   try {
     await update.downloadAndInstall();
-    // App will quit + relaunch from inside downloadAndInstall on Windows;
-    // this fallback covers the case where the platform doesn't auto-relaunch.
+
     await relaunch();
   } catch (e: any) {
     console.error('[updater] install failed:', e);

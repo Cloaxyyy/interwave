@@ -52,59 +52,31 @@ export default function ShortcutOverlay() {
   ];
 
   return (
-    <div
-      onClick={() => setOpen(false)}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 'min(560px, 100%)', maxHeight: '85vh',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-default)',
-          borderRadius: 14, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--border-default)' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>
-            <Keyboard size={16} weight="duotone" /> KEYBOARD SHORTCUTS
-          </span>
-          <button
-            onClick={() => setOpen(false)}
-            aria-label="Close"
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 4, display: 'flex' }}
-          >
-            <X size={18} weight="bold" />
+    <div className="iw-modal-backdrop" onClick={() => setOpen(false)}>
+      <div className="iw-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="iw-modal-head">
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Keyboard size={16} weight="duotone" />
+            <span>Keyboard shortcuts</span>
+          </h3>
+          <button className="iw-x" aria-label="Close" onClick={() => setOpen(false)}>
+            <X size={14} weight="bold" />
           </button>
         </div>
-        <div style={{ overflowY: 'auto', padding: '16px 20px 20px' }}>
+        <div className="iw-modal-body">
           {globalGroups.map((g) => (
-            <div key={g.title} style={{ marginBottom: 18 }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
-                {g.title.toUpperCase()}
-              </div>
+            <div key={g.title}>
+              <div className="iw-kb-section">{g.title}</div>
               {g.actions.map((id) => {
                 const meta = ACTIONS.find((a) => a.id === id);
                 if (!meta) return null;
                 const combo = bindings[id] ?? DEFAULT_BINDINGS[id];
                 return (
-                  <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0' }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--sans)' }}>{meta.label}</span>
-                    <span style={{ display: 'flex', gap: 4 }}>
+                  <div key={id} className="iw-kb-row">
+                    <span className="iw-kb-lbl">{meta.label}</span>
+                    <span className="iw-kb-keys">
                       {prettyKey(combo).map((k, i) => (
-                        <kbd key={i} style={{
-                          fontFamily: 'var(--mono)', fontSize: 11, padding: '2px 7px',
-                          background: 'var(--bg-elevated)',
-                          border: '1px solid var(--border-default)',
-                          borderRadius: 4, color: 'var(--text-secondary)',
-                          minWidth: 20, textAlign: 'center',
-                        }}>
-                          {k === 'Space' ? '␣' : k}
-                        </kbd>
+                        <kbd key={i} className="iw-kb-k">{k === 'Space' ? '␣' : k}</kbd>
                       ))}
                     </span>
                   </div>
@@ -112,18 +84,19 @@ export default function ShortcutOverlay() {
               })}
             </div>
           ))}
-          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 12, marginTop: 4 }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>OVERLAYS</div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0' }}>
-              <span style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--sans)' }}>This overlay</span>
-              <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '2px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 4, color: 'var(--text-secondary)' }}>?</kbd>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0' }}>
-              <span style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--sans)' }}>Close any modal</span>
-              <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '2px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 4, color: 'var(--text-secondary)' }}>Esc</kbd>
-            </div>
+          <div className="iw-kb-section">Overlays</div>
+          <div className="iw-kb-row">
+            <span className="iw-kb-lbl">This overlay</span>
+            <span className="iw-kb-keys"><kbd className="iw-kb-k">?</kbd></span>
           </div>
-          <p style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--sans)' }}>
+          <div className="iw-kb-row">
+            <span className="iw-kb-lbl">Close any modal</span>
+            <span className="iw-kb-keys"><kbd className="iw-kb-k">Esc</kbd></span>
+          </div>
+          <p style={{
+            marginTop: 16, fontSize: 11, color: 'var(--text-muted)',
+            fontFamily: 'var(--sans)',
+          }}>
             Customize bindings in Settings → Hotkeys.
           </p>
         </div>

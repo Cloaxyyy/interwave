@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/authStore';
+import LegalModal, { LegalDoc } from '../components/common/LegalModal';
 
 type Mode = 'login' | 'register';
 
@@ -12,12 +13,20 @@ export default function LoginView() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
+  const [openDoc, setOpenDoc] = useState<LegalDoc | null>(null);
   const { setSession, setDisplayName: storeSetDisplayName } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    if (mode === 'register' && !agreed) {
+      setError('You must read and agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -136,7 +145,7 @@ export default function LoginView() {
           {(['login', 'register'] as Mode[]).map((m) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setError(null); setSuccess(null); }}
+              onClick={() => { setMode(m); setError(null); setSuccess(null); setAgreed(false); }}
               style={{
                 flex: 1,
                 padding: '7px 0',
@@ -202,6 +211,56 @@ export default function LoginView() {
             />
           </div>
 
+          {mode === 'register' && (
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                padding: '12px 14px',
+                marginTop: 4,
+                background: agreed ? 'rgba(200,255,87,0.06)' : 'var(--bg-surface)',
+                border: `1px solid ${agreed ? 'var(--accent)' : 'var(--border-strong)'}`,
+                borderRadius: 8,
+                cursor: 'pointer',
+                transition: 'all 150ms',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                style={{
+                  marginTop: 2,
+                  width: 16,
+                  height: 16,
+                  accentColor: 'var(--accent)',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text-primary)', fontFamily: 'Syne, sans-serif' }}>
+                I have read and agree to the{' '}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); setOpenDoc('terms'); }}
+                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+                >
+                  Terms of Service
+                </button>
+                {' '}and{' '}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); setOpenDoc('privacy'); }}
+                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+                >
+                  Privacy Policy
+                </button>
+                .
+              </span>
+            </label>
+          )}
+
           {error && (
             <p style={{ fontSize: 12, color: 'var(--destructive)', padding: '8px 12px', background: 'rgba(255,68,68,0.08)', borderRadius: 6, fontFamily: 'Syne, sans-serif' }}>
               {error}
@@ -214,30 +273,57 @@ export default function LoginView() {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '10px 0',
-              marginTop: 4,
-              borderRadius: 8,
-              border: 'none',
-              background: loading ? 'var(--bg-elevated)' : 'var(--accent)',
-              color: loading ? 'var(--text-muted)' : '#000',
-              fontFamily: 'Syne, sans-serif',
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: loading ? 'wait' : 'pointer',
-              transition: 'all 150ms',
-            }}
-          >
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
-          </button>
+          {(() => {
+            const blocked = loading || (mode === 'register' && !agreed);
+            return (
+              <button
+                type="submit"
+                disabled={blocked}
+                style={{
+                  width: '100%',
+                  padding: '10px 0',
+                  marginTop: 4,
+                  borderRadius: 8,
+                  border: 'none',
+                  background: blocked ? 'var(--bg-elevated)' : 'var(--accent)',
+                  color: blocked ? 'var(--text-muted)' : '#000',
+                  fontFamily: 'Syne, sans-serif',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: loading ? 'wait' : blocked ? 'not-allowed' : 'pointer',
+                  transition: 'all 150ms',
+                }}
+              >
+                {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            );
+          })()}
         </form>
 
-        {}
+        {mode === 'login' && (
+          <p style={{ marginTop: 18, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'Syne, sans-serif' }}>
+            By signing in you agree to our{' '}
+            <button
+              type="button"
+              onClick={() => setOpenDoc('terms')}
+              style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+            >
+              Terms
+            </button>
+            {' '}and{' '}
+            <button
+              type="button"
+              onClick={() => setOpenDoc('privacy')}
+              style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}
+            >
+              Privacy Policy
+            </button>
+            .
+          </p>
+        )}
       </div>
+
+      {openDoc && <LegalModal doc={openDoc} onClose={() => setOpenDoc(null)} />}
     </div>
   );
 }

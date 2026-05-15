@@ -1,29 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import bannerLogo from '../../assets/interwave-banner-dark.svg';
+import topbarIcon from '../../assets/interwave-topbar-icon.svg';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import {
-  Minus, Square, X, MagnifyingGlass, CaretLeft, CaretRight, Question,
-  MicrophoneStage, MusicNotes, House, Users,
+  Minus, Square, X, MagnifyingGlass, CaretLeft, CaretRight, Question, Users,
 } from '@phosphor-icons/react';
-import { useUiStore, type View } from '../../stores/uiStore';
+import { useUiStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useFriendsStore } from '../../stores/friendsStore';
 import { supabase } from '../../lib/supabase';
 
 const appWindow = getCurrentWindow();
 
-interface TabSpec {
-  id: View;
-  kicker: string;
-  name: string;
-  Icon: typeof MicrophoneStage;
-}
-
 export default function Titlebar() {
   const activeView = useUiStore((s) => s.activeView);
   const setActiveView = useUiStore((s) => s.setActiveView);
-  const activePlaylistName = useUiStore((s) => s.activePlaylistName);
-  const activeArtist = useUiStore((s) => s.activeArtist);
   const { user, displayName, isStaff, signOut } = useAuthStore();
   const onlineFriendCount = useFriendsStore((s) => {
     let n = 0;
@@ -45,26 +35,6 @@ export default function Titlebar() {
 
   const initials = (displayName ?? user?.email?.split('@')[0] ?? 'You')[0]?.toUpperCase() ?? '•';
 
-  const tabs: TabSpec[] = [];
-  if (activeView === 'home')     tabs.push({ id: 'home',     kicker: 'HOME',     name: 'Welcome',                          Icon: House });
-  if (activeView === 'browse')   tabs.push({ id: 'browse',   kicker: 'NEW',      name: 'Release notes',                    Icon: MusicNotes });
-  if (activeView === 'library')  tabs.push({ id: 'library',  kicker: 'LIBRARY',  name: 'Your Library',                     Icon: MusicNotes });
-  if (activeView === 'liked')    tabs.push({ id: 'liked',    kicker: 'LIKED',    name: 'Liked Songs',                      Icon: MusicNotes });
-  if (activeView === 'queue')    tabs.push({ id: 'queue',    kicker: 'QUEUE',    name: 'Up next',                          Icon: MusicNotes });
-  if (activeView === 'search')   tabs.push({ id: 'search',   kicker: 'SEARCH',   name: 'Search',                           Icon: MagnifyingGlass });
-  if (activeView === 'friends')  tabs.push({ id: 'friends',  kicker: 'FRIENDS',  name: 'Friend activity',                  Icon: Users });
-  if (activeView === 'playlist' && activePlaylistName) {
-    tabs.push({ id: 'playlist', kicker: 'PLAYLIST', name: activePlaylistName, Icon: MusicNotes });
-  }
-  if (activeView === 'artist' && activeArtist) {
-    tabs.push({ id: 'artist', kicker: 'ARTIST', name: activeArtist, Icon: MicrophoneStage });
-  }
-  if (activeView === 'profile')  tabs.push({ id: 'profile',  kicker: 'YOU',      name: 'Profile',                          Icon: Users });
-  if (activeView === 'settings') tabs.push({ id: 'settings', kicker: 'SETTINGS', name: 'Preferences',                      Icon: MusicNotes });
-  if (activeView === 'admin')    tabs.push({ id: 'admin',    kicker: 'ADMIN',    name: 'Control panel',                    Icon: MusicNotes });
-  if (activeView === 'support')  tabs.push({ id: 'support',  kicker: 'HELP',     name: 'Support',                          Icon: Question });
-  if (activeView === 'import')   tabs.push({ id: 'import',   kicker: 'IMPORT',   name: 'Import',                           Icon: MusicNotes });
-
   const triggerSearch = () => setActiveView('search');
   const showHelp = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
 
@@ -76,10 +46,10 @@ export default function Titlebar() {
         style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }}
         title="Home"
       >
-        <span className="iw-brand-mark" style={{
-          background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))',
+        <span style={{
+          width: 32, height: 32, display: 'inline-block', flexShrink: 0,
         }}>
-          <img src={bannerLogo} alt="" draggable={false} style={{ width: '100%', height: '100%', display: 'block', filter: 'brightness(0) invert(1)' }} />
+          <img src={topbarIcon} alt="Interwave" draggable={false} style={{ width: '100%', height: '100%', display: 'block' }} />
         </span>
         <div style={{
           fontSize: 17, fontWeight: 600, letterSpacing: '-0.015em',
@@ -112,18 +82,8 @@ export default function Titlebar() {
         <span className="iw-kbd">⌘K</span>
       </div>
 
-      {/* Open tabs */}
-      <div className="iw-tabs" onMouseDown={(e) => e.stopPropagation()}>
-        {tabs.map((t) => (
-          <div key={t.id} className={`iw-tab iw-tab-active`} onClick={() => setActiveView(t.id)}>
-            <div className="iw-tab-icon"><t.Icon size={14} /></div>
-            <div style={{ minWidth: 0 }}>
-              <div className="iw-tab-kicker">{t.kicker}</div>
-              <div className="iw-tab-name">{t.name}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Drag spacer fills the gap between search and the right cluster */}
+      <div data-tauri-drag-region style={{ flex: 1, minWidth: 0 }} />
 
       {/* Right cluster */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }} onMouseDown={(e) => e.stopPropagation()}>

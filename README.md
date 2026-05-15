@@ -63,7 +63,7 @@ Bug reports + feature requests welcome via GitHub Issues. PRs welcome too — op
 
 ## License
 
-MIT. Use it, fork it, sell it (well — see "About YouTube" below).
+MIT. Use it (anytime), fork it(always), sell it(no — see "About YouTube" below).
 
 ## About YouTube
 

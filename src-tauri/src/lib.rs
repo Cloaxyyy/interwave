@@ -94,6 +94,9 @@ pub fn run() {
                         audio.send(audio::thread::AudioCommand::SetCrossfade(secs.clamp(0.0, 12.0)));
                     }
                 }
+                if let Ok(Some(v)) = db::settings::get_kv(&conn, "normalize") {
+                    audio::thread::set_normalize(v == "true");
+                }
             }
 
             let discord = discord::spawn();
@@ -207,6 +210,9 @@ pub fn run() {
             commands::library::update_settings,
             commands::library::rename_playlist,
             commands::library::get_liked_tracks,
+            commands::library::get_recently_added,
+            commands::library::get_most_played,
+            commands::library::get_forgotten_favorites,
             commands::library::delete_track,
             commands::library::get_stats,
             commands::library::get_top_artists,

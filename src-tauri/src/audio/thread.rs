@@ -5,6 +5,17 @@ use std::panic::AssertUnwindSafe;
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
 use crate::audio::eq::{EqSettings, EqSource};
+
+use std::sync::OnceLock;
+static NORMALIZE_ENABLED: OnceLock<AtomicBool> = OnceLock::new();
+
+pub fn set_normalize(enabled: bool) {
+    NORMALIZE_ENABLED.get_or_init(|| AtomicBool::new(false)).store(enabled, Ordering::Relaxed);
+}
+
+fn normalize_enabled() -> bool {
+    NORMALIZE_ENABLED.get().map(|a| a.load(Ordering::Relaxed)).unwrap_or(false)
+}
 use crate::db::tracks::Track;
 use crate::error::WaveError;
 
@@ -135,7 +146,9 @@ pub fn decode_raw(bytes: Vec<u8>) -> Result<(Vec<i16>, u32, u16), WaveError> {
 
 fn decode_with_symphonia(bytes: Vec<u8>) -> Result<rodio::buffer::SamplesBuffer<i16>, WaveError> {
     let (mut samples, sr, ch) = decode_raw(bytes)?;
-    normalize_samples(&mut samples);
+    if normalize_enabled() {
+        normalize_samples(&mut samples);
+    }
     Ok(rodio::buffer::SamplesBuffer::new(ch, sr, samples))
 }
 
@@ -425,7 +438,9 @@ pub fn spawn_audio_thread(eq: EqSettings) -> AudioHandle {
                         }
                         begin_crossfade(&mut sink, crossfade_secs, volume);
                         prepare_playback(&mut current_track, &mut sink, &mut playback_started_at, &mut paused_position, &shared_clone, &track, &queue, volume);
-                        normalize_samples(&mut samples);
+                        if normalize_enabled() {
+                            normalize_samples(&mut samples);
+                        }
                         let sr = sample_rate.max(1);
                         let ch = channels.max(1);
                         let arc_samples = Arc::new(samples);

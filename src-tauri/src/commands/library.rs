@@ -115,6 +115,24 @@ pub fn get_liked_tracks(state: State<'_, AppState>) -> Result<Vec<tracks::Track>
 }
 
 #[tauri::command]
+pub fn get_recently_added(state: State<'_, AppState>) -> Result<Vec<tracks::Track>, WaveError> {
+    let conn = state.db.get().map_err(WaveError::from)?;
+    Ok(tracks::get_recently_added(&conn, 12)?)
+}
+
+#[tauri::command]
+pub fn get_most_played(state: State<'_, AppState>) -> Result<Vec<tracks::Track>, WaveError> {
+    let conn = state.db.get().map_err(WaveError::from)?;
+    Ok(tracks::get_most_played(&conn, 12)?)
+}
+
+#[tauri::command]
+pub fn get_forgotten_favorites(state: State<'_, AppState>) -> Result<Vec<tracks::Track>, WaveError> {
+    let conn = state.db.get().map_err(WaveError::from)?;
+    Ok(tracks::get_forgotten_favorites(&conn, 12)?)
+}
+
+#[tauri::command]
 pub fn delete_track(track_id: String, state: State<'_, AppState>) -> Result<(), WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;
     Ok(tracks::delete_track(&conn, &track_id)?)

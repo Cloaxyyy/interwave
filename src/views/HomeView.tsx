@@ -4,7 +4,8 @@ import { useUiStore } from '../stores/uiStore';
 import { usePlayerStore } from '../stores/playerStore';
 import {
   getRecentlyPlayed, getStats, getAllPlaylists, getLikedTracks, playTrack,
-  type RecentTrack, type ListeningStats, type Playlist,
+  getRecentlyAdded, getMostPlayed, getForgottenFavorites,
+  type RecentTrack, type ListeningStats, type Playlist, type Track,
 } from '../lib/tauri';
 
 const QUICK = [
@@ -35,10 +36,13 @@ export default function HomeView() {
   const { currentTrack, playbackState } = usePlayerStore();
   const isPlaying = playbackState === 'playing';
 
-  const [recent, setRecent]       = useState<RecentTrack[]>([]);
-  const [stats, setStats]         = useState<ListeningStats | null>(null);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [likedHero, setLikedHero] = useState<string | null>(null);
+  const [recent, setRecent]               = useState<RecentTrack[]>([]);
+  const [stats, setStats]                 = useState<ListeningStats | null>(null);
+  const [playlists, setPlaylists]         = useState<Playlist[]>([]);
+  const [likedHero, setLikedHero]         = useState<string | null>(null);
+  const [recentAdds, setRecentAdds]       = useState<Track[]>([]);
+  const [mostPlayed, setMostPlayed]       = useState<Track[]>([]);
+  const [forgotten, setForgotten]         = useState<Track[]>([]);
 
   useEffect(() => {
     getRecentlyPlayed().then(r => setRecent(r.slice(0, 8))).catch(console.error);
@@ -48,7 +52,20 @@ export default function HomeView() {
       const first = t.find(x => x.thumbnail_url);
       if (first?.thumbnail_url) setLikedHero(first.thumbnail_url);
     }).catch(() => {});
+    getRecentlyAdded().then(setRecentAdds).catch(() => {});
+    getMostPlayed().then(setMostPlayed).catch(() => {});
+    getForgottenFavorites().then(setForgotten).catch(() => {});
   }, []);
+
+  const playLibraryTrack = (t: Track) => {
+    playTrack({
+      video_id: t.youtube_id,
+      title: t.title,
+      artist: t.artist,
+      duration_seconds: t.duration_seconds,
+      thumbnail_url: t.thumbnail_url,
+    }).catch(console.error);
+  };
 
   const playRecent = (r: RecentTrack) => {
     playTrack({
@@ -187,6 +204,44 @@ export default function HomeView() {
           />
         )}
       </Section>
+
+      {(mostPlayed.length > 0 || recentAdds.length > 0 || forgotten.length > 0) && (
+        <Section title="Smart mixes" actionLabel="" onAction={() => {}}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 14,
+          }}>
+            {mostPlayed.length > 0 && (
+              <SmartMixCard
+                title="On Repeat"
+                subtitle={`${mostPlayed.length} most played`}
+                grad="linear-gradient(135deg, oklch(0.45 0.18 32), oklch(0.32 0.16 12))"
+                covers={mostPlayed.slice(0, 4).map(t => t.thumbnail_url)}
+                onPlay={() => mostPlayed[0] && playLibraryTrack(mostPlayed[0])}
+              />
+            )}
+            {recentAdds.length > 0 && (
+              <SmartMixCard
+                title="Fresh Finds"
+                subtitle={`${recentAdds.length} recently added`}
+                grad="linear-gradient(135deg, oklch(0.50 0.15 195), oklch(0.30 0.12 220))"
+                covers={recentAdds.slice(0, 4).map(t => t.thumbnail_url)}
+                onPlay={() => recentAdds[0] && playLibraryTrack(recentAdds[0])}
+              />
+            )}
+            {forgotten.length > 0 && (
+              <SmartMixCard
+                title="Forgotten Favorites"
+                subtitle={`${forgotten.length} you used to love`}
+                grad="linear-gradient(135deg, oklch(0.42 0.16 305), oklch(0.28 0.14 285))"
+                covers={forgotten.slice(0, 4).map(t => t.thumbnail_url)}
+                onPlay={() => forgotten[0] && playLibraryTrack(forgotten[0])}
+              />
+            )}
+          </div>
+        </Section>
+      )}
 
       {}
       {playlists.length > 0 && (
@@ -382,5 +437,71 @@ function EmptyState({
         {ctaLabel} →
       </button>
     </div>
+  );
+}
+
+function SmartMixCard({
+  title, subtitle, grad, covers, onPlay,
+}: {
+  title: string; subtitle: string; grad: string;
+  covers: (string | null)[]; onPlay: () => void;
+}) {
+  const filled = covers.filter(Boolean) as string[];
+  return (
+    <button
+      onClick={onPlay}
+      className="card-hover"
+      style={{
+        position: 'relative',
+        padding: 0,
+        border: '1px solid var(--border-subtle)',
+        background: grad,
+        borderRadius: 12,
+        height: 132,
+        textAlign: 'left',
+        cursor: 'pointer',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
+      {filled.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 8, right: 8,
+          width: 64, height: 64,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 2,
+          opacity: 0.55,
+          borderRadius: 6,
+          overflow: 'hidden',
+        }}>
+          {filled.slice(0, 4).map((url, i) => (
+            <img key={i} src={url} alt="" draggable={false}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ))}
+        </div>
+      )}
+      <div style={{ padding: '14px 16px 0' }}>
+        <div style={{
+          fontFamily: 'var(--mono)', fontSize: 10,
+          color: 'rgba(255,255,255,0.7)', letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+        }}>SMART MIX</div>
+      </div>
+      <div style={{ padding: '0 16px 14px' }}>
+        <div style={{
+          fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 400,
+          color: '#fff', lineHeight: 1.05, letterSpacing: '-0.01em',
+          marginBottom: 4,
+        }}>{title}</div>
+        <div style={{
+          fontFamily: 'var(--sans)', fontSize: 11.5,
+          color: 'rgba(255,255,255,0.75)',
+        }}>{subtitle}</div>
+      </div>
+    </button>
   );
 }

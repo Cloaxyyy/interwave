@@ -1,6 +1,6 @@
 [package]
 name = "wave"
-version = "0.3.8"
+version = "0.3.9"
 description = "Wave music player"
 authors = []
 edition = "2021"

@@ -113,6 +113,45 @@ pub fn get_liked_tracks(conn: &Connection) -> WaveResult<Vec<Track>> {
     Ok(tracks)
 }
 
+pub fn get_recently_added(conn: &Connection, limit: i64) -> WaveResult<Vec<Track>> {
+    let mut stmt = conn.prepare(
+        &format!("SELECT {TRACK_COLS} FROM tracks ORDER BY created_at DESC LIMIT ?1"),
+    )?;
+    let tracks = stmt
+        .query_map(params![limit], row_to_track)?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(tracks)
+}
+
+pub fn get_most_played(conn: &Connection, limit: i64) -> WaveResult<Vec<Track>> {
+    let mut stmt = conn.prepare(
+        &format!("SELECT {TRACK_COLS} FROM tracks WHERE play_count > 0 \
+                  ORDER BY play_count DESC, last_played_at DESC LIMIT ?1"),
+    )?;
+    let tracks = stmt
+        .query_map(params![limit], row_to_track)?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(tracks)
+}
+
+pub fn get_forgotten_favorites(conn: &Connection, limit: i64) -> WaveResult<Vec<Track>> {
+    let cutoff = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs() as i64
+        - 30 * 24 * 3600;
+    let mut stmt = conn.prepare(
+        &format!("SELECT {TRACK_COLS} FROM tracks \
+                  WHERE play_count >= 3 \
+                    AND (last_played_at IS NULL OR last_played_at < ?1) \
+                  ORDER BY play_count DESC LIMIT ?2"),
+    )?;
+    let tracks = stmt
+        .query_map(params![cutoff, limit], row_to_track)?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(tracks)
+}
+
 pub fn delete_track(conn: &Connection, id: &str) -> WaveResult<()> {
     conn.execute("DELETE FROM tracks WHERE id = ?1", params![id])?;
     Ok(())

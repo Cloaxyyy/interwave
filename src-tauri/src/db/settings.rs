@@ -86,6 +86,7 @@ pub fn save_settings(conn: &Connection, s: &Settings) -> WaveResult<()> {
             params![key, value],
         )?;
     }
+    crate::audio::thread::set_normalize(s.normalize);
     Ok(())
 }
 

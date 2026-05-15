@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useTauriEvents } from './hooks/useTauriEvents';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useUiStore } from './stores/uiStore';
@@ -19,38 +19,51 @@ import UpdatePill from './components/common/UpdatePill';
 import ResumeBanner from './components/common/ResumeBanner';
 import AnnouncementBanner from './components/common/AnnouncementBanner';
 import ToastStack from './components/common/ToastStack';
-import LibraryView from './views/LibraryView';
-import SearchView from './views/SearchView';
-import QueueView from './views/QueueView';
-import ImportView from './views/ImportView';
-import PlaylistView from './views/PlaylistView';
-import LikedSongsView from './views/LikedSongsView';
+import ShortcutOverlay from './components/common/ShortcutOverlay';
 import HomeView from './views/HomeView';
-import ProfileView from './views/ProfileView';
-import SettingsView from './views/SettingsView';
-import AdminView from './views/AdminView';
-import ArtistView from './views/ArtistView';
-import BrowseView from './views/BrowseView';
+import LibraryView from './views/LibraryView';
 import LoginView from './views/LoginView';
 import MiniPlayer from './components/layout/MiniPlayer';
 import AdminGate from './components/common/AdminGate';
 
+const SearchView = lazy(() => import('./views/SearchView'));
+const QueueView = lazy(() => import('./views/QueueView'));
+const ImportView = lazy(() => import('./views/ImportView'));
+const PlaylistView = lazy(() => import('./views/PlaylistView'));
+const LikedSongsView = lazy(() => import('./views/LikedSongsView'));
+const ProfileView = lazy(() => import('./views/ProfileView'));
+const SettingsView = lazy(() => import('./views/SettingsView'));
+const AdminView = lazy(() => import('./views/AdminView'));
+const ArtistView = lazy(() => import('./views/ArtistView'));
+const BrowseView = lazy(() => import('./views/BrowseView'));
+
+function ViewFallback() {
+  return (
+    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--sans)' }}>
+      Loading…
+    </div>
+  );
+}
+
 function ActiveView() {
   const { activeView } = useUiStore();
-  switch (activeView) {
-    case 'home':     return <HomeView />;
-    case 'profile':  return <ProfileView />;
-    case 'settings': return <SettingsView />;
-    case 'search':   return <SearchView />;
-    case 'queue':    return <QueueView />;
-    case 'import':   return <ImportView />;
-    case 'admin':    return <AdminView />;
-    case 'artist':   return <ArtistView />;
-    case 'browse':   return <BrowseView />;
-    case 'playlist': return <PlaylistView />;
-    case 'liked':    return <LikedSongsView />;
-    default:         return <LibraryView />;
-  }
+  const node = (() => {
+    switch (activeView) {
+      case 'home':     return <HomeView />;
+      case 'profile':  return <ProfileView />;
+      case 'settings': return <SettingsView />;
+      case 'search':   return <SearchView />;
+      case 'queue':    return <QueueView />;
+      case 'import':   return <ImportView />;
+      case 'admin':    return <AdminView />;
+      case 'artist':   return <ArtistView />;
+      case 'browse':   return <BrowseView />;
+      case 'playlist': return <PlaylistView />;
+      case 'liked':    return <LikedSongsView />;
+      default:         return <LibraryView />;
+    }
+  })();
+  return <Suspense fallback={<ViewFallback />}>{node}</Suspense>;
 }
 
 export default function App() {
@@ -129,6 +142,8 @@ export default function App() {
       <PlayerBar />
       {}
       <CommandPalette />
+      {}
+      <ShortcutOverlay />
       {}
       <LyricsFullscreen />
       {}

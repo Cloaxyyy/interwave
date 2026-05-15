@@ -130,18 +130,17 @@ function TrackTableRow({
         position: 'relative',
       }}
     >
-      {isPlaying && (
-        <td style={{ width: 0, padding: 0, position: 'relative' }}>
+      {}
+      <td style={{ width: 40, textAlign: 'right', paddingRight: 16, paddingLeft: 8, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, position: 'relative' }}>
+        {isPlaying && (
           <div style={{
-            position: 'absolute', left: 0, top: 8, bottom: 8,
+            position: 'absolute',
+            left: 0, top: 8, bottom: 8,
             width: 3, borderRadius: '0 3px 3px 0',
             background: 'var(--accent)',
-            transform: 'scaleY(1)', transformOrigin: 'center',
+            pointerEvents: 'none',
           }}/>
-        </td>
-      )}
-      {}
-      <td style={{ width: 40, textAlign: 'right', paddingRight: 16, paddingLeft: 8, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
+        )}
         {isPlaying && !hovered ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <NowPlayingBars paused={isPaused} />

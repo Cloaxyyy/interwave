@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { pause, resume, skipNext, setMiniPlayer } from '../../lib/tauri';
 import { useUiStore } from '../../stores/uiStore';
+import { extractAccentColor } from '../../lib/colorExtract';
 
 const drag: React.CSSProperties = { WebkitAppRegion: 'drag' } as React.CSSProperties;
 const noDrag: React.CSSProperties = { WebkitAppRegion: 'no-drag' } as React.CSSProperties;
@@ -11,6 +12,15 @@ export default function MiniPlayer() {
   const setMiniPlayerStore = useUiStore(s => s.setMiniPlayer);
   const isPlaying = playbackState === 'playing';
 
+  const [accent, setAccent] = useState<string>('oklch(0.72 0.18 295)');
+
+  useEffect(() => {
+    let cancelled = false;
+    extractAccentColor(currentTrack?.thumbnail_url)
+      .then((c) => { if (!cancelled) setAccent(c); });
+    return () => { cancelled = true; };
+  }, [currentTrack?.thumbnail_url]);
+
   const handleExit = async () => {
     await setMiniPlayer(false);
     setMiniPlayerStore(false);
@@ -19,12 +29,26 @@ export default function MiniPlayer() {
   return (
     <div style={{
       width: '100%', height: '100vh',
-      background: 'var(--bg-elevated)',
+      background: `
+        radial-gradient(ellipse at 0% 50%,
+          color-mix(in oklch, ${accent} 30%, transparent) 0%,
+          transparent 60%
+        ),
+        radial-gradient(ellipse at 100% 50%,
+          color-mix(in oklch, ${accent} 14%, transparent) 0%,
+          transparent 60%
+        ),
+        linear-gradient(180deg,
+          color-mix(in oklch, ${accent} 8%, var(--bg-elevated)) 0%,
+          var(--bg-base) 100%
+        )
+      `,
       display: 'flex', alignItems: 'center',
       gap: 10, padding: '0 12px',
       borderRadius: 10,
-      border: '1px solid var(--border-default)',
+      border: `1px solid color-mix(in oklch, ${accent} 25%, var(--border-default))`,
       overflow: 'hidden',
+      transition: 'background 600ms ease, border-color 600ms ease',
       ...drag,
     }}>
       {}
@@ -67,39 +91,42 @@ export default function MiniPlayer() {
 
       {}
       <div style={{ display: 'flex', gap: 4, flexShrink: 0, ...noDrag }}>
-        <MiniBtn onClick={() => isPlaying ? pause() : resume()}>
+        <MiniBtn accent={accent} primary onClick={() => isPlaying ? pause() : resume()}>
           {isPlaying ? '⏸' : '▶'}
         </MiniBtn>
-        <MiniBtn onClick={() => skipNext().catch(console.error)}>⏭</MiniBtn>
-        <MiniBtn onClick={handleExit} title="Exit mini player">↕</MiniBtn>
+        <MiniBtn accent={accent} onClick={() => skipNext().catch(console.error)}>⏭</MiniBtn>
+        <MiniBtn accent={accent} onClick={handleExit} title="Exit mini player">↕</MiniBtn>
       </div>
     </div>
   );
 }
 
-function MiniBtn({ onClick, children, title }: {
+function MiniBtn({ onClick, children, title, accent, primary }: {
   onClick: () => void;
   children: React.ReactNode;
   title?: string;
+  accent: string;
+  primary?: boolean;
 }) {
+  const [hovered, setHovered] = React.useState(false);
+  const bg = primary
+    ? `color-mix(in oklch, ${accent} ${hovered ? 32 : 22}%, var(--bg-elevated))`
+    : (hovered ? `color-mix(in oklch, ${accent} 18%, transparent)` : 'transparent');
+  const color = primary || hovered
+    ? 'var(--text-primary)'
+    : 'var(--text-secondary)';
   return (
     <button
       onClick={onClick}
       title={title}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         width: 32, height: 32, borderRadius: 6,
-        background: 'transparent', border: 'none',
-        color: 'var(--text-secondary)', fontSize: 14,
+        background: bg, border: 'none',
+        color, fontSize: 14,
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'background 100ms, color 100ms',
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-overlay)';
-        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+        transition: 'background 160ms, color 160ms',
       }}
     >
       {children}

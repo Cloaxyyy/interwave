@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { PageShell } from '../components/layout/PageShell';
 import {
   ShieldStar, Wrench, UsersThree, Globe, ScrollIcon,
-  Plus, Trash, X as XIcon, Megaphone,
+  Plus, Trash, X as XIcon, Megaphone, ChatCircle, PaperPlaneTilt, ArrowLeft,
 } from '@phosphor-icons/react';
+import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/authStore';
 import {
   getMaintenance, setMaintenance,
@@ -16,7 +17,7 @@ import {
   type AdminUserRow, type AdminUserDetail, type AnnouncementRow,
 } from '../lib/admin';
 
-type Tab = 'maintenance' | 'users' | 'bans' | 'announcements' | 'audit';
+type Tab = 'maintenance' | 'users' | 'bans' | 'announcements' | 'tickets' | 'audit';
 
 export default function AdminView() {
   const { isStaff, role } = useAuthStore();
@@ -68,6 +69,7 @@ export default function AdminView() {
           { id: 'users',         icon: <UsersThree size={13} weight="bold"/>, label: 'Users' },
           { id: 'bans',          icon: <Globe size={13} weight="bold"/>,      label: 'IP bans' },
           { id: 'announcements', icon: <Megaphone size={13} weight="bold"/>,  label: 'Announce' },
+          { id: 'tickets',       icon: <ChatCircle size={13} weight="bold"/>, label: 'Support' },
           { id: 'audit',         icon: <ScrollIcon size={13} weight="bold"/>, label: 'Audit log' },
         ] as const).map((t) => (
           <button
@@ -95,6 +97,7 @@ export default function AdminView() {
         {tab === 'users' && <UsersPanel />}
         {tab === 'bans' && <IpBansPanel />}
         {tab === 'announcements' && <AnnouncementsPanel />}
+        {tab === 'tickets' && <SupportTicketsPanel />}
         {tab === 'audit' && <AuditPanel />}
       </div>
     </PageShell>
@@ -983,3 +986,350 @@ const confirmBtn: React.CSSProperties = {
   cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 };
+
+interface AdminTicket {
+  id: string;
+  user_id: string;
+  email: string | null;
+  subject: string;
+  body: string;
+  category: string;
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  app_version: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface AdminReply {
+  id: string;
+  ticket_id: string;
+  author_id: string | null;
+  is_staff: boolean;
+  body: string;
+  created_at: string;
+}
+
+const TICKET_STATUSES: AdminTicket['status'][] = ['open', 'in_progress', 'resolved', 'closed'];
+const STATUS_COLOR: Record<string, string> = {
+  open: 'var(--accent)',
+  in_progress: '#ffb84d',
+  resolved: 'var(--success)',
+  closed: 'var(--text-muted)',
+};
+
+function SupportTicketsPanel() {
+  const [tickets, setTickets] = useState<AdminTicket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<AdminTicket['status'] | 'all'>('open');
+  const [activeTicket, setActiveTicket] = useState<AdminTicket | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const { data, error: e } = await supabase
+        .from('support_tickets')
+        .select('id, user_id, email, subject, body, category, status, app_version, created_at, updated_at')
+        .order('updated_at', { ascending: false });
+      if (e) throw e;
+      setTickets((data ?? []) as AdminTicket[]);
+      setError(null);
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      const tableMissing = msg.includes('does not exist') || msg.includes('relation');
+      setError(tableMissing
+        ? 'Support backend not provisioned — re-run supabase/migrations/005_support_tickets.sql to pick up the new admin policies.'
+        : msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = filter === 'all' ? tickets : tickets.filter((t) => t.status === filter);
+
+  if (activeTicket) {
+    return (
+      <TicketThread
+        ticket={activeTicket}
+        onBack={() => { setActiveTicket(null); load(); }}
+        onUpdate={(updated) => setActiveTicket(updated)}
+      />
+    );
+  }
+
+  return (
+    <div>
+      <SectionHeader
+        title="Support tickets"
+        sub="Every ticket users submit lands here. Reply inside a ticket to start a conversation, change the status to track progress."
+      />
+
+      {error && (
+        <div style={{
+          padding: 12, borderRadius: 10, marginBottom: 16,
+          background: 'rgba(255,180,80,0.10)', border: '1px solid rgba(255,180,80,0.30)',
+          color: '#ffb84d', fontFamily: 'var(--sans)', fontSize: 12, lineHeight: 1.5,
+        }}>{error}</div>
+      )}
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+        {(['all', ...TICKET_STATUSES] as const).map((s) => {
+          const active = filter === s;
+          const count = s === 'all' ? tickets.length : tickets.filter((t) => t.status === s).length;
+          return (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderRadius: 999,
+                background: active ? 'rgba(200,255,87,0.10)' : 'transparent',
+                border: `1px solid ${active ? 'var(--accent)' : 'var(--border-default)'}`,
+                color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: active ? 600 : 500,
+                cursor: 'pointer', textTransform: 'capitalize',
+              }}
+            >
+              {s.replace('_', ' ')} <span style={{ opacity: 0.6 }}>({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {loading && <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Loading…</div>}
+
+      {!loading && filtered.length === 0 && (
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'var(--sans)', fontSize: 13 }}>
+          No tickets in this filter.
+        </div>
+      )}
+
+      {!loading && filtered.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {filtered.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTicket(t)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 10,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-default)',
+                cursor: 'pointer', textAlign: 'left',
+                transition: 'all 120ms',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-surface)')}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: 'var(--sans)', fontSize: 13.5, fontWeight: 600,
+                  color: 'var(--text-primary)', marginBottom: 4,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>{t.subject}</div>
+                <div style={{
+                  fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--text-muted)',
+                  display: 'flex', gap: 8,
+                }}>
+                  <span style={{ textTransform: 'capitalize' }}>{t.category}</span>
+                  <span>·</span>
+                  <span>{t.email ?? t.user_id.slice(0, 8)}</span>
+                  <span>·</span>
+                  <span>{new Date(t.updated_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <span style={{
+                fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700,
+                color: STATUS_COLOR[t.status] ?? 'var(--text-muted)',
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                flexShrink: 0,
+              }}>{t.status.replace('_', ' ')}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TicketThread({ ticket, onBack, onUpdate }: { ticket: AdminTicket; onBack: () => void; onUpdate: (t: AdminTicket) => void }) {
+  const me = useAuthStore((s) => s.user);
+  const [replies, setReplies] = useState<AdminReply[]>([]);
+  const [reply, setReply] = useState('');
+  const [sending, setSending] = useState(false);
+  const [status, setStatus] = useState(ticket.status);
+
+  const loadReplies = async () => {
+    const { data } = await supabase
+      .from('support_ticket_replies')
+      .select('id, ticket_id, author_id, is_staff, body, created_at')
+      .eq('ticket_id', ticket.id)
+      .order('created_at', { ascending: true });
+    setReplies((data ?? []) as AdminReply[]);
+  };
+
+  useEffect(() => { loadReplies(); }, [ticket.id]);
+
+  const handleSend = async () => {
+    if (!reply.trim() || sending || !me) return;
+    setSending(true);
+    try {
+      await supabase.from('support_ticket_replies').insert({
+        ticket_id: ticket.id,
+        author_id: me.id,
+        is_staff: true,
+        body: reply.trim(),
+      });
+      setReply('');
+      await loadReplies();
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleStatus = async (next: AdminTicket['status']) => {
+    setStatus(next);
+    await supabase.from('support_tickets').update({ status: next }).eq('id', ticket.id);
+    onUpdate({ ...ticket, status: next });
+  };
+
+  return (
+    <div>
+      <button
+        onClick={onBack}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--sans)', fontSize: 12, padding: '6px 0',
+          marginBottom: 14,
+        }}
+      >
+        <ArrowLeft size={12} weight="bold" /> All tickets
+      </button>
+
+      <div style={{ marginBottom: 18 }}>
+        <h2 style={{
+          fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400,
+          color: 'var(--text-primary)', margin: 0, marginBottom: 6,
+        }}>{ticket.subject}</h2>
+        <div style={{
+          fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--text-muted)',
+          display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
+        }}>
+          <span style={{ textTransform: 'capitalize' }}>{ticket.category}</span>
+          <span>·</span>
+          <span>{ticket.email ?? ticket.user_id.slice(0, 8)}</span>
+          <span>·</span>
+          <span>v{ticket.app_version ?? '?'}</span>
+          <span>·</span>
+          <span>{new Date(ticket.created_at).toLocaleString()}</span>
+        </div>
+      </div>
+
+      <div style={{
+        display: 'flex', gap: 6, marginBottom: 18,
+      }}>
+        {TICKET_STATUSES.map((s) => (
+          <button
+            key={s}
+            onClick={() => handleStatus(s)}
+            style={{
+              padding: '5px 10px', borderRadius: 999,
+              background: status === s ? `color-mix(in oklch, ${STATUS_COLOR[s]} 18%, transparent)` : 'transparent',
+              border: `1px solid ${status === s ? STATUS_COLOR[s] : 'var(--border-default)'}`,
+              color: status === s ? STATUS_COLOR[s] : 'var(--text-secondary)',
+              fontFamily: 'var(--sans)', fontSize: 11, fontWeight: status === s ? 600 : 500,
+              cursor: 'pointer', textTransform: 'capitalize',
+            }}
+          >
+            {s.replace('_', ' ')}
+          </button>
+        ))}
+      </div>
+
+      {/* Original ticket body */}
+      <div style={{
+        padding: '14px 16px', borderRadius: 12, marginBottom: 12,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-default)',
+      }}>
+        <div style={{
+          fontFamily: 'var(--mono)', fontSize: 9.5, color: 'var(--text-muted)',
+          letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8,
+        }}>Original report</div>
+        <pre style={{
+          fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--text-primary)',
+          margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+          lineHeight: 1.6,
+        }}>{ticket.body}</pre>
+      </div>
+
+      {/* Reply thread */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+        {replies.map((r) => (
+          <div
+            key={r.id}
+            style={{
+              alignSelf: r.is_staff ? 'flex-end' : 'flex-start',
+              maxWidth: '78%',
+              padding: '10px 14px', borderRadius: 14,
+              background: r.is_staff
+                ? 'color-mix(in oklch, var(--accent-live) 14%, var(--bg-overlay))'
+                : 'var(--bg-overlay)',
+              border: `1px solid ${r.is_staff ? 'var(--accent)' : 'var(--border-default)'}`,
+            }}
+          >
+            <div style={{
+              fontFamily: 'var(--mono)', fontSize: 9.5,
+              color: r.is_staff ? 'var(--accent)' : 'var(--text-muted)',
+              letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4,
+            }}>
+              {r.is_staff ? 'Staff' : 'User'} · {new Date(r.created_at).toLocaleString()}
+            </div>
+            <div style={{
+              fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-primary)',
+              whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.55,
+            }}>{r.body}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Compose */}
+      <div style={{
+        display: 'flex', gap: 8, alignItems: 'flex-end',
+        padding: 10, borderRadius: 12,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-default)',
+      }}>
+        <textarea
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          placeholder="Reply as staff…"
+          rows={2}
+          style={{
+            flex: 1, background: 'transparent', border: 'none', outline: 'none',
+            color: 'var(--text-primary)', fontFamily: 'var(--sans)', fontSize: 13,
+            resize: 'vertical', minHeight: 40,
+          }}
+        />
+        <button
+          onClick={handleSend}
+          disabled={sending || !reply.trim()}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 14px', borderRadius: 8, border: 'none',
+            background: sending || !reply.trim() ? 'var(--bg-elevated)' : 'var(--accent)',
+            color: sending || !reply.trim() ? 'var(--text-muted)' : '#000',
+            cursor: sending || !reply.trim() ? 'not-allowed' : 'pointer',
+            fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 700,
+          }}
+        >
+          <PaperPlaneTilt size={12} weight="fill" /> Send
+        </button>
+      </div>
+    </div>
+  );
+}

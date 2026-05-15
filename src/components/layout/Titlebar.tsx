@@ -91,8 +91,13 @@ export default function Titlebar() {
       style={{
         height: 48,
 
-        background: 'linear-gradient(180deg, var(--tint-12) 0%, var(--tint-4) 100%)',
-        borderBottom: '1px solid var(--seam)',
+        background: `
+          linear-gradient(180deg,
+            color-mix(in oklch, var(--accent-live) 10%, var(--bg-surface)) 0%,
+            color-mix(in oklch, var(--accent-live) 5%, var(--bg-surface)) 100%
+          )
+        `,
+        borderBottom: 'none',
         display: 'flex',
         alignItems: 'center',
         padding: '0 12px',

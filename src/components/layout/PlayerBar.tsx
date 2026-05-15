@@ -146,11 +146,15 @@ export default function PlayerBar() {
         height: 92,
 
         background: `
-          linear-gradient(180deg, var(--tint-12) 0%, var(--bg-glass) 100%)
+          linear-gradient(180deg,
+            color-mix(in oklch, var(--accent-live) 4%, var(--bg-base)) 0%,
+            var(--bg-base) 100%
+          )
         `,
         backdropFilter: 'blur(28px) saturate(150%)',
         WebkitBackdropFilter: 'blur(28px) saturate(150%)',
-        borderTop: '1px solid var(--seam)',
+        borderTop: 'none',
+        boxShadow: '0 -1px 0 0 color-mix(in oklch, var(--accent-live) 6%, transparent)',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,

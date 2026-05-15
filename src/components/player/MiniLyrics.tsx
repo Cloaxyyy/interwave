@@ -38,15 +38,64 @@ export default function MiniLyrics() {
   }
 
   if (!lyrics?.has_synced) {
+    if (lyrics?.plain) {
 
+      const lines = lyrics.plain.split('\n').filter((l) => l.trim()).slice(0, 3);
+      return (
+        <Shell onClick={() => setLyricsFullscreen(true)} interactive>
+          <div style={{
+            position: 'absolute', top: 6, right: 8,
+            fontFamily: 'var(--mono)', fontSize: 9,
+            color: 'var(--text-muted)', letterSpacing: '0.1em',
+            display: 'flex', alignItems: 'center', gap: 4,
+            textTransform: 'uppercase',
+          }}>
+            <MicrophoneStage size={10} weight="fill"/>
+            Lyrics
+          </div>
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            gap: 4, padding: '14px 12px 12px',
+            textAlign: 'center', minHeight: 90, justifyContent: 'center',
+          }}>
+            {lines.map((line, i) => (
+              <p key={i} style={{
+                fontFamily: 'var(--sans)',
+                fontSize: i === 0 ? 13 : 11,
+                fontWeight: i === 0 ? 600 : 400,
+                color: i === 0 ? 'var(--text-primary)' : 'var(--text-muted)',
+                opacity: i === 0 ? 1 : 0.7,
+                lineHeight: 1.3, margin: 0,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                maxWidth: '100%',
+              }}>{line}</p>
+            ))}
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)',
+              marginTop: 4, letterSpacing: '0.05em',
+            }}>Tap to open full lyrics →</span>
+          </div>
+        </Shell>
+      );
+    }
     return (
-      <Shell onClick={() => setLyricsFullscreen(true)}>
-        <p style={{
-          fontFamily: 'var(--sans)', fontSize: 11,
-          color: 'var(--text-muted)', textAlign: 'center', padding: 12,
+      <Shell onClick={() => setLyricsFullscreen(true)} interactive>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+          padding: '14px 12px', textAlign: 'center', minHeight: 90, justifyContent: 'center',
         }}>
-          {lyrics?.plain ? 'Tap to open lyrics →' : 'No synced lyrics for this track'}
-        </p>
+          <MicrophoneStage size={20} weight="duotone" color="var(--text-muted)" />
+          <p style={{
+            fontFamily: 'var(--sans)', fontSize: 11.5,
+            color: 'var(--text-secondary)', margin: 0,
+          }}>
+            No synced lyrics found
+          </p>
+          <span style={{
+            fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)',
+            letterSpacing: '0.05em',
+          }}>Tap to retry / open fullscreen →</span>
+        </div>
       </Shell>
     );
   }

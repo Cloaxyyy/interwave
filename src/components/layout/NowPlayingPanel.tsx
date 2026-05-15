@@ -317,7 +317,7 @@ export default function NowPlayingPanel() {
             {currentTrack && recommendations.length > 0 && (
               <div style={{
                 width: '100%', flexShrink: 0,
-                borderTop: '1px solid var(--border-subtle)',
+                borderTop: 'none',
                 paddingTop: 10, marginTop: 'auto',
               }}>
                 <div style={{

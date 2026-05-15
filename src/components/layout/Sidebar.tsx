@@ -36,7 +36,7 @@ import type { Playlist } from '../../lib/tauri';
 type SortMode = 'recent' | 'added' | 'alpha' | 'creator';
 type ViewMode = 'list' | 'list-compact' | 'grid' | 'grid-compact';
 
-const APP_VERSION = '0.6.1';
+const APP_VERSION = '0.6.2';
 
 export default function Sidebar() {
   const { activeView, setActiveView, setActivePlaylist, bumpLibraryVersion, libraryVersion } = useUiStore();
@@ -370,7 +370,7 @@ export default function Sidebar() {
       </div>
 
       {}
-      <div ref={profileRef} style={{ position: 'relative', borderTop: '1px solid color-mix(in oklch, var(--border-subtle) 50%, transparent)' }}>
+      <div ref={profileRef} style={{ position: 'relative' }}>
         <button
           onClick={() => setProfileOpen((v) => !v)}
           style={{

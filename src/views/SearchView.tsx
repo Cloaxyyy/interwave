@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { PageShell, PageHeader } from '../components/layout/PageShell';
 import { useSearchStore } from '../stores/searchStore';
 import { usePlayerStore } from '../stores/playerStore';
 import { useUiStore } from '../stores/uiStore';
@@ -108,32 +109,9 @@ export default function SearchView() {
   };
 
   return (
-    <div
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
-      {}
-      <div
-        style={{
-          padding: '24px 28px 18px',
-          borderBottom: '1px solid var(--seam)',
-          background: 'linear-gradient(180deg, var(--tint-8) 0%, transparent 100%)',
-          flexShrink: 0,
-          display: 'flex', flexDirection: 'column', gap: 14,
-        }}
-      >
-        <h1 style={{
-          fontFamily: 'var(--serif)', fontSize: 36, fontWeight: 400,
-          letterSpacing: '-0.02em', margin: 0, color: 'var(--text-primary)',
-          lineHeight: 1,
-        }}>
-          Search
-        </h1>
-
+    <PageShell width="wide">
+      <PageHeader eyebrow="Find" title="Search" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
         {}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
@@ -350,6 +328,6 @@ export default function SearchView() {
           <RecentSearches onSelect={handleRecentSelect} />
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

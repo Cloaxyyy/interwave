@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { MusicNote, Queue, X, DotsSixVertical } from '@phosphor-icons/react';
+import { PageShell, PageHeader } from '../components/layout/PageShell';
 import { usePlayerStore } from '../stores/playerStore';
 import { clearQueue, skipNext, setQueue } from '../lib/tauri';
 import type { Track } from '../lib/tauri';
@@ -163,25 +164,23 @@ export default function QueueView() {
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {}
-      <div style={{ padding: '16px 20px 8px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-          Queue{queue.length > 0 && ` · ${queue.length} track${queue.length !== 1 ? 's' : ''}`}
-        </h2>
-        {queue.length > 0 && (
+    <PageShell width="normal">
+      <PageHeader
+        eyebrow="Up next"
+        title="Queue"
+        subtitle={queue.length > 0 ? `${queue.length} track${queue.length !== 1 ? 's' : ''} queued` : 'Nothing waiting'}
+        actions={queue.length > 0 ? (
           <button
             onClick={handleClear}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'Syne, sans-serif', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', borderRadius: 4 }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--destructive)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
+            style={{ background: 'transparent', border: '1px solid var(--border-default)', cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: 'var(--sans)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 6, transition: 'all 120ms' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--destructive)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--destructive)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-default)'; }}
           >
-            <X size={12} weight="bold" /> Clear
+            <X size={12} weight="bold" /> Clear queue
           </button>
-        )}
-      </div>
-
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 4px' }}>
+        ) : undefined}
+      />
+      <div>
         {}
         {currentTrack && (
           <div style={{ marginBottom: 16 }}>
@@ -251,6 +250,6 @@ export default function QueueView() {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { Play } from '@phosphor-icons/react';
+import { PageShell, PageHeader } from '../components/layout/PageShell';
 import { searchYoutube, playTrack, type SearchResult } from '../lib/tauri';
 import { TrackListSkeleton } from '../components/common/Skeleton';
 import { cleanTrackTitle } from '../lib/cleanTitle';
@@ -24,42 +25,16 @@ const SECTIONS: Section[] = [
 
 export default function BrowseView() {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {}
-      <div style={{
-        flexShrink: 0,
-        padding: '24px 28px 18px',
-        borderBottom: '1px solid var(--seam)',
-        background: 'linear-gradient(180deg, var(--tint-12) 0%, transparent 100%)',
-      }}>
-        <p style={{
-          fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)',
-          letterSpacing: '0.10em', textTransform: 'uppercase', marginBottom: 8,
-        }}>
-          Browse
-        </p>
-        <h1 style={{
-          fontFamily: 'var(--serif)', fontSize: 'clamp(36px, 5vw, 56px)',
-          fontWeight: 400, letterSpacing: '-0.02em', margin: 0,
-          color: 'var(--text-primary)', lineHeight: 1,
-        }}>
-          What's playing
-        </h1>
-        <p style={{
-          fontFamily: 'var(--sans)', fontSize: 13,
-          color: 'var(--text-secondary)', marginTop: 8,
-        }}>
-          Live queries against YouTube — these update with what's actually trending.
-        </p>
-      </div>
-
-      {}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 56px' }}>
-        {SECTIONS.map((s) => (
-          <BrowseSection key={s.id} section={s}/>
-        ))}
-      </div>
-    </div>
+    <PageShell width="wide">
+      <PageHeader
+        eyebrow="Browse"
+        title="What's playing"
+        subtitle="Live queries against YouTube — these update with what's actually trending."
+      />
+      {SECTIONS.map((s) => (
+        <BrowseSection key={s.id} section={s}/>
+      ))}
+    </PageShell>
   );
 }
 

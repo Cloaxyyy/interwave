@@ -20,6 +20,7 @@ import ResumeBanner from './components/common/ResumeBanner';
 import AnnouncementBanner from './components/common/AnnouncementBanner';
 import ToastStack from './components/common/ToastStack';
 import ShortcutOverlay from './components/common/ShortcutOverlay';
+import OnboardingModal from './components/common/OnboardingModal';
 import HomeView from './views/HomeView';
 import LibraryView from './views/LibraryView';
 import LoginView from './views/LoginView';
@@ -142,6 +143,8 @@ export default function App() {
       <PlayerBar />
       {}
       <CommandPalette />
+      {}
+      <OnboardingModal />
       {}
       <ShortcutOverlay />
       {}

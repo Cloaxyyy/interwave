@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { PageShell } from '../components/layout/PageShell';
 import {
   ShieldStar, Wrench, UsersThree, Globe, ScrollIcon,
   Plus, Trash, X as XIcon, Megaphone,
@@ -33,77 +34,70 @@ export default function AdminView() {
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{
-        flexShrink: 0,
-        padding: '24px 28px 16px',
-        borderBottom: '1px solid var(--border-subtle)',
-        background: 'linear-gradient(180deg, oklch(0.22 0.04 295), var(--bg-base))',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: 10,
-            background: 'var(--grad-violet)',
-            display: 'grid', placeItems: 'center',
-            boxShadow: 'var(--shadow-accent)',
-          }}>
-            <ShieldStar size={24} weight="fill" color="white" />
-          </div>
-          <div>
-            <p style={{
-              fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.10em',
-              textTransform: 'uppercase', color: 'var(--text-muted)',
-            }}>
-              Admin · {role}
-            </p>
-            <h1 style={{
-              fontFamily: 'var(--serif)', fontSize: 36, fontWeight: 400,
-              letterSpacing: '-0.02em', margin: 0, lineHeight: 1.1,
-            }}>
-              Control Panel
-            </h1>
-          </div>
+    <PageShell>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 10,
+          background: 'var(--grad-violet)',
+          display: 'grid', placeItems: 'center',
+          boxShadow: 'var(--shadow-accent)',
+          flexShrink: 0,
+        }}>
+          <ShieldStar size={24} weight="fill" color="white" />
         </div>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, marginTop: 18 }}>
-          {([
-            { id: 'maintenance',   icon: <Wrench size={13} weight="bold"/>,     label: 'Maintenance' },
-            { id: 'users',         icon: <UsersThree size={13} weight="bold"/>, label: 'Users' },
-            { id: 'bans',          icon: <Globe size={13} weight="bold"/>,      label: 'IP bans' },
-            { id: 'announcements', icon: <Megaphone size={13} weight="bold"/>,  label: 'Announce' },
-            { id: 'audit',         icon: <ScrollIcon size={13} weight="bold"/>, label: 'Audit log' },
-          ] as const).map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '7px 14px', borderRadius: 8,
-                background: tab === t.id ? 'var(--accent-dim)' : 'transparent',
-                color: tab === t.id ? 'var(--accent)' : 'var(--text-secondary)',
-                border: '1px solid',
-                borderColor: tab === t.id ? 'var(--accent)' : 'var(--border-subtle)',
-                fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 150ms',
-              }}
-            >
-              {t.icon}{t.label}
-            </button>
-          ))}
+        <div>
+          <p style={{
+            fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.10em',
+            textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4,
+          }}>
+            Admin · {role}
+          </p>
+          <h1 style={{
+            fontFamily: 'var(--serif)', fontSize: 'clamp(34px, 4.5vw, 48px)', fontWeight: 400,
+            letterSpacing: '-0.02em', margin: 0, lineHeight: 1.05, color: 'var(--text-primary)',
+          }}>
+            Control Panel
+          </h1>
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px 56px' }}>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 28, flexWrap: 'wrap' }}>
+        {([
+          { id: 'maintenance',   icon: <Wrench size={13} weight="bold"/>,     label: 'Maintenance' },
+          { id: 'users',         icon: <UsersThree size={13} weight="bold"/>, label: 'Users' },
+          { id: 'bans',          icon: <Globe size={13} weight="bold"/>,      label: 'IP bans' },
+          { id: 'announcements', icon: <Megaphone size={13} weight="bold"/>,  label: 'Announce' },
+          { id: 'audit',         icon: <ScrollIcon size={13} weight="bold"/>, label: 'Audit log' },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '7px 14px', borderRadius: 8,
+              background: tab === t.id ? 'var(--accent-dim)' : 'transparent',
+              color: tab === t.id ? 'var(--accent)' : 'var(--text-secondary)',
+              border: '1px solid',
+              borderColor: tab === t.id ? 'var(--accent)' : 'var(--border-subtle)',
+              fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            {t.icon}{t.label}
+          </button>
+        ))}
+      </div>
+
+      <div>
         {tab === 'maintenance' && <MaintenancePanel />}
         {tab === 'users' && <UsersPanel />}
         {tab === 'bans' && <IpBansPanel />}
         {tab === 'announcements' && <AnnouncementsPanel />}
         {tab === 'audit' && <AuditPanel />}
       </div>
-    </div>
+    </PageShell>
   );
 }
 

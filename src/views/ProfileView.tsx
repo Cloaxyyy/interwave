@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { PageShell } from '../components/layout/PageShell';
 import {
   getStats, getTopArtists, getRecentlyPlayed,
   type ListeningStats, type TopArtist, type RecentTrack
@@ -49,7 +50,7 @@ export default function ProfileView() {
   ];
 
   return (
-    <div style={{ padding: '0 0 56px', overflowY: 'auto', height: '100%' }}>
+    <PageShell width="wide">
 
       {}
       <div style={{
@@ -218,6 +219,6 @@ export default function ProfileView() {
         </section>
 
       </div>
-    </div>
+    </PageShell>
   );
 }

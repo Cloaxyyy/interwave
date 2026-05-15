@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { PageShell, PageHeader } from '../components/layout/PageShell';
 import ImportView from './ImportView';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
@@ -772,13 +773,11 @@ export default function SettingsView() {
   const [section, setSection] = useState<Section>('sound');
 
   return (
-    <div style={{ padding: '28px 32px 56px', maxWidth: 900 }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 40, letterSpacing: '-0.02em', fontWeight: 400, margin: '0 0 4px', color: 'var(--text-primary)' }}>
-          Settings
-        </h1>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>v1.2.0</span>
-      </div>
+    <PageShell>
+      <PageHeader
+        eyebrow="Preferences"
+        title="Settings"
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 40 }}>
         {}
@@ -807,6 +806,6 @@ export default function SettingsView() {
         {}
         <div>{renderSection(section)}</div>
       </div>
-    </div>
+    </PageShell>
   );
 }

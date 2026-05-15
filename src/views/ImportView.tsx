@@ -3,6 +3,7 @@ import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { CircleNotch, CheckCircle, XCircle, FolderOpen, FileArrowDown, Link } from '@phosphor-icons/react';
 import { spotifyImportFile, importSpotifyUrl } from '../lib/tauri';
+import { PageShell, PageHeader } from '../components/layout/PageShell';
 import type { ImportProgressEvent, ImportCompleteEvent } from '../lib/tauri';
 import { useImportStore } from '../stores/importStore';
 
@@ -82,24 +83,15 @@ export default function ImportView() {
   const isImporting = importStatus === 'importing';
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <PageShell width="narrow">
       <style>{SPIN_KEYFRAME}</style>
+      <PageHeader
+        eyebrow="Bring your music"
+        title="Import"
+        subtitle="Bring your Spotify library and playlists into Interwave."
+      />
 
-      {}
-      <div
-        style={{
-          padding: '16px 20px 8px',
-          borderBottom: '1px solid var(--border-subtle)',
-          flexShrink: 0,
-        }}
-      >
-        <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-          Import from Spotify
-        </h2>
-      </div>
-
-      {}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px', maxWidth: 480 }}>
+      <div>
 
         {}
         <div
@@ -269,7 +261,7 @@ export default function ImportView() {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }
 

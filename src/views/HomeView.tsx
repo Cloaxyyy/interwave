@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Play, ArrowRight } from '@phosphor-icons/react';
+import { PageShell } from '../components/layout/PageShell';
 import { useUiStore } from '../stores/uiStore';
 import { usePlayerStore } from '../stores/playerStore';
 import {
@@ -78,13 +79,7 @@ export default function HomeView() {
   };
 
   return (
-    <div style={{
-      flex: 1,
-      overflowY: 'auto',
-      overflowX: 'hidden',
-    }}>
-    <div style={{ padding: '20px 28px 56px', maxWidth: 1280 }}>
-
+    <PageShell width="wide">
       {}
       <div style={{
         display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
@@ -280,8 +275,7 @@ export default function HomeView() {
           <span><strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{formatHours(stats.hours_this_month)}</strong> this month</span>
         </div>
       )}
-    </div>
-    </div>
+    </PageShell>
   );
 }
 

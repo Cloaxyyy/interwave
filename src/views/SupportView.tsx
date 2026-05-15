@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { getDiagnostics } from '../lib/crashReporter';
 
-const APP_VERSION = '0.6.2';
+const APP_VERSION = '0.6.3';
 
 type Category = 'bug' | 'feature' | 'account' | 'general';
 

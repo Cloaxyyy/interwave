@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { HeartStraight, MicrophoneStage, Queue as QueueIcon, Play, ArrowRight } from '@phosphor-icons/react';
+import { HeartStraight, MicrophoneStage, Queue as QueueIcon, Play, ArrowRight, ArrowSquareOut } from '@phosphor-icons/react';
+import { getArtistInfo, type ArtistInfo } from '../../lib/artistInfo';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useUiStore } from '../../stores/uiStore';
 import { likeTrack, unlikeTrack, playTrack, addToQueue } from '../../lib/tauri';
@@ -274,75 +275,51 @@ export default function NowPlayingPanel() {
 
             {}
             {currentTrack && (
-              <div style={{ width: '100%', flexShrink: 0, marginTop: 4 }}>
-                <h3 style={{
-                  fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700,
-                  color: 'var(--text-secondary)',
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                  marginBottom: 8,
-                }}>
-                  About the artist
-                </h3>
-                <div
-                  onClick={() => useUiStore.getState().setActiveArtist(currentTrack.artist)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '10px',
-                    borderRadius: 10,
-                    background: 'color-mix(in oklch, var(--bg-overlay) 50%, transparent)',
-                    cursor: 'pointer',
-                    transition: 'background 140ms',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-overlay)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'color-mix(in oklch, var(--bg-overlay) 50%, transparent)')}
-                >
-                  <ArtistAvatar name={currentTrack.artist} thumbnail={currentTrack.thumbnail_url} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 600,
-                      color: 'var(--text-primary)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>{currentTrack.artist}</div>
-                    <div style={{
-                      fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--text-muted)',
-                      marginTop: 1,
-                    }}>View artist page</div>
-                  </div>
-                  <ArrowRight size={12} weight="bold" color="var(--text-muted)" />
-                </div>
-              </div>
+              <AboutArtistCard
+                artist={currentTrack.artist}
+                fallbackThumb={currentTrack.thumbnail_url}
+              />
             )}
 
             {}
-            {currentTrack && recommendations.length > 0 && (
-              <div style={{
-                width: '100%', flexShrink: 0,
-                borderTop: 'none',
-                paddingTop: 10, marginTop: 'auto',
-              }}>
+            {currentTrack && recommendations.length > 0 && (() => {
+              const artistKey = currentTrack.artist.trim().toLowerCase();
+              const fromArtist = recommendations.filter((r) => r.artist.trim().toLowerCase() === artistKey);
+              const others = recommendations.filter((r) => r.artist.trim().toLowerCase() !== artistKey);
+              const showFromArtist = fromArtist.length >= 2;
+              const list = showFromArtist ? fromArtist : others;
+              const heading = showFromArtist ? `More from ${currentTrack.artist}` : 'You might also like';
+              return (
                 <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-                  marginBottom: 8,
+                  width: '100%', flexShrink: 0,
+                  borderTop: 'none',
+                  paddingTop: 10, marginTop: 'auto',
                 }}>
-                  <h3 style={{
-                    fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700,
-                    color: 'var(--text-secondary)',
-                    textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0,
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                    marginBottom: 8,
                   }}>
-                    Recommended
-                  </h3>
-                  <span style={{
-                    fontFamily: 'var(--mono)', fontSize: 10,
-                    color: 'var(--text-muted)',
+                    <h3 style={{
+                      fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700,
+                      color: 'var(--text-secondary)',
+                      textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      maxWidth: '85%',
+                    }}>
+                      {heading}
+                    </h3>
+                    <span style={{
+                      fontFamily: 'var(--mono)', fontSize: 10,
+                      color: 'var(--text-muted)',
+                    }}>
+                      {list.length}
+                    </span>
+                  </div>
+                  <div style={{
+                    display: 'flex', gap: 10, overflowX: 'auto', overflowY: 'hidden',
+                    paddingBottom: 4, scrollbarWidth: 'thin',
                   }}>
-                    {recommendations.length}
-                  </span>
-                </div>
-                <div style={{
-                  display: 'flex', gap: 10, overflowX: 'auto', overflowY: 'hidden',
-                  paddingBottom: 4, scrollbarWidth: 'thin',
-                }}>
-                  {recommendations.slice(0, 12).map((r) => (
+                    {list.slice(0, 12).map((r) => (
                     <div
                       key={r.youtube_id}
                       onClick={() => playTrack({
@@ -385,32 +362,173 @@ export default function NowPlayingPanel() {
                       }}>{r.artist}</p>
                     </div>
                   ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
       </div>
     </aside>
   );
 }
 
-function ArtistAvatar({ name, thumbnail }: { name: string; thumbnail: string | null }) {
+function AboutArtistCard({ artist, fallbackThumb }: { artist: string; fallbackThumb: string | null }) {
+  const [info, setInfo] = useState<ArtistInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setInfo(null);
+    setExpanded(false);
+    setLoading(true);
+    getArtistInfo(artist)
+      .then((r) => { if (!cancelled) setInfo(r); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [artist]);
+
+  const photo = info?.thumbnail_url ?? fallbackThumb;
+  const extract = info?.extract ?? null;
+  const wikiUrl = info?.wikipedia_url ?? null;
+
   let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
-  const initials = name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('') || '?';
-  if (thumbnail) {
-    return (
-      <div style={{
-        width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-        background: `center/cover url(${thumbnail})`,
-      }}/>
-    );
-  }
+  for (let i = 0; i < artist.length; i++) h = (h * 31 + artist.charCodeAt(i)) % 360;
+
+  const handleArtistClick = () => useUiStore.getState().setActiveArtist(artist);
+
   return (
-    <div style={{
-      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-      background: `linear-gradient(135deg, oklch(0.45 0.12 ${h}), oklch(0.30 0.10 ${(h + 40) % 360}))`,
-      display: 'grid', placeItems: 'center',
-      fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 700, color: '#fff',
-    }}>{initials}</div>
+    <div style={{ width: '100%', flexShrink: 0, marginTop: 4 }}>
+      <h3 style={{
+        fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700,
+        color: 'var(--text-secondary)',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        marginBottom: 8,
+      }}>
+        About the artist
+      </h3>
+      <div style={{
+        borderRadius: 12,
+        background: 'color-mix(in oklch, var(--bg-overlay) 60%, transparent)',
+        overflow: 'hidden',
+      }}>
+        {photo && (
+          <div
+            onClick={handleArtistClick}
+            style={{
+              width: '100%', height: 140,
+              background: `center/cover url(${photo})`,
+              cursor: 'pointer',
+              position: 'relative',
+            }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%)',
+            }}/>
+            <div style={{
+              position: 'absolute', left: 14, bottom: 12,
+              fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 500,
+              color: '#fff', letterSpacing: '-0.01em',
+              textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+            }}>{artist}</div>
+          </div>
+        )}
+        <div style={{ padding: '12px 14px' }}>
+          {!photo && (
+            <div
+              onClick={handleArtistClick}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                background: `linear-gradient(135deg, oklch(0.45 0.12 ${h}), oklch(0.30 0.10 ${(h + 40) % 360}))`,
+                display: 'grid', placeItems: 'center',
+                fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 700, color: '#fff',
+              }}>{(artist[0] ?? '?').toUpperCase()}</div>
+              <div style={{
+                fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--text-primary)',
+                fontWeight: 500, letterSpacing: '-0.01em',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>{artist}</div>
+            </div>
+          )}
+
+          {loading && (
+            <div style={{
+              fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--text-muted)',
+              padding: '4px 0',
+            }}>Loading bio…</div>
+          )}
+
+          {!loading && extract && (
+            <p
+              onClick={() => setExpanded((v) => !v)}
+              style={{
+                fontFamily: 'var(--sans)', fontSize: 12.5, lineHeight: 1.55,
+                color: 'var(--text-secondary)',
+                margin: 0, padding: 0,
+                cursor: 'pointer',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: expanded ? 'unset' : 4,
+                overflow: 'hidden',
+              }}
+            >
+              {extract}
+            </p>
+          )}
+
+          {!loading && !extract && (
+            <p style={{
+              fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--text-muted)',
+              margin: 0, lineHeight: 1.5,
+            }}>
+              No bio found. Click the artist name to see their tracks in your library.
+            </p>
+          )}
+
+          <div style={{
+            display: 'flex', gap: 10, alignItems: 'center', marginTop: 12,
+            paddingTop: 10,
+          }}>
+            <button
+              onClick={handleArtistClick}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '5px 12px', borderRadius: 999,
+                background: 'var(--bg-overlay)',
+                border: '1px solid var(--border-default)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 140ms',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-overlay)')}
+            >
+              View on Interwave <ArrowRight size={11} weight="bold" />
+            </button>
+            {wikiUrl && (
+              <a
+                href={wikiUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--text-muted)',
+                  textDecoration: 'none',
+                }}
+              >
+                Wikipedia <ArrowSquareOut size={10} weight="bold" />
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

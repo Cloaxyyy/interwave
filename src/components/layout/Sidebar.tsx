@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import {
-  House,
   MagnifyingGlass,
   GearSix,
+  User as UserIcon,
   Plus,
   ShieldStar,
   SignOut,
@@ -36,7 +36,7 @@ import type { Playlist } from '../../lib/tauri';
 type SortMode = 'recent' | 'added' | 'alpha' | 'creator';
 type ViewMode = 'list' | 'list-compact' | 'grid' | 'grid-compact';
 
-const APP_VERSION = '0.6.2';
+const APP_VERSION = '0.6.3';
 
 export default function Sidebar() {
   const { activeView, setActiveView, setActivePlaylist, bumpLibraryVersion, libraryVersion } = useUiStore();
@@ -161,22 +161,6 @@ export default function Sidebar() {
         transition: 'background 600ms ease',
       }}
     >
-      {}
-      <div style={{ display: 'flex', gap: 6, padding: '10px 12px 6px' }}>
-        <TopIconButton
-          active={activeView === 'home'}
-          onClick={() => setActiveView('home')}
-          icon={<House size={18} weight={activeView === 'home' ? 'fill' : 'regular'} />}
-          label="Home"
-        />
-        <TopIconButton
-          active={activeView === 'search'}
-          onClick={() => setActiveView('search')}
-          icon={<MagnifyingGlass size={18} weight={activeView === 'search' ? 'bold' : 'regular'} />}
-          label="Search"
-        />
-      </div>
-
       {}
       {updateAvailable && (
         <div
@@ -416,7 +400,7 @@ export default function Sidebar() {
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             zIndex: 50,
           }}>
-            <ProfileMenuItem icon={<House size={14} weight="duotone" />} label="Profile" onClick={() => { setActiveView('profile'); setProfileOpen(false); }} />
+            <ProfileMenuItem icon={<UserIcon size={14} weight="duotone" />} label="Profile" onClick={() => { setActiveView('profile'); setProfileOpen(false); }} />
             <ProfileMenuItem icon={<QueueIcon size={14} weight="duotone" />} label="Queue" onClick={() => { setActiveView('queue'); setProfileOpen(false); }} />
             <ProfileMenuItem icon={<GearSix size={14} weight="duotone" />} label="Settings" onClick={() => { setActiveView('settings'); setProfileOpen(false); }} />
             {isStaff && (
@@ -443,32 +427,6 @@ export default function Sidebar() {
   );
 }
 
-function TopIconButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
-  return (
-    <button
-      onClick={onClick}
-      title={label}
-      style={{
-        flex: 1,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: 8,
-        padding: '11px 8px',
-        borderRadius: 10,
-        background: active ? 'var(--bg-overlay)' : 'var(--bg-surface)',
-        border: '1px solid color-mix(in oklch, var(--border-subtle) 60%, transparent)',
-        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-        fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 600,
-        cursor: 'pointer',
-        transition: 'all 140ms',
-      }}
-      onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; }}
-      onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; }}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (

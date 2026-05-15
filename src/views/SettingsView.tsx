@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { setEqBand as setEqBandCmd, getEqBands, setEqPreset, listEqPresets, setCrossfade as setCrossfadeCmd, getCrossfade } from '../lib/tauri';
 import { getDiagnostics, clearCrashLog, crashCount } from '../lib/crashReporter';
 
-const APP_VERSION = '0.7.4';
+const APP_VERSION = '0.7.5';
 import { usePlayerStore } from '../stores/playerStore';
 import {
   ACTIONS, loadBindings, saveBindings, resetBindings,

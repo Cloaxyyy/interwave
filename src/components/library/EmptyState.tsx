@@ -1,64 +1,59 @@
-
 import type { ReactNode } from 'react';
 
 interface Props {
-  icon: ReactNode;
+  icon?: ReactNode;
   title: string;
   body: string;
   actionLabel?: string;
   onAction?: () => void;
   secondaryLabel?: string;
   onSecondary?: () => void;
+  compact?: boolean;
 }
 
 export default function EmptyState({
-  icon, title, body, actionLabel, onAction, secondaryLabel, onSecondary,
+  title, body, actionLabel, onAction, secondaryLabel, onSecondary, compact,
 }: Props) {
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      gap: 14, padding: '52px 28px', textAlign: 'center',
-      maxWidth: 480, margin: '36px auto',
-      background: 'var(--bg-surface)',
-      border: '1px solid var(--border-subtle)',
-      borderRadius: 16,
-    }}>
-      <div style={{
-        width: 64, height: 64, borderRadius: 16,
-        background: 'var(--bg-elevated)',
-        display: 'grid', placeItems: 'center',
-        color: 'var(--accent)',
-        boxShadow: '0 4px 20px -8px var(--accent-glow)',
-      }}>
-        {icon}
-      </div>
-      <h3 style={{
-        fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400,
-        letterSpacing: '-0.01em', margin: 0, color: 'var(--text-primary)',
-      }}>
-        {title}
-      </h3>
-      <p style={{
-        fontFamily: 'var(--sans)', fontSize: 13,
-        color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0,
-        maxWidth: 360,
-      }}>
-        {body}
-      </p>
+    <div className={`iw-empty ${compact ? 'iw-empty-compact' : ''}`}>
+      <WaveMark />
+      <h3 className="iw-empty-title">{title}</h3>
+      <p className="iw-empty-body">{body}</p>
       {(actionLabel || secondaryLabel) && (
-        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+        <div className="iw-empty-action">
           {actionLabel && onAction && (
-            <button onClick={onAction} className="btn-primary" style={{ padding: '9px 18px', fontSize: 12 }}>
-              {actionLabel} →
+            <button onClick={onAction} className="iw-btn-pill iw-btn-primary">
+              {actionLabel}
             </button>
           )}
           {secondaryLabel && onSecondary && (
-            <button onClick={onSecondary} className="btn-ghost" style={{ padding: '9px 18px', fontSize: 12 }}>
+            <button onClick={onSecondary} className="iw-btn-pill iw-btn-ghost-pill">
               {secondaryLabel}
             </button>
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+export function WaveMark() {
+  return (
+    <div className="iw-empty-mark" aria-hidden="true">
+      <svg viewBox="0 0 100 100" className="iw-empty-wave">
+        <defs>
+          <linearGradient id="iw-ew-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="var(--accent-deep)"/>
+            <stop offset="100%" stopColor="var(--accent)"/>
+          </linearGradient>
+        </defs>
+        <path d="M 12 50 Q 24 22, 36 50 T 60 50 T 84 50 T 100 50"
+          fill="none" stroke="url(#iw-ew-grad)" strokeWidth="2.2"
+          strokeLinecap="round" className="iw-empty-wave-a"/>
+        <path d="M 12 50 Q 24 78, 36 50 T 60 50 T 84 50 T 100 50"
+          fill="none" stroke="url(#iw-ew-grad)" strokeWidth="2.2"
+          strokeLinecap="round" className="iw-empty-wave-b"/>
+      </svg>
     </div>
   );
 }

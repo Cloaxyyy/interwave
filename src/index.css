@@ -1193,3 +1193,59 @@ body {
 .iw-about-card p {
   font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0;
 }
+
+/* ======================================================================
+ * EMPTY STATE — breathing wave-mark
+ * ====================================================================== */
+.iw-empty-wrap {
+  height: 100%;
+  display: grid; place-items: center;
+  padding: 40px;
+}
+.iw-empty {
+  text-align: center; max-width: 460px;
+  animation: iw-stagger-rise 600ms var(--ease-out) both;
+}
+.iw-empty.iw-empty-compact .iw-empty-mark { width: 56px; height: 56px; margin-bottom: 12px; }
+.iw-empty.iw-empty-compact .iw-empty-title { font-size: 16px; margin-bottom: 4px; }
+.iw-empty-mark {
+  width: 90px; height: 90px;
+  margin: 0 auto 22px;
+  display: grid; place-items: center;
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%);
+  border: 1px solid color-mix(in oklch, var(--border-subtle) 80%, transparent);
+  animation: iw-empty-breathe 3.4s ease-in-out infinite;
+}
+@keyframes iw-empty-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 40%, transparent); }
+  50%      { box-shadow: 0 0 0 10px color-mix(in oklch, var(--accent) 0%, transparent); }
+}
+.iw-empty-wave {
+  width: 60%; height: 60%;
+}
+.iw-empty-wave-a, .iw-empty-wave-b {
+  stroke-dasharray: 280;
+  animation: iw-wave-draw 4s ease-in-out infinite;
+}
+.iw-empty-wave-b { animation-delay: 0.3s; opacity: 0.55; }
+@keyframes iw-wave-draw {
+  0%   { stroke-dashoffset:  280; opacity: 0.4; }
+  50%  { stroke-dashoffset:    0; opacity: 1;   }
+  100% { stroke-dashoffset: -280; opacity: 0.4; }
+}
+.iw-empty-title {
+  font-family: var(--sans);
+  font-size: 22px; font-weight: 600; letter-spacing: -0.015em;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+}
+.iw-empty-body {
+  font-size: 13.5px; color: var(--text-muted); line-height: 1.6;
+  margin: 0 0 18px;
+}
+.iw-empty-action { display: flex; justify-content: center; gap: 10px; }
+@keyframes iw-stagger-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}

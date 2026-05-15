@@ -18,7 +18,7 @@ import {
 } from '../../lib/tauri';
 import type { Playlist } from '../../lib/tauri';
 
-const APP_VERSION = '0.7.4';
+const APP_VERSION = '0.7.5';
 
 type NavId = 'home' | 'browse' | 'library' | 'liked';
 

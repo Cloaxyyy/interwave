@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
-import { CircleNotch, CheckCircle, XCircle, FolderOpen, FileArrowDown, Link } from '@phosphor-icons/react';
-import { spotifyImportFile, importSpotifyUrl } from '../lib/tauri';
+import { CircleNotch, CheckCircle, XCircle, FolderOpen, FileArrowDown, Link, MusicNotes } from '@phosphor-icons/react';
+import { spotifyImportFile, importSpotifyUrl, importLocalFiles } from '../lib/tauri';
+import { useUiStore } from '../stores/uiStore';
+import { useToastStore } from '../stores/toastStore';
 import type { ImportProgressEvent, ImportCompleteEvent } from '../lib/tauri';
 import { useImportStore } from '../stores/importStore';
 
@@ -22,6 +24,37 @@ export default function ImportView() {
   } = useImportStore();
 
   const [spotifyUrl, setSpotifyUrl] = useState('');
+  const [localBusy, setLocalBusy] = useState(false);
+  const bumpLibraryVersion = useUiStore((s) => s.bumpLibraryVersion);
+  const pushToast = useToastStore((s) => s.push);
+
+  const handlePickLocalFiles = async () => {
+    if (localBusy) return;
+    try {
+      const selected = await open({
+        multiple: true,
+        title: 'Select audio files to import',
+        filters: [{ name: 'Audio', extensions: ['mp3', 'm4a', 'aac', 'flac', 'wav', 'ogg', 'opus', 'wma', 'aiff'] }],
+      });
+      if (!selected) return;
+      const paths = Array.isArray(selected) ? selected : [selected];
+      if (paths.length === 0) return;
+      setLocalBusy(true);
+      const imported = await importLocalFiles(paths);
+      bumpLibraryVersion();
+      pushToast({
+        kind: 'success',
+        title: imported.length === 1
+          ? `Imported "${imported[0].title}"`
+          : `Imported ${imported.length} local files`,
+        duration: 3000,
+      });
+    } catch (e) {
+      pushToast({ kind: 'error', title: 'Local import failed', body: String(e), duration: 5000 });
+    } finally {
+      setLocalBusy(false);
+    }
+  };
 
   useEffect(() => {
     const cleanups: Array<() => void> = [];
@@ -219,6 +252,51 @@ export default function ImportView() {
               Import
             </button>
           </div>
+        </div>
+
+        {}
+        <div
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 10,
+            padding: '18px 20px',
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <MusicNotes size={16} color="var(--accent)" weight="duotone" />
+            <p style={{ fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Import local audio files
+            </p>
+          </div>
+          <p style={{ fontFamily: 'Syne, sans-serif', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>
+            Pick MP3 / M4A / FLAC / WAV / OGG / Opus from disk. They'll appear in your library and play locally — no streaming.
+          </p>
+          <button
+            onClick={handlePickLocalFiles}
+            disabled={localBusy}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: localBusy ? 'var(--bg-overlay)' : 'var(--accent-dim)',
+              border: `1px solid ${localBusy ? 'var(--border-subtle)' : 'var(--accent)'}`,
+              borderRadius: 6,
+              color: localBusy ? 'var(--text-muted)' : 'var(--accent)',
+              fontFamily: 'Syne, sans-serif',
+              fontSize: 12,
+              fontWeight: 600,
+              padding: '8px 16px',
+              cursor: localBusy ? 'default' : 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            {localBusy
+              ? <><CircleNotch size={14} weight="bold" style={{ animation: 'spin 1s linear infinite' }} /> Importing…</>
+              : <><FolderOpen size={14} weight="duotone" /> Pick files…</>
+            }
+          </button>
         </div>
 
         {}

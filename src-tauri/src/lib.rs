@@ -210,6 +210,7 @@ pub fn run() {
             commands::library::update_settings,
             commands::library::rename_playlist,
             commands::library::get_liked_tracks,
+            commands::library::import_local_files,
             commands::library::get_recently_added,
             commands::library::get_most_played,
             commands::library::get_forgotten_favorites,

@@ -383,6 +383,74 @@ fn start_playback(
             return;
         }
 
+        if let Some(local_path) = track.local_path.clone() {
+            if std::path::Path::new(&local_path).exists() {
+                log::info!("local-file playback: {local_path}");
+                let dur = track.duration_seconds.unwrap_or(0) as f64;
+                let path_for_read = local_path.clone();
+                let read_result = tokio::task::spawn_blocking(move || std::fs::read(&path_for_read))
+                    .await
+                    .map_err(|e| WaveError::Internal(e.to_string()));
+                let bytes = match read_result {
+                    Ok(Ok(b)) => b,
+                    Ok(Err(e)) => {
+                        emit_error(&app, format!("Cannot read local file: {e}"));
+                        app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                        return;
+                    }
+                    Err(e) => {
+                        emit_error(&app, format!("File read task failed: {e}"));
+                        app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                        return;
+                    }
+                };
+                let decoded = tokio::task::spawn_blocking(move || {
+                    crate::audio::thread::decode_raw(bytes)
+                }).await;
+                let (samples, sample_rate, channels) = match decoded {
+                    Ok(Ok(r)) => r,
+                    Ok(Err(e)) => {
+                        app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                        emit_error(&app, format!("Local file decode failed: {e}"));
+                        return;
+                    }
+                    Err(e) => {
+                        app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                        emit_error(&app, format!("Decode task failed: {e}"));
+                        return;
+                    }
+                };
+                let waveform_bars = crate::audio::thread::compute_waveform(&samples, 200);
+                app.emit("playback://waveform", WaveformEvent { bars: waveform_bars }).ok();
+
+                let (result_tx, result_rx) = std::sync::mpsc::sync_channel::<Result<(), WaveError>>(1);
+                if !audio.send(AudioCommand::PlayDecoded {
+                    samples, sample_rate, channels: channels as u16,
+                    track: track.clone(), result_tx,
+                }) {
+                    app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                    emit_error(&app, "Audio device unavailable — restart the app.");
+                    return;
+                }
+                let started = tokio::task::spawn_blocking(move || result_rx.recv())
+                    .await.ok().and_then(|r| r.ok());
+                match started {
+                    Some(Ok(())) => {
+                        emit_playback_started(app, audio, track, dur, poll_generation, url_cache, prefetch_cache, discord, db);
+                    }
+                    Some(Err(e)) => {
+                        app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                        emit_error(&app, format!("Playback failed: {e}"));
+                    }
+                    None => {
+                        app.emit("playback://state", StateEvent { state: "stopped".into() }).ok();
+                        emit_error(&app, "Audio thread disconnected — restart the app.");
+                    }
+                }
+                return;
+            }
+        }
+
         if let Some(bytes) = take_prefetched(&prefetch_cache, &track.youtube_id) {
             log::info!("Prefetch cache hit for {} ({} bytes)", track.youtube_id, bytes.len());
             let dur = track.duration_seconds.unwrap_or(0) as f64;

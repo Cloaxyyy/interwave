@@ -157,22 +157,6 @@ export default function LyricsFullscreen() {
               const opacity = isActive ? 1 : Math.max(0.14, 1 - dist * 0.16);
 
               if (isActive && line.text) {
-                const lineStartMs = line.time_ms;
-                const lineEndMs = synced[i + 1]?.time_ms ?? lineStartMs + 4000;
-                const lineDur = Math.max(1, lineEndMs - lineStartMs);
-                const elapsed = Math.max(0, Math.min(lineDur, position * 1000 - lineStartMs));
-                const progress = elapsed / lineDur;
-
-                const words = line.text.split(/(\s+)/);
-                const charLengths = words.map((w) => Math.max(1, w.length));
-                const totalChars = charLengths.reduce((a, b) => a + b, 0);
-                let cum = 0;
-                const wordStarts = charLengths.map((len) => {
-                  const start = cum / totalChars;
-                  cum += len;
-                  return start;
-                });
-
                 return (
                   <p
                     key={i}
@@ -188,37 +172,14 @@ export default function LyricsFullscreen() {
                       padding: '6px 24px',
                       textAlign: 'center',
                       cursor: 'pointer',
-                      transition: 'opacity 320ms cubic-bezier(0.4,0,0.2,1)',
+                      transition: 'opacity 320ms cubic-bezier(0.4,0,0.2,1), color 280ms ease, text-shadow 360ms ease',
                       maxWidth: '100%',
                       opacity: 1,
+                      color: 'var(--text-primary)',
+                      textShadow: `0 0 32px color-mix(in oklch, ${accentColor} 45%, transparent)`,
                     }}
                   >
-                    {words.map((w, wi) => {
-                      const isSpace = /^\s+$/.test(w);
-                      if (isSpace) return <span key={wi}>{w}</span>;
-                      const start = wordStarts[wi];
-
-                      const leadIn = 0.05;
-                      const wordProgress = Math.max(0, Math.min(1, (progress - start) / leadIn));
-                      const reached = progress >= start;
-                      return (
-                        <span
-                          key={wi}
-                          style={{
-                            color: reached
-                              ? `color-mix(in oklch, var(--text-primary) ${Math.round(wordProgress * 100)}%, var(--text-secondary))`
-                              : 'var(--text-secondary)',
-                            textShadow: reached && wordProgress > 0.6
-                              ? `0 0 28px color-mix(in oklch, ${accentColor} 55%, transparent)`
-                              : 'none',
-                            transition: 'color 220ms ease, text-shadow 320ms ease',
-                            opacity: reached ? 1 : 0.55,
-                          }}
-                        >
-                          {w}
-                        </span>
-                      );
-                    })}
+                    {line.text}
                   </p>
                 );
               }

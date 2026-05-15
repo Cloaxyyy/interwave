@@ -64,41 +64,12 @@ export default function MiniLyrics() {
 
   const renderActive = () => {
     if (!cur) return null;
-    const lineStartMs = cur.time_ms;
-    const lineEndMs = next?.time_ms ?? lineStartMs + 4000;
-    const lineDur = Math.max(1, lineEndMs - lineStartMs);
-    const elapsed = Math.max(0, Math.min(lineDur, posMs - lineStartMs));
-    const progress = elapsed / lineDur;
-
-    const words = cur.text.split(/(\s+)/);
-    const charLengths = words.map((w) => Math.max(1, w.length));
-    const totalChars = charLengths.reduce((a, b) => a + b, 0);
-    let cum = 0;
-    const wordStarts = charLengths.map((len) => {
-      const start = cum / totalChars;
-      cum += len;
-      return start;
-    });
-
     return (
-      <span>
-        {words.map((w, wi) => {
-          if (/^\s+$/.test(w)) return <span key={wi}>{w}</span>;
-          const start = wordStarts[wi];
-          const reached = progress >= start;
-          return (
-            <span
-              key={wi}
-              style={{
-                color: reached ? 'var(--text-primary)' : 'var(--text-secondary)',
-                opacity: reached ? 1 : 0.55,
-                transition: 'color 220ms ease, opacity 220ms ease',
-              }}
-            >
-              {w}
-            </span>
-          );
-        })}
+      <span style={{
+        color: 'var(--text-primary)',
+        transition: 'color 240ms ease',
+      }}>
+        {cur.text}
       </span>
     );
   };

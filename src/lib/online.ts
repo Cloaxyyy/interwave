@@ -11,26 +11,13 @@ export const useOnlineStore = create<OnlineStore>((set) => ({
   setOnline: (online) => set({ online }),
 }));
 
-let intervalId: ReturnType<typeof setInterval> | null = null;
+let initialized = false;
 
 export function initOnlineMonitor() {
-  if (intervalId !== null) return;
+  if (initialized) return;
+  initialized = true;
   const apply = (v: boolean) => useOnlineStore.getState().setOnline(v);
   apply(navigator.onLine);
-
   window.addEventListener('online',  () => apply(true));
   window.addEventListener('offline', () => apply(false));
-
-  intervalId = setInterval(async () => {
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 4000);
-
-      await fetch('https://www.gstatic.com/generate_204', {
-        method: 'HEAD', cache: 'no-store', signal: ctrl.signal, mode: 'no-cors',
-      });
-      clearTimeout(t);
-      apply(true);
-    } catch { apply(false); }
-  }, 30 * 1000);
 }

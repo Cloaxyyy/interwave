@@ -4,11 +4,11 @@
 
 A music player that's fast, private, and yours.
 
-[![Latest release](https://img.shields.io/github/v/release/Cloaxyyy/wave?style=flat-square&color=8a5cf6&label=latest)](https://github.com/Cloaxyyy/wave/releases/latest)
-[![Build status](https://img.shields.io/github/actions/workflow/status/Cloaxyyy/wave/build-windows.yml?branch=main&style=flat-square&color=8a5cf6)](https://github.com/Cloaxyyy/wave/actions)
+[![Latest release](https://img.shields.io/github/v/release/Cloaxyyy/interwave?style=flat-square&color=8a5cf6&label=latest)](https://github.com/Cloaxyyy/interwave/releases/latest)
+[![Build status](https://img.shields.io/github/actions/workflow/status/Cloaxyyy/interwave/build-windows.yml?branch=main&style=flat-square&color=8a5cf6)](https://github.com/Cloaxyyy/interwave/actions)
 [![License](https://img.shields.io/badge/license-MIT-8a5cf6?style=flat-square)](LICENSE)
 
-[Download for Windows](https://github.com/Cloaxyyy/wave/releases/latest) · [What's new](https://github.com/Cloaxyyy/wave/releases) · [Report a bug](https://github.com/Cloaxyyy/wave/issues/new)
+[Download for Windows](https://github.com/Cloaxyyy/interwave/releases/latest) · [What's new](https://github.com/Cloaxyyy/interwave/releases) · [Report a bug](https://github.com/Cloaxyyy/interwave/issues/new)
 
 </div>
 
@@ -19,9 +19,9 @@ Interwave is a desktop music player built around three things: it's free, it doe
 ## Features
 
 - **Search any song** — type, hit enter, play. Powered by YouTube's catalog with live recommendations.
-- **Karaoke lyrics** — synced lyrics with per-word reveal, like Apple Music. Fullscreen mode optional.
+- **Karaoke lyrics** — synced lyrics with per-word reveal, Fullscreen mode optional.
 - **Live colour from album art** — every surface (player bar, sidebar, panel, hero) re-tints to the current cover. Each song has its own atmosphere.
-- **Resizable, hideable Now Playing panel** — drag the left edge to resize, like Spotify.
+- **Resizable, hideable Now Playing panel** — drag the left edge to resize,
 - **Custom hotkeys** — both in-app keys and global system-wide chord shortcuts (Ctrl+Shift+Space etc.) that work even in fullscreen games.
 - **Discord Rich Presence** — your status shows the cover art of what you're listening to.
 - **Auto-updater** — silent check every 5 minutes, one-click restart to install. Set up once, never download manually again.
@@ -29,10 +29,10 @@ Interwave is a desktop music player built around three things: it's free, it doe
 - **Crash recovery** — if Interwave dies mid-song, the next launch offers to resume from where you left off.
 - **Built-in moderation** — admin panel for community owners: suspend accounts, ban IPs, broadcast announcements, set per-page maintenance.
 - **Privacy first** — local SQLite library. Optional Supabase sync for cross-device. No telemetry, no ads.
-
+- **And so Much more!**
 ## Install
 
-[Download the Windows installer](https://github.com/Cloaxyyy/wave/releases/latest) (`interwave_X.Y.Z_x64-setup.exe`).
+[Download the Windows installer](https://github.com/Cloaxyyy/interwave/releases/latest) (`interwave_X.Y.Z_x64-setup.exe`).
 
 After your first install, every subsequent update arrives automatically — a small "Update available — Restart" pill appears in the bottom-right when a new version is published. One click and you're on the new build.
 
@@ -44,18 +44,7 @@ After your first install, every subsequent update arrives automatically — a sm
 - **Rust + rodio + symphonia** — audio decode and playback
 - **React 19 + TypeScript + Vite** — frontend
 - **SQLite** (via rusqlite) — local library
-- **GitHub Actions** — signed releases on every push
 
-## Build from source
-
-```bash
-git clone https://github.com/Cloaxyyy/wave
-cd wave
-pnpm install
-pnpm tauri dev
-```
-
-You'll need Rust stable and Node 20+. The first build downloads ~1 GB of Cargo crates; subsequent builds are cached.
 
 ## Contributing
 

@@ -1,12 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   MagnifyingGlass,
-  GearSix,
-  User as UserIcon,
   Plus,
-  ShieldStar,
-  SignOut,
-  Question,
   ListBullets,
   GridFour,
   CaretDown,
@@ -15,17 +10,11 @@ import {
   Check,
   PencilSimple,
   Trash,
-  Queue as QueueIcon,
-  ChatCircle,
   HeartStraight,
   ArrowsOutSimple,
-  Play,
-  Pause,
 } from '@phosphor-icons/react';
-import { useUiStore, type View } from '../../stores/uiStore';
+import { useUiStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
-import { isSupabaseConfigured, supabase } from '../../lib/supabase';
-import { useFriendsStore } from '../../stores/friendsStore';
 import { useUpdateStore } from '../../lib/updater';
 import {
   getAllPlaylists, createPlaylist, renamePlaylist, deletePlaylist,
@@ -37,13 +26,11 @@ type SortMode = 'recent' | 'added' | 'alpha' | 'creator';
 type ViewMode = 'list' | 'list-compact' | 'grid' | 'grid-compact';
 type FilterPill = 'all' | 'playlists' | 'liked';
 
-const APP_VERSION = '0.6.4';
+const APP_VERSION = '0.7.0';
 
 export default function Sidebar() {
   const { activeView, setActiveView, setActivePlaylist, bumpLibraryVersion, libraryVersion } = useUiStore();
-  const { user, displayName, isStaff, signOut } = useAuthStore();
-  const friendsActivity = useFriendsStore((s) => s.activity);
-  const friends = useFriendsStore((s) => s.friends);
+  const { user, displayName } = useAuthStore();
   const updateStatus = useUpdateStore((s) => s.status);
   const newVersion = useUpdateStore((s) => s.newVersion);
 
@@ -139,24 +126,6 @@ export default function Sidebar() {
     return list;
   }, [playlists, librarySearch, sortMode]);
 
-  const initials = useMemo(() => {
-    const name = displayName ?? user?.email?.split('@')[0] ?? 'You';
-    return name[0]?.toUpperCase() ?? '•';
-  }, [displayName, user]);
-
-  const onlineFriends = useMemo(() => {
-    const out: { name: string; track: any; thumb: string | null }[] = [];
-    for (const f of friends) {
-      const a = friendsActivity.get(f.user_id);
-      if (a?.online) out.push({
-        name: f.display_name,
-        track: a.track,
-        thumb: a.track?.thumbnail_url ?? null,
-      });
-    }
-    return out;
-  }, [friends, friendsActivity]);
-
   const updateAvailable = updateStatus === 'available';
 
   return (
@@ -194,48 +163,7 @@ export default function Sidebar() {
       )}
 
       {}
-      <div style={{ padding: '8px 12px 4px' }}>
-        <SectionLabel>Friend activity</SectionLabel>
-        {onlineFriends.length === 0 ? (
-          <div
-            onClick={() => setActiveView('friends')}
-            style={{
-              fontFamily: 'var(--sans)', fontSize: 11.5,
-              color: 'var(--text-muted)',
-              padding: '6px 8px', cursor: 'pointer',
-              borderRadius: 6,
-              transition: 'background 120ms',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-elevated)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-          >
-            {friends.length === 0 ? 'Add friends to see what they play' : 'No friends online'}
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {onlineFriends.slice(0, 4).map((f) => (
-              <FriendActivityRow key={f.name} friend={f} onClick={() => setActiveView('friends')} />
-            ))}
-            {onlineFriends.length > 4 && (
-              <button
-                onClick={() => setActiveView('friends')}
-                style={{
-                  background: 'none', border: 'none',
-                  color: 'var(--text-muted)', cursor: 'pointer',
-                  fontFamily: 'var(--mono)', fontSize: 10,
-                  textAlign: 'left', padding: '4px 8px',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                +{onlineFriends.length - 4} more →
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, paddingTop: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, paddingTop: 4 }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '8px 12px 4px',
@@ -399,92 +327,10 @@ export default function Sidebar() {
         )}
       </div>
 
-      {}
-      <div ref={profileRef} style={{ position: 'relative' }}>
-        <button
-          onClick={() => setProfileOpen((v) => !v)}
-          style={{
-            width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 14px', background: profileOpen ? 'var(--bg-elevated)' : 'transparent',
-            border: 'none', cursor: 'pointer', textAlign: 'left',
-            transition: 'background 120ms',
-          }}
-          onMouseEnter={(e) => { if (!profileOpen) (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-elevated)'; }}
-          onMouseLeave={(e) => { if (!profileOpen) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-        >
-          <div style={{
-            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-            background: 'var(--grad-violet)',
-            display: 'grid', placeItems: 'center',
-            fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 700, color: 'white',
-          }}>{initials}</div>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{
-              fontFamily: 'var(--sans)', fontSize: 12.5, fontWeight: 600,
-              color: 'var(--text-primary)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {displayName ?? user?.email?.split('@')[0] ?? 'Listener'}
-            </div>
-            <div style={{
-              fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-muted)',
-              letterSpacing: '0.05em', marginTop: 1,
-            }}>
-              {!isSupabaseConfigured ? 'LOCAL' : user ? 'SIGNED IN' : 'NOT SIGNED IN'}
-            </div>
-          </div>
-          <CaretUp size={11} weight="bold" color="var(--text-muted)" style={{ transform: profileOpen ? 'rotate(180deg)' : 'none', transition: 'transform 160ms' }} />
-        </button>
-
-        {profileOpen && (
-          <div style={{
-            position: 'absolute', bottom: 'calc(100% + 4px)', left: 12, right: 12,
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border-default)',
-            borderRadius: 10,
-            overflow: 'hidden',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-            zIndex: 50,
-          }}>
-            <ProfileMenuItem icon={<UserIcon size={14} weight="duotone" />} label="Profile" onClick={() => { setActiveView('profile'); setProfileOpen(false); }} />
-            <ProfileMenuItem icon={<QueueIcon size={14} weight="duotone" />} label="Queue" onClick={() => { setActiveView('queue'); setProfileOpen(false); }} />
-            <ProfileMenuItem icon={<GearSix size={14} weight="duotone" />} label="Settings" onClick={() => { setActiveView('settings'); setProfileOpen(false); }} />
-            {isStaff && (
-              <ProfileMenuItem icon={<ShieldStar size={14} weight="duotone" />} label="Admin Panel" onClick={() => { setActiveView('admin'); setProfileOpen(false); }} />
-            )}
-            <div style={{ height: 1, background: 'var(--border-subtle)' }} />
-            <ProfileMenuItem icon={<ChatCircle size={14} weight="duotone" />} label="Support" onClick={() => { setActiveView('support' as View); setProfileOpen(false); }} />
-            <ProfileMenuItem icon={<Question size={14} weight="duotone" />} label="Keyboard shortcuts" onClick={() => { window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' })); setProfileOpen(false); }} />
-            {user && (
-              <>
-                <div style={{ height: 1, background: 'var(--border-subtle)' }} />
-                <ProfileMenuItem
-                  icon={<SignOut size={14} weight="duotone" />}
-                  label="Sign out"
-                  destructive
-                  onClick={async () => { setProfileOpen(false); await supabase.auth.signOut(); signOut(); }}
-                />
-              </>
-            )}
-          </div>
-        )}
-      </div>
     </aside>
   );
 }
 
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{
-      fontFamily: 'var(--mono)', fontSize: 9.5, fontWeight: 700,
-      color: 'var(--text-muted)', letterSpacing: '0.10em',
-      padding: '4px 8px 6px', textTransform: 'uppercase',
-    }}>
-      {children}
-    </div>
-  );
-}
 
 function SmallIconButton({ children, title, onClick }: { children: React.ReactNode; title: string; onClick: () => void }) {
   return (
@@ -506,80 +352,7 @@ function SmallIconButton({ children, title, onClick }: { children: React.ReactNo
   );
 }
 
-function FriendActivityRow({ friend, onClick }: { friend: { name: string; track: any; thumb: string | null }; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '6px 8px', borderRadius: 6,
-        background: 'transparent', border: 'none',
-        cursor: 'pointer', textAlign: 'left', width: '100%',
-        transition: 'background 120ms',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-elevated)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-    >
-      <div style={{
-        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-        background: friend.thumb ? `center/cover url(${friend.thumb})` : 'var(--bg-overlay)',
-        position: 'relative',
-      }}>
-        <div style={{
-          position: 'absolute', bottom: -1, right: -1,
-          width: 8, height: 8, borderRadius: '50%',
-          background: 'var(--success)',
-          border: '1.5px solid var(--bg-surface)',
-        }}/>
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 600,
-          color: 'var(--text-primary)',
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>{friend.name}</div>
-        {friend.track && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 3,
-            fontFamily: 'var(--sans)', fontSize: 10, color: 'var(--text-muted)',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            marginTop: 1,
-          }}>
-            {friend.track.state === 'playing'
-              ? <Play size={7} weight="fill" color="var(--accent)" />
-              : <Pause size={7} weight="fill" color="var(--text-muted)" />
-            }
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {friend.track.title}
-            </span>
-          </div>
-        )}
-      </div>
-    </button>
-  );
-}
 
-function ProfileMenuItem({ icon, label, onClick, destructive }: { icon: React.ReactNode; label: string; onClick: () => void; destructive?: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '9px 14px', width: '100%',
-        background: 'transparent', border: 'none', cursor: 'pointer',
-        color: destructive ? 'var(--destructive)' : 'var(--text-primary)',
-        fontFamily: 'var(--sans)', fontSize: 12.5, fontWeight: 500,
-        textAlign: 'left',
-        transition: 'background 120ms',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-overlay)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-    >
-      <span style={{ color: destructive ? 'var(--destructive)' : 'var(--text-muted)', display: 'flex' }}>{icon}</span>
-      {label}
-    </button>
-  );
-}
 
 function SortMenu({ mode, onChange }: { mode: SortMode; onChange: (m: SortMode) => void }) {
   const [open, setOpen] = useState(false);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import bannerLogo from '../../assets/interwave-banner-dark.svg';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { Minus, Square, X, MagnifyingGlass, House, Bell, Users, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { Minus, Square, X, MagnifyingGlass, Bell, Users, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useUiStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useFriendsStore } from '../../stores/friendsStore';
@@ -71,64 +71,42 @@ function NavArrowButton({ icon, label, onClick, disabled }: {
   );
 }
 
-function HomePill({ active, onClick }: { active: boolean; onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      onClick={onClick}
-      title="Home"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        width: 44, height: 44, borderRadius: '50%',
-        display: 'grid', placeItems: 'center',
-        background: active
-          ? 'color-mix(in oklch, var(--accent-live) 22%, var(--bg-overlay))'
-          : 'var(--bg-overlay)',
-        border: 'none',
-        color: active ? 'var(--accent)' : (hovered ? 'var(--text-primary)' : 'var(--text-secondary)'),
-        cursor: 'pointer',
-        flexShrink: 0,
-        transition: 'all 140ms',
-      }}
-    >
-      <House size={18} weight={active ? 'fill' : 'regular'} />
-    </button>
-  );
-}
 
 function SearchBar({ active, onClick }: { active: boolean; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
+  const focused = active;
   return (
     <button
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        height: 44, padding: '0 16px',
-        background: active
-          ? 'color-mix(in oklch, var(--accent-live) 12%, var(--bg-overlay))'
-          : 'var(--bg-overlay)',
-        border: `2px solid ${active ? 'color-mix(in oklch, var(--accent-live) 50%, transparent)' : (hovered ? 'var(--border-strong)' : 'transparent')}`,
+        display: 'flex', alignItems: 'center', gap: 10,
+        height: 36, padding: '0 16px',
+        background: focused ? 'var(--bg-elevated)' : 'var(--bg-surface)',
+        border: `1px solid ${focused ? 'var(--accent)' : 'transparent'}`,
         borderRadius: 999,
-        color: hovered || active ? 'var(--text-primary)' : 'var(--text-secondary)',
+        color: focused || hovered ? 'var(--text-primary)' : 'var(--text-muted)',
         cursor: 'pointer',
         fontFamily: 'var(--sans)',
-        fontSize: 13,
+        fontSize: 13.5,
         flex: 1,
-        maxWidth: 480,
-        minWidth: 280,
-        transition: 'all 140ms',
+        maxWidth: 440,
+        minWidth: 260,
         textAlign: 'left',
+        transition: 'border-color 200ms, background 200ms, box-shadow 200ms',
+        boxShadow: focused
+          ? `0 0 0 4px color-mix(in oklch, var(--accent) 16%, transparent)`
+          : 'none',
       }}
     >
-      <MagnifyingGlass size={17} weight="bold" style={{ flexShrink: 0 }} />
-      <span style={{ flex: 1 }}>What do you want to play?</span>
+      <MagnifyingGlass size={15} weight="bold" style={{ flexShrink: 0, color: focused ? 'var(--accent)' : 'currentColor' }} />
+      <span style={{ flex: 1 }}>Search artists, songs, albums…</span>
       <span style={{
-        fontFamily: 'var(--mono)', fontSize: 10,
-        padding: '2px 7px', borderRadius: 4,
-        background: 'rgba(0,0,0,0.35)',
+        fontFamily: 'var(--mono)', fontSize: 10.5,
+        padding: '2px 6px', borderRadius: 4,
+        background: 'var(--bg-base)',
+        border: '1px solid color-mix(in oklch, var(--border-subtle) 60%, transparent)',
         color: 'var(--text-muted)',
         flexShrink: 0,
       }}>⌘K</span>
@@ -136,46 +114,28 @@ function SearchBar({ active, onClick }: { active: boolean; onClick: () => void }
   );
 }
 
-function RoundIconButton({ icon, label, onClick, active = false }: {
-  icon: React.ReactNode; label: string; onClick: () => void; active?: boolean;
-}) {
+
+function ProfileAvatarButton({ initials, onClick, open }: { initials: string; onClick: () => void; open: boolean }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={onClick}
-      title={label}
+      title="Account"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        width: 34, height: 34, borderRadius: '50%',
-        display: 'grid', placeItems: 'center',
-        background: 'transparent',
-        border: 'none',
-        color: active ? 'var(--accent)' : (hovered ? 'var(--text-primary)' : 'var(--text-secondary)'),
-        cursor: 'pointer',
-        transition: 'color 140ms, transform 140ms',
-        transform: hovered ? 'scale(1.06)' : 'scale(1)',
-      }}
-    >
-      {icon}
-    </button>
-  );
-}
-
-function ProfileAvatarButton({ initials, onClick, open }: { initials: string; onClick: () => void; open: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      title="Account"
-      style={{
         width: 32, height: 32, borderRadius: '50%',
-        background: 'var(--grad-violet)',
-        border: open ? '2px solid var(--accent)' : '2px solid transparent',
+        background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))',
+        border: '2px solid var(--bg-base)',
+        boxShadow: open || hovered
+          ? `0 0 0 1px var(--accent), 0 0 14px color-mix(in oklch, var(--accent) 40%, transparent)`
+          : `0 0 0 1px var(--accent)`,
         display: 'grid', placeItems: 'center',
-        color: '#fff',
-        fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 700,
+        color: 'var(--accent-ink)',
+        fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600,
         cursor: 'pointer',
-        transition: 'all 140ms',
+        transition: 'all 200ms var(--ease-spring)',
+        transform: hovered ? 'scale(1.08)' : 'scale(1)',
       }}
     >
       {initials}
@@ -218,21 +178,15 @@ export default function Titlebar() {
     <div
       data-tauri-drag-region
       style={{
-        height: 64,
-        background: `
-          linear-gradient(180deg,
-            color-mix(in oklch, var(--accent-live) 10%, var(--bg-surface)) 0%,
-            color-mix(in oklch, var(--accent-live) 4%, var(--bg-surface)) 100%
-          )
-        `,
-        borderBottom: 'none',
+        height: 56,
+        background: 'var(--bg-base)',
+        borderBottom: '1px solid color-mix(in oklch, var(--border-subtle) 60%, transparent)',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 14px',
-        gap: 10,
+        padding: '0 18px 0 22px',
+        gap: 14,
         flexShrink: 0,
         userSelect: 'none',
-        transition: 'background 600ms ease',
         position: 'relative',
         zIndex: 5,
       }}
@@ -247,15 +201,20 @@ export default function Titlebar() {
       >
         <div
           onClick={() => setActiveView('home')}
-          style={{ cursor: 'pointer', padding: '0 6px', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }}
           title="Home"
         >
-          <img
-            src={bannerLogo}
-            alt="Interwave"
-            draggable={false}
-            style={{ height: 20, display: 'block' }}
-          />
+          <div className="iw-brand-mark" style={{
+            background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))',
+          }}>
+            <img src={bannerLogo} alt="" draggable={false} style={{ width: '100%', height: '100%', display: 'block', filter: 'brightness(0) invert(1)' }} />
+          </div>
+          <div style={{
+            fontFamily: 'var(--sans)', fontSize: 17, fontWeight: 600,
+            letterSpacing: '-0.015em', color: 'var(--text-primary)',
+          }}>
+            inter<em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>wave</em>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
           <NavArrowButton
@@ -281,42 +240,70 @@ export default function Titlebar() {
         }}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <HomePill active={activeView === 'home'} onClick={() => setActiveView('home')} />
         <SearchBar active={activeView === 'search'} onClick={triggerSearch} />
       </div>
 
       {}
       <div
         style={{
-          display: 'flex', alignItems: 'center', gap: 6,
+          display: 'flex', alignItems: 'center', gap: 8,
           flex: 1, justifyContent: 'flex-end', minWidth: 0,
         }}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <RoundIconButton
-          icon={<Bell size={16} weight={activeView === 'browse' ? 'fill' : 'regular'} />}
-          label="What's new"
-          onClick={() => setActiveView('browse')}
-        />
-        <div style={{ position: 'relative' }}>
-          <RoundIconButton
-            icon={<Users size={16} weight={activeView === 'friends' ? 'fill' : 'regular'} />}
-            label={`Friends${onlineFriends > 0 ? ` (${onlineFriends} online)` : ''}`}
-            onClick={() => setActiveView('friends')}
-            active={activeView === 'friends'}
-          />
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }))}
+          title="Help"
+          style={{
+            height: 32, padding: '0 14px', borderRadius: 999,
+            background: 'var(--bg-surface)', border: 'none',
+            color: 'var(--text-secondary)',
+            fontSize: 12, fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 6,
+            cursor: 'pointer',
+            transition: 'background 160ms, color 160ms',
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-elevated)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-surface)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; }}
+        >
+          <Bell size={13} weight="regular"/>
+          <span>Help</span>
+          <span style={{
+            fontFamily: 'var(--mono)', fontSize: 10,
+            padding: '1px 5px', borderRadius: 4,
+            background: 'var(--bg-base)',
+            border: '1px solid color-mix(in oklch, var(--border-subtle) 60%, transparent)',
+            color: 'var(--text-muted)',
+          }}>?</span>
+        </button>
+
+        <button
+          onClick={() => setActiveView('friends')}
+          title={`Friends${onlineFriends > 0 ? ` — ${onlineFriends} online` : ''}`}
+          style={{
+            position: 'relative',
+            width: 32, height: 32, borderRadius: 999,
+            background: activeView === 'friends' ? 'var(--bg-elevated)' : 'var(--bg-surface)',
+            border: 'none',
+            color: activeView === 'friends' ? 'var(--accent)' : 'var(--text-secondary)',
+            display: 'grid', placeItems: 'center',
+            cursor: 'pointer',
+            transition: 'background 160ms, color 160ms',
+          }}
+        >
+          <Users size={14} weight={activeView === 'friends' ? 'fill' : 'regular'} />
           {onlineFriends > 0 && (
             <span style={{
-              position: 'absolute', top: 4, right: 4,
-              width: 8, height: 8, borderRadius: '50%',
+              position: 'absolute', top: 5, right: 5,
+              width: 7, height: 7, borderRadius: '50%',
               background: 'var(--success)',
-              border: '2px solid var(--bg-surface)',
+              border: '2px solid var(--bg-base)',
               pointerEvents: 'none',
             }}/>
           )}
-        </div>
+        </button>
 
-        <div ref={profileRef} style={{ position: 'relative', marginLeft: 4 }}>
+        <div ref={profileRef} style={{ position: 'relative' }}>
           <ProfileAvatarButton initials={initials} onClick={() => setProfileOpen((v) => !v)} open={profileOpen} />
           {profileOpen && (
             <div style={{

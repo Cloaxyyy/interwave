@@ -26,6 +26,28 @@ import LibraryView from './views/LibraryView';
 import LoginView from './views/LoginView';
 import { usePlayerStore } from './stores/playerStore';
 import { useFriendsStore, startPresence, stopPresence, broadcastNowPlaying } from './stores/friendsStore';
+
+function StreamBanner() {
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const playbackState = usePlayerStore((s) => s.playbackState);
+  if (!currentTrack || playbackState === 'stopped') {
+    return <div className="iw-stream-bar iw-stream-empty" />;
+  }
+  return (
+    <div className="iw-stream-bar">
+      <div className="iw-stream-left">
+        <span style={{ opacity: 0.85 }}>Now playing</span>
+        <span className="iw-stream-name">{currentTrack.title}</span>
+        <span style={{ opacity: 0.7 }}>by {currentTrack.artist}</span>
+      </div>
+      <div className="iw-stream-right">
+        <span style={{ opacity: 0.85, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {playbackState === 'playing' ? '● LIVE' : playbackState === 'paused' ? '|| PAUSED' : '… LOADING'}
+        </span>
+      </div>
+    </div>
+  );
+}
 import MiniPlayer from './components/layout/MiniPlayer';
 import AdminGate from './components/common/AdminGate';
 
@@ -172,24 +194,27 @@ export default function App() {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <Titlebar />
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {!libraryExpanded && <Sidebar />}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)', position: 'relative' }}>
-          <ErrorBoundary>
-            <AnimatePresence mode="wait">
-              <PageTransition viewKey={libraryExpanded ? 'library' : activeView}>
-                <MaintenanceWall>
-                  {libraryExpanded ? <LibraryView /> : <ActiveView />}
-                </MaintenanceWall>
-              </PageTransition>
-            </AnimatePresence>
-          </ErrorBoundary>
-        </main>
-        {!libraryExpanded && <NowPlayingPanel />}
+    <div className="iw-room">
+      <div className="iw-app-shell">
+        <Titlebar />
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+          {!libraryExpanded && <Sidebar />}
+          <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)', position: 'relative' }}>
+            <ErrorBoundary>
+              <AnimatePresence mode="wait">
+                <PageTransition viewKey={libraryExpanded ? 'library' : activeView}>
+                  <MaintenanceWall>
+                    {libraryExpanded ? <LibraryView /> : <ActiveView />}
+                  </MaintenanceWall>
+                </PageTransition>
+              </AnimatePresence>
+            </ErrorBoundary>
+          </main>
+          {!libraryExpanded && <NowPlayingPanel />}
+        </div>
+        <PlayerBar />
+        <StreamBanner />
       </div>
-      <PlayerBar />
       {}
       <CommandPalette />
       {}

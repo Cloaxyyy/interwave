@@ -211,3 +211,206 @@ button, [role="button"] {
   color: var(--text-primary);
   border-color: var(--border-strong);
 }
+
+/* ======================================================================
+ * Interwave v2 design — outer room + rounded app inset
+ * Ports the visual language from the Claude Design handoff.
+ * ====================================================================== */
+
+:root {
+  --ease-out: cubic-bezier(0.25, 0.9, 0.25, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.45;
+  background: oklch(0.08 0.012 295);
+}
+
+.iw-room {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 110% -10%,
+      color-mix(in oklch, var(--accent-live) 22%, transparent) 0%,
+      transparent 50%),
+    radial-gradient(ellipse at -10% 110%,
+      color-mix(in oklch, var(--accent-deep) 18%, transparent) 0%,
+      transparent 50%),
+    oklch(0.08 0.012 295);
+  padding: 14px 18px 12px;
+}
+
+.iw-app-shell {
+  position: relative;
+  background: var(--bg-base);
+  border-radius: 22px;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.8);
+  animation: iw-app-rise 600ms var(--ease-out) both;
+}
+.iw-app-shell::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  border-radius: 22px;
+  box-shadow: inset 0 0 0 1px oklch(0.22 0.014 295);
+  z-index: 50;
+}
+@keyframes iw-app-rise {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ======================================================================
+ * Brand mark — animated glow
+ * ====================================================================== */
+
+@keyframes iw-mark-breathe {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px -4px color-mix(in oklch, var(--accent-live) 50%, transparent),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  50% {
+    box-shadow:
+      0 6px 22px -4px color-mix(in oklch, var(--accent-live) 80%, transparent),
+      inset 0 0 0 1px rgba(255,255,255,0.10);
+  }
+}
+.iw-brand-mark {
+  width: 32px; height: 32px; border-radius: 9px;
+  display: inline-grid; place-items: center;
+  overflow: hidden; flex-shrink: 0;
+  animation: iw-mark-breathe 4s ease-in-out infinite;
+}
+
+/* ======================================================================
+ * Bottom livestream-style gradient anchor strip
+ * Replaces the visible 1px seam between PlayerBar and the window edge
+ * with a decorative, drifting accent ribbon — purely cosmetic.
+ * ====================================================================== */
+
+.iw-stream-bar {
+  height: 32px;
+  padding: 0 22px;
+  background: linear-gradient(90deg,
+    oklch(0.42 0.18 280) 0%,
+    oklch(0.52 0.20 320) 25%,
+    oklch(0.58 0.18 30)  55%,
+    oklch(0.52 0.20 195) 85%,
+    oklch(0.48 0.20 260) 100%);
+  background-size: 220% 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: 0 0 22px 22px;
+  position: relative; overflow: hidden;
+  animation: iw-stream-drift 18s ease-in-out infinite;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+.iw-stream-bar::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(45deg,
+    rgba(0,0,0,0.06) 25%, transparent 25%, transparent 50%,
+    rgba(0,0,0,0.06) 50%, rgba(0,0,0,0.06) 75%, transparent 75%);
+  background-size: 16px 16px;
+  opacity: 0.3; pointer-events: none;
+}
+@keyframes iw-stream-drift {
+  0%, 100% { background-position:   0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.iw-stream-bar.iw-stream-empty {
+  background: var(--bg-base);
+  height: 14px;
+  animation: none;
+}
+.iw-stream-bar .iw-stream-left,
+.iw-stream-bar .iw-stream-right {
+  display: flex; align-items: center; gap: 10px;
+  position: relative; z-index: 2;
+  font-weight: 500;
+}
+.iw-stream-bar .iw-stream-name {
+  font-family: var(--serif); font-style: italic; font-size: 14px;
+}
+
+/* ======================================================================
+ * Hero artist/playlist display title — Geist 800 + Instrument italic accent
+ * ====================================================================== */
+
+.iw-display-title {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: clamp(40px, 6vw, 88px);
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.iw-display-title em {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+/* ======================================================================
+ * Equalizer (matches the design — taller, accent-coloured)
+ * ====================================================================== */
+
+.iw-eq {
+  display: inline-flex; align-items: flex-end; gap: 2px; height: 14px;
+}
+.iw-eq span {
+  width: 2px; background: var(--accent); border-radius: 1px;
+  animation: iw-eq-bar 1s ease-in-out infinite;
+}
+.iw-eq span:nth-child(1) { animation-delay: 0s;    height: 30%; }
+.iw-eq span:nth-child(2) { animation-delay: 0.15s; height: 80%; }
+.iw-eq span:nth-child(3) { animation-delay: 0.30s; height: 50%; }
+.iw-eq span:nth-child(4) { animation-delay: 0.45s; height: 90%; }
+@keyframes iw-eq-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+
+/* ======================================================================
+ * Track-row playing-bar (matches the .track-row.playing::before)
+ * ====================================================================== */
+
+.iw-row-mark {
+  position: absolute; left: 0; top: 12px; bottom: 12px;
+  width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--accent);
+  transform: scaleY(0); transform-origin: center;
+  transition: transform 240ms var(--ease-spring);
+}
+.iw-row-mark.iw-row-mark-on { transform: scaleY(1); }
+
+/* ======================================================================
+ * Tooltip — bright pill on dark
+ * ====================================================================== */
+
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 5px 10px; border-radius: 6px;
+  background: oklch(0.94 0.005 295); color: oklch(0.16 0.014 295);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 200ms, transform 200ms;
+  z-index: 100; font-weight: 500;
+}
+[data-tip]:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+[data-tip-bottom]::after {
+  bottom: auto; top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+[data-tip-bottom]:hover::after { transform: translateX(-50%) translateY(0); }

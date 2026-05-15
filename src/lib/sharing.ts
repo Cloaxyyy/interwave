@@ -19,7 +19,14 @@ export class ShareError extends Error {
 }
 
 function tokenMissing(msg: string): boolean {
-  return msg.includes('does not exist') || msg.includes('relation "public.shared_playlists');
+  const m = msg.toLowerCase();
+  return (
+    m.includes('does not exist') ||
+    m.includes('relation "public.shared_playlists') ||
+    m.includes('could not find the table') ||
+    m.includes('schema cache') ||
+    m.includes('pgrst205')
+  );
 }
 
 export async function publishPlaylistSnapshot(
@@ -52,7 +59,7 @@ export async function publishPlaylistSnapshot(
     const msg = String(e?.message ?? e);
     if (tokenMissing(msg)) {
       throw new ShareError(
-        'Sharing backend not provisioned yet — apply supabase/migrations/006_shared_playlists.sql in your Supabase Dashboard.',
+        'Sharing backend not ready. Open Supabase Dashboard → SQL Editor → run supabase/migrations/006_shared_playlists.sql. If you already did, the schema cache is reloading — wait ~30 seconds and try again.',
         'backend',
       );
     }

@@ -124,11 +124,22 @@ function TrackTableRow({
       onMouseLeave={() => setHovered(false)}
       onClick={() => onPlay(track)}
       style={{
-        background: isPlaying ? 'var(--accent-glow)' : hovered ? 'var(--bg-elevated)' : 'transparent',
+        background: hovered ? 'var(--bg-surface)' : 'transparent',
         transition: 'background 120ms',
-        cursor: 'default',
+        cursor: 'pointer',
+        position: 'relative',
       }}
     >
+      {isPlaying && (
+        <td style={{ width: 0, padding: 0, position: 'relative' }}>
+          <div style={{
+            position: 'absolute', left: 0, top: 8, bottom: 8,
+            width: 3, borderRadius: '0 3px 3px 0',
+            background: 'var(--accent)',
+            transform: 'scaleY(1)', transformOrigin: 'center',
+          }}/>
+        </td>
+      )}
       {}
       <td style={{ width: 40, textAlign: 'right', paddingRight: 16, paddingLeft: 8, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
         {isPlaying && !hovered ? (
@@ -172,28 +183,29 @@ function TrackTableRow({
           <div style={{ minWidth: 0 }}>
             <p
               style={{
-                fontFamily: 'Syne, sans-serif',
-                fontSize: 13,
-                fontWeight: 600,
+                fontFamily: 'var(--sans)',
+                fontSize: 14,
+                fontWeight: 500,
                 color: isPlaying ? 'var(--accent)' : 'var(--text-primary)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                maxWidth: 280,
+                maxWidth: 320,
+                margin: 0,
               }}
             >
               {cleanTrackTitle(track.title)}
             </p>
             <p
               style={{
-                fontFamily: 'Syne, sans-serif',
+                fontFamily: 'var(--mono)',
                 fontSize: 11,
-                color: 'var(--text-secondary)',
-                marginTop: 1,
+                color: isPlaying ? 'color-mix(in oklch, var(--accent) 80%, var(--text-secondary))' : 'var(--text-muted)',
+                marginTop: 2,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                maxWidth: 280,
+                maxWidth: 320,
               }}
             >
               {track.artist}
@@ -225,7 +237,7 @@ function TrackTableRow({
       {}
       {showDateAdded && (
         <td style={{ paddingRight: 12 }}>
-          <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 12, color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-secondary)' }}>
             {formatDate(track.created_at)}
           </span>
         </td>
@@ -249,7 +261,7 @@ function TrackTableRow({
           ) : track.liked ? (
             <Heart size={13} weight="fill" color="var(--accent)" style={{ marginRight: 4, flexShrink: 0 }} />
           ) : null}
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--text-muted)', minWidth: 32, textAlign: 'right', flexShrink: 0 }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)', minWidth: 36, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
             {formatDuration(track.duration_seconds)}
           </span>
         </div>
@@ -311,23 +323,23 @@ export default function TrackTable({
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             <th style={{ width: 40, textAlign: 'right', paddingRight: 16, paddingLeft: 8, paddingBottom: 8 }}>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>#</span>
             </th>
             <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 12 }}>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Title</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>Title</span>
             </th>
             {showAlbum && (
               <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 12 }}>
-                <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Album</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>Album</span>
               </th>
             )}
             {showDateAdded && (
               <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 12 }}>
-                <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Date Added</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>Date Added</span>
               </th>
             )}
             <th style={{ width: 140, textAlign: 'right', paddingBottom: 8, paddingRight: 8 }}>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Duration</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>Duration</span>
             </th>
           </tr>
         </thead>

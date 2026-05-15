@@ -54,7 +54,7 @@ export async function publishPlaylistSnapshot(
       .single();
     if (error) throw error;
     const token = (data as any).token as string;
-    return { token, share_link: `interwave://share/${token}` };
+    return { token, share_link: `https://interwave.cc/p/${encodeURIComponent(token)}` };
   } catch (e: any) {
     const msg = String(e?.message ?? e);
     if (tokenMissing(msg)) {
@@ -69,7 +69,16 @@ export async function publishPlaylistSnapshot(
 
 export async function fetchSharedPlaylist(token: string): Promise<SharedSnapshot> {
   if (!isSupabaseConfigured) throw new ShareError('Sharing requires a Supabase backend.', 'config');
-  const cleanToken = token.replace(/^interwave:\/\/share\//i, '').trim();
+  let cleanToken = token.trim();
+
+  cleanToken = cleanToken.replace(/^https?:\/\/interwave\.cc\/p\//i, '');
+
+  cleanToken = cleanToken.replace(/^interwave:\/\/share\//i, '');
+
+  cleanToken = cleanToken.split('?')[0].split('#')[0];
+
+  try { cleanToken = decodeURIComponent(cleanToken); } catch {}
+  cleanToken = cleanToken.trim();
   if (!cleanToken) throw new ShareError('Invalid share link.', 'notfound');
 
   try {

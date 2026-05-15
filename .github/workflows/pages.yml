@@ -1,0 +1,59 @@
+name: Deploy interwave.cc
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Inject Supabase config into web bundle
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          # Replace the __SUPABASE_URL__ / __SUPABASE_ANON__ placeholders in
+          # web/index.html with the real values from repo secrets so the
+          # share resolver can fetch from PostgREST anonymously.
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON" ]; then
+            echo "::warning::VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY missing — share links will not resolve on the web until they're set."
+          fi
+          # Use a marker we know is in the file
+          sed -i "s|__SUPABASE_URL__|${SUPABASE_URL//&/\\&}|g" web/index.html
+          sed -i "s|__SUPABASE_ANON__|${SUPABASE_ANON//&/\\&}|g" web/index.html
+          echo "Injected. Sample line:"
+          grep -n 'SUPABASE_URL\s*=' web/index.html | head -1 | sed -E 's|(SUPABASE_URL = ).{0,12}.*|\1<redacted>|'
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

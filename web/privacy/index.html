@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Privacy · Interwave</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-0: oklch(0.13 0.014 295);
+    --bg-1: oklch(0.16 0.018 295);
+    --ink-1: oklch(0.97 0.005 295);
+    --ink-2: oklch(0.78 0.012 295);
+    --ink-3: oklch(0.58 0.016 295);
+    --accent: oklch(0.72 0.18 295);
+    --line: oklch(0.22 0.018 295);
+    --serif: 'Instrument Serif', serif;
+    --sans:  'Geist', -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans); font-size: 15px; line-height: 1.65;
+    background: oklch(0.08 0.012 295); color: var(--ink-1);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 60px 32px 80px; }
+  .back {
+    font-size: 12px; color: var(--ink-3);
+    display: inline-block; margin-bottom: 24px;
+  }
+  h1 {
+    font-family: var(--sans); font-weight: 800;
+    font-size: 48px; letter-spacing: -0.03em; line-height: 1;
+    margin-bottom: 8px;
+  }
+  h1 em {
+    font-family: var(--serif); font-weight: 400; font-style: italic;
+    color: var(--accent); letter-spacing: -0.02em;
+  }
+  .subtitle {
+    color: var(--ink-3); font-size: 13px; margin-bottom: 36px;
+  }
+  h2 {
+    font-size: 18px; font-weight: 600;
+    margin: 28px 0 8px; letter-spacing: -0.005em;
+  }
+  p { color: var(--ink-2); margin-bottom: 12px; }
+  ul { color: var(--ink-2); padding-left: 20px; margin: 8px 0 16px; }
+  li { margin-bottom: 6px; }
+  code {
+    font-family: ui-monospace, monospace; font-size: 13px;
+    background: var(--bg-1); padding: 1px 6px; border-radius: 4px;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← Back to Interwave</a>
+    <h1>Privacy <em>policy</em></h1>
+    <div class="subtitle">Last updated: 2026-05-15</div>
+
+    <h2>What we store</h2>
+    <p>
+      Interwave is a desktop application. The vast majority of your data — playlists, listening history, settings — lives in a local SQLite database on your computer and never leaves the device.
+    </p>
+    <p>If you create an account, the managed backend stores only:</p>
+    <ul>
+      <li>Your email address and a display name (for sign-in and friend search)</li>
+      <li>Your friend list (so we can show you what they're playing)</li>
+      <li>Snapshots of any playlist you choose to <b>Share</b> (the snapshot includes the playlist name, cover, and the list of YouTube IDs in it)</li>
+      <li>Support tickets you submit, with whatever diagnostic data you opt to include</li>
+    </ul>
+    <p>That's it. We don't track listening history server-side, we don't sell anything, we don't have ads.</p>
+
+    <h2>Realtime presence</h2>
+    <p>
+      When you have <b>Presence</b> enabled in Settings, your current track is broadcast to friends through a Supabase Realtime channel. Nothing is persisted from this — friends just see what you're listening to right now.
+    </p>
+
+    <h2>Crash diagnostics</h2>
+    <p>
+      Errors caught in the app are kept locally in your browser's localStorage. They are <b>never</b> sent automatically. If you submit a support ticket and check "Attach diagnostics," the report you send includes them.
+    </p>
+
+    <h2>Third parties</h2>
+    <ul>
+      <li><b>YouTube</b> — used to resolve and stream audio. Subject to YouTube's terms.</li>
+      <li><b>LRCLIB</b> — fetched anonymously when you open lyrics for a track.</li>
+      <li><b>Wikipedia + MusicBrainz</b> — fetched anonymously for the "About the artist" card.</li>
+      <li><b>Supabase</b> — the managed backend that hosts auth, friends, support, and shared playlists.</li>
+      <li><b>GitHub Releases</b> — checked for the auto-updater and the "What's New" page.</li>
+    </ul>
+
+    <h2>Account deletion</h2>
+    <p>
+      Email <a href="mailto:support@interwave.cc">support@interwave.cc</a> from the address on your account and we'll wipe everything tied to it.
+    </p>
+
+    <h2>Contact</h2>
+    <p>Questions? <a href="mailto:support@interwave.cc">support@interwave.cc</a> or open an issue on <a href="https://github.com/Cloaxyyy/wave">GitHub</a>.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Interwave</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>
+  /* GitHub Pages doesn't do server-side routing. When someone hits
+   * https://interwave.cc/p/<token>, GitHub serves this 404.html with the
+   * original URL still in the address bar. We rewrite the URL into a
+   * query-string the SPA index.html can read, then redirect. */
+  (function () {
+    var path  = location.pathname || '/';
+    var query = location.search || '';
+    var hash  = location.hash || '';
+
+    /* /p/<token>  → /?p=<token> */
+    var m = path.match(/^\/p\/([^/?#]+)\/?$/);
+    if (m) {
+      location.replace('/?p=' + m[1] + (query ? '&' + query.slice(1) : '') + hash);
+      return;
+    }
+
+    /* Anything else: bounce home. */
+    location.replace('/' + hash);
+  })();
+</script>
+</head>
+<body>
+  <p style="font-family: system-ui, sans-serif; padding: 24px; color: #888">
+    Redirecting…
+  </p>
+</body>
+</html>

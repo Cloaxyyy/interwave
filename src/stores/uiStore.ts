@@ -29,6 +29,9 @@ interface UiStore {
 
   lyricsFullscreen: boolean;
   setLyricsFullscreen: (v: boolean) => void;
+
+  libraryExpanded: boolean;
+  setLibraryExpanded: (v: boolean) => void;
 }
 
 export const useUiStore = create<UiStore>((set) => ({
@@ -67,4 +70,6 @@ export const useUiStore = create<UiStore>((set) => ({
   },
   lyricsFullscreen: false,
   setLyricsFullscreen: (v) => set({ lyricsFullscreen: v }),
+  libraryExpanded: false,
+  setLibraryExpanded: (v) => set({ libraryExpanded: v }),
 }));

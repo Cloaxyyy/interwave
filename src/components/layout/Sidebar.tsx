@@ -36,7 +36,7 @@ import type { Playlist } from '../../lib/tauri';
 type SortMode = 'recent' | 'added' | 'alpha' | 'creator';
 type ViewMode = 'list' | 'list-compact' | 'grid' | 'grid-compact';
 
-const APP_VERSION = '0.6.0';
+const APP_VERSION = '0.6.1';
 
 export default function Sidebar() {
   const { activeView, setActiveView, setActivePlaylist, bumpLibraryVersion, libraryVersion } = useUiStore();
@@ -267,7 +267,7 @@ export default function Sidebar() {
             <SmallIconButton title="Create playlist" onClick={() => { setCreating(true); setNewName(''); setLibExpanded(true); }}>
               <Plus size={13} weight="bold" />
             </SmallIconButton>
-            <SmallIconButton title="Open Library" onClick={() => setActiveView('library')}>
+            <SmallIconButton title="Expand Library to full screen" onClick={() => useUiStore.getState().setLibraryExpanded(true)}>
               <ArrowsOutSimple size={12} weight="bold" />
             </SmallIconButton>
           </div>

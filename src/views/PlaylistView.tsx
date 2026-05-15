@@ -8,7 +8,9 @@ import TrackTable from '../components/library/TrackTable';
 import PlaylistPickerModal from '../components/library/PlaylistPickerModal';
 import HeroHeader from '../components/library/HeroHeader';
 import { TrackListSkeleton } from '../components/common/Skeleton';
-import { MagnifyingGlass, X as XIcon } from '@phosphor-icons/react';
+import { MagnifyingGlass, X as XIcon, ShareNetwork } from '@phosphor-icons/react';
+import { publishPlaylistSnapshot, ShareError } from '../lib/sharing';
+import { useToastStore } from '../stores/toastStore';
 
 function RecommendedSection({ seedYoutubeId }: { seedYoutubeId: string }) {
   const [recs, setRecs] = useState<SearchResult[]>([]);
@@ -194,6 +196,7 @@ export default function PlaylistView() {
         loading={loading}
         onPlay={tracks.length > 0 ? handlePlayAll : undefined}
         onShuffle={tracks.length > 0 ? handleShuffle : undefined}
+        extra={tracks.length > 0 && activePlaylistName ? <ShareButton playlistName={activePlaylistName} tracks={tracks} /> : undefined}
         isStartingPlay={isStartingPlay}
       />
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 8px 24px' }}>
@@ -282,5 +285,45 @@ export default function PlaylistView() {
         <PlaylistPickerModal track={trackToAdd} onClose={() => setTrackToAdd(null)} />
       )}
     </div>
+  );
+}
+
+function ShareButton({ playlistName, tracks }: { playlistName: string; tracks: Track[] }) {
+  const [busy, setBusy] = useState(false);
+  const [shared, setShared] = useState(false);
+  const pushToast = useToastStore((s) => s.push);
+
+  const handleShare = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { token, share_link } = await publishPlaylistSnapshot(playlistName, tracks);
+      await navigator.clipboard.writeText(share_link);
+      setShared(true);
+      pushToast({
+        kind: 'success',
+        title: 'Share link copied',
+        body: `Token: ${token}`,
+        duration: 4500,
+      });
+      setTimeout(() => setShared(false), 2500);
+    } catch (e) {
+      const msg = e instanceof ShareError ? e.message : String(e);
+      pushToast({ kind: 'error', title: 'Could not share', body: msg, duration: 5000 });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      disabled={busy}
+      className="btn-ghost"
+      title="Copy share link"
+    >
+      <ShareNetwork size={14} weight="bold" />
+      {shared ? 'Copied!' : busy ? 'Sharing…' : 'Share'}
+    </button>
   );
 }

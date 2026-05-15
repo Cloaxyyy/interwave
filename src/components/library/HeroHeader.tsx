@@ -19,13 +19,14 @@ interface HeroHeaderProps {
 
   onPlay?: () => void;
   onShuffle?: () => void;
+  extra?: ReactNode;
   loading?: boolean;
   isStartingPlay?: boolean;
 }
 
 export default function HeroHeader({
   eyebrow, title, coverUrl, coverFallback, subtitle, meta,
-  onPlay, onShuffle, loading = false, isStartingPlay = false,
+  onPlay, onShuffle, extra, loading = false, isStartingPlay = false,
 }: HeroHeaderProps) {
 
   const bg = `
@@ -41,7 +42,7 @@ export default function HeroHeader({
         flexShrink: 0,
         padding: '40px 32px 28px',
         background: bg,
-        borderBottom: '1px solid var(--border-subtle)',
+        borderBottom: 'none',
         position: 'relative',
       }}
     >
@@ -139,6 +140,7 @@ export default function HeroHeader({
               Shuffle
             </button>
           )}
+          {extra}
         </div>
       )}
     </div>

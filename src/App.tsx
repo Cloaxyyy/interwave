@@ -78,6 +78,7 @@ export default function App() {
   useKeyboardShortcuts();
   const activeView = useUiStore((s) => s.activeView);
   const miniPlayer = useUiStore((s) => s.miniPlayer);
+  const libraryExpanded = useUiStore((s) => s.libraryExpanded);
   const { session, loading, initialize, displayName } = useAuthStore();
   const { currentTrack, playbackState, position, duration } = usePlayerStore();
 
@@ -174,19 +175,19 @@ export default function App() {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Titlebar />
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <Sidebar />
+        {!libraryExpanded && <Sidebar />}
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)', position: 'relative' }}>
           <ErrorBoundary>
             <AnimatePresence mode="wait">
-              <PageTransition viewKey={activeView}>
+              <PageTransition viewKey={libraryExpanded ? 'library' : activeView}>
                 <MaintenanceWall>
-                  <ActiveView />
+                  {libraryExpanded ? <LibraryView /> : <ActiveView />}
                 </MaintenanceWall>
               </PageTransition>
             </AnimatePresence>
           </ErrorBoundary>
         </main>
-        <NowPlayingPanel />
+        {!libraryExpanded && <NowPlayingPanel />}
       </div>
       <PlayerBar />
       {}

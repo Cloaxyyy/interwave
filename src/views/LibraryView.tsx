@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { MusicNotes, MagnifyingGlass, Heart, Rows, SquaresFour, Play } from '@phosphor-icons/react';
+import { MusicNotes, MagnifyingGlass, Heart, Rows, SquaresFour, Play, ArrowsInSimple } from '@phosphor-icons/react';
 import { usePlayerStore } from '../stores/playerStore';
 import { useUiStore } from '../stores/uiStore';
 import { getLibrary, likeTrack, unlikeTrack } from '../lib/tauri';
@@ -56,6 +56,8 @@ export default function LibraryView() {
   const [expandedAlbum, setExpandedAlbum] = useState<string | null>(null);
   const { currentTrack, playbackState } = usePlayerStore();
   const { bumpLibraryVersion, libraryVersion, setActiveView } = useUiStore();
+  const libraryExpanded = useUiStore((s) => s.libraryExpanded);
+  const setLibraryExpanded = useUiStore((s) => s.setLibraryExpanded);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,7 +130,28 @@ export default function LibraryView() {
   );
 
   return (
-    <div className="iw-page-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="iw-page-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+      {libraryExpanded && (
+        <button
+          onClick={() => setLibraryExpanded(false)}
+          title="Collapse Library"
+          style={{
+            position: 'absolute', top: 18, right: 18, zIndex: 5,
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 12px', borderRadius: 999,
+            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(10px)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 140ms',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.65)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.45)')}
+        >
+          <ArrowsInSimple size={12} weight="bold" /> Collapse
+        </button>
+      )}
       <HeroHeader
         eyebrow="Your Music"
         title="Library"

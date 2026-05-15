@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
-import { CircleNotch, CheckCircle, XCircle, FolderOpen, FileArrowDown, Link } from '@phosphor-icons/react';
-import { spotifyImportFile, importSpotifyUrl } from '../lib/tauri';
+import { CircleNotch, CheckCircle, XCircle, FolderOpen, FileArrowDown, Link, ShareNetwork } from '@phosphor-icons/react';
+import { spotifyImportFile, importSpotifyUrl, createPlaylist, addTrackToPlaylist, saveTrackFromSearch } from '../lib/tauri';
 import { PageShell, PageHeader } from '../components/layout/PageShell';
 import type { ImportProgressEvent, ImportCompleteEvent } from '../lib/tauri';
 import { useImportStore } from '../stores/importStore';
+import { fetchSharedPlaylist, ShareError } from '../lib/sharing';
+import { useUiStore } from '../stores/uiStore';
+import { useToastStore } from '../stores/toastStore';
 
 const SPIN_KEYFRAME = `@keyframes spin { to { transform: rotate(360deg); } }`;
 
@@ -23,6 +26,44 @@ export default function ImportView() {
   } = useImportStore();
 
   const [spotifyUrl, setSpotifyUrl] = useState('');
+  const [shareToken, setShareToken] = useState('');
+  const [shareBusy, setShareBusy] = useState(false);
+  const bumpLibraryVersion = useUiStore((s) => s.bumpLibraryVersion);
+  const pushToast = useToastStore((s) => s.push);
+
+  const handleImportShare = async () => {
+    if (!shareToken.trim() || shareBusy) return;
+    setShareBusy(true);
+    try {
+      const snap = await fetchSharedPlaylist(shareToken);
+      const newPlaylist = await createPlaylist(`${snap.name} (imported)`);
+      let added = 0;
+      for (const t of snap.tracks) {
+        try {
+          const saved = await saveTrackFromSearch(
+            t.youtube_id, t.title, t.artist, t.duration_seconds, t.thumbnail_url,
+          );
+          await addTrackToPlaylist(newPlaylist.id, saved);
+          added += 1;
+        } catch (e) {
+          console.error('share import: skipped track', t.title, e);
+        }
+      }
+      bumpLibraryVersion();
+      pushToast({
+        kind: 'success',
+        title: `Imported "${snap.name}"`,
+        body: `${added} of ${snap.tracks.length} tracks added.`,
+        duration: 4500,
+      });
+      setShareToken('');
+    } catch (e) {
+      const msg = e instanceof ShareError ? e.message : String(e);
+      pushToast({ kind: 'error', title: 'Could not import share', body: msg, duration: 5500 });
+    } finally {
+      setShareBusy(false);
+    }
+  };
 
   useEffect(() => {
     const cleanups: Array<() => void> = [];
@@ -150,6 +191,61 @@ export default function ImportView() {
           <FolderOpen size={16} weight="duotone" />
           Select Spotify export file…
         </button>
+
+        {}
+        <div
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 10,
+            padding: '18px 20px',
+            marginBottom: 16,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <ShareNetwork size={16} color="var(--accent)" weight="duotone" />
+            <p style={{ fontFamily: 'Syne, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Import from a friend's share link
+            </p>
+          </div>
+          <p style={{ fontFamily: 'Syne, sans-serif', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>
+            Paste a token or <code style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--accent)' }}>interwave://share/&lt;token&gt;</code> link. We'll snapshot the shared playlist and add it to your library.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              type="text"
+              value={shareToken}
+              onChange={(e) => setShareToken(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleImportShare(); }}
+              placeholder="interwave://share/…"
+              disabled={shareBusy}
+              style={{
+                flex: 1,
+                background: 'var(--bg-overlay)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 6, color: 'var(--text-primary)',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5,
+                padding: '8px 12px', outline: 'none',
+                opacity: shareBusy ? 0.5 : 1,
+              }}
+            />
+            <button
+              onClick={handleImportShare}
+              disabled={shareBusy || !shareToken.trim()}
+              style={{
+                background: shareBusy || !shareToken.trim() ? 'var(--bg-overlay)' : 'var(--accent-dim)',
+                border: `1px solid ${shareBusy || !shareToken.trim() ? 'var(--border-subtle)' : 'var(--accent)'}`,
+                borderRadius: 6,
+                color: shareBusy || !shareToken.trim() ? 'var(--text-muted)' : 'var(--accent)',
+                fontFamily: 'Syne, sans-serif', fontSize: 12, fontWeight: 600,
+                padding: '8px 16px', cursor: shareBusy || !shareToken.trim() ? 'default' : 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              {shareBusy ? 'Importing…' : 'Import'}
+            </button>
+          </div>
+        </div>
 
         {}
         <div

@@ -27,27 +27,6 @@ import LoginView from './views/LoginView';
 import { usePlayerStore } from './stores/playerStore';
 import { useFriendsStore, startPresence, stopPresence, broadcastNowPlaying } from './stores/friendsStore';
 
-function StreamBanner() {
-  const currentTrack = usePlayerStore((s) => s.currentTrack);
-  const playbackState = usePlayerStore((s) => s.playbackState);
-  if (!currentTrack || playbackState === 'stopped') {
-    return <div className="iw-stream-bar iw-stream-empty" />;
-  }
-  return (
-    <div className="iw-stream-bar">
-      <div className="iw-stream-left">
-        <span style={{ opacity: 0.85 }}>Now playing</span>
-        <span className="iw-stream-name">{currentTrack.title}</span>
-        <span style={{ opacity: 0.7 }}>by {currentTrack.artist}</span>
-      </div>
-      <div className="iw-stream-right">
-        <span style={{ opacity: 0.85, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          {playbackState === 'playing' ? '● LIVE' : playbackState === 'paused' ? '|| PAUSED' : '… LOADING'}
-        </span>
-      </div>
-    </div>
-  );
-}
 import MiniPlayer from './components/layout/MiniPlayer';
 import AdminGate from './components/common/AdminGate';
 
@@ -226,9 +205,6 @@ export default function App() {
         </main>
         <div style={{ gridColumn: '1 / -1', gridRow: 3, minWidth: 0 }}>
           <PlayerBar />
-        </div>
-        <div style={{ gridColumn: '1 / -1', gridRow: 4, minWidth: 0 }}>
-          <StreamBanner />
         </div>
       </div>
       {}

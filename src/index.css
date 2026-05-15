@@ -249,7 +249,7 @@ body {
   height: 100%;
   display: grid;
   grid-template-columns: auto 1fr;
-  grid-template-rows: 56px 1fr 92px 32px;
+  grid-template-rows: 56px 1fr 92px;
   animation: iw-app-rise 400ms var(--ease-out) both;
 }
 .iw-app-shell::before { content: none; }

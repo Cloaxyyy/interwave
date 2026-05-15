@@ -31,6 +31,7 @@ import AdminGate from './components/common/AdminGate';
 
 const SearchView = lazy(() => import('./views/SearchView'));
 const FriendsView = lazy(() => import('./views/FriendsView'));
+const SupportView = lazy(() => import('./views/SupportView'));
 const QueueView = lazy(() => import('./views/QueueView'));
 const ImportView = lazy(() => import('./views/ImportView'));
 const PlaylistView = lazy(() => import('./views/PlaylistView'));
@@ -58,6 +59,7 @@ function ActiveView() {
       case 'settings': return <SettingsView />;
       case 'search':   return <SearchView />;
       case 'friends':  return <FriendsView />;
+      case 'support':  return <SupportView />;
       case 'queue':    return <QueueView />;
       case 'import':   return <ImportView />;
       case 'admin':    return <AdminView />;

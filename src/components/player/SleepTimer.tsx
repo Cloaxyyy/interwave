@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Moon, MusicNote } from '@phosphor-icons/react';
 import { pause } from '../../lib/tauri';
 import { usePlayerStore } from '../../stores/playerStore';
 
@@ -85,13 +86,6 @@ export default function SleepTimer() {
 
   const isActive = timerMode !== 'off';
 
-  const buttonLabel = (() => {
-    if (!isActive) return '💤';
-    if (timerMode === 'end-of-song') return '💤 ♪';
-    if (remaining !== null) return `💤 ${formatRemaining(remaining)}`;
-    return '💤';
-  })();
-
   const options: { label: string; value: TimerOption }[] = [
     { label: 'Off', value: 'off' },
     { label: '15 min', value: 15 },
@@ -105,26 +99,32 @@ export default function SleepTimer() {
     <div ref={containerRef} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen((v) => !v)}
-        title="Sleep timer"
+        title={isActive ? `Sleep timer active${remaining !== null ? ` — ${formatRemaining(remaining)}` : ''}` : 'Sleep timer'}
         style={{
-          background: isActive ? 'var(--bg-overlay)' : 'none',
-          border: isActive ? '1px solid var(--border-default)' : '1px solid transparent',
+          background: 'transparent',
+          border: '1px solid transparent',
           borderRadius: 6,
-          color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+          color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
           cursor: 'pointer',
-          fontSize: isActive ? 10 : 14,
-          fontFamily: 'Syne, sans-serif',
-          fontWeight: isActive ? 600 : 400,
-          padding: isActive ? '3px 7px' : '4px 6px',
-          lineHeight: 1.4,
+          fontFamily: 'var(--mono)',
+          fontSize: 10,
+          fontWeight: 500,
+          padding: '5px 8px',
+          lineHeight: 1,
           display: 'flex',
           alignItems: 'center',
-          gap: 3,
+          gap: 5,
           whiteSpace: 'nowrap',
-          transition: 'color 150ms, background 150ms, border-color 150ms',
+          transition: 'color 150ms',
         }}
+        onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; }}
+        onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
       >
-        {buttonLabel}
+        <Moon size={14} weight={isActive ? 'fill' : 'regular'} />
+        {isActive && timerMode === 'end-of-song' && <MusicNote size={10} weight="fill" />}
+        {isActive && remaining !== null && (
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatRemaining(remaining)}</span>
+        )}
       </button>
 
       {open && (

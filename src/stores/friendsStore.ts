@@ -68,36 +68,53 @@ export const useFriendsStore = create<FriendsStore>((set, get) => ({
     try {
       const { data: rows, error: fErr } = await supabase
         .from('friendships')
-        .select('friend_id, created_at, profile:user_profiles!friendships_friend_id_fkey(display_name)')
+        .select('friend_id, created_at')
         .eq('user_id', me);
       if (fErr) throw fErr;
-      const friends: Friend[] = (rows ?? []).map((r: any) => ({
-        user_id: r.friend_id,
-        display_name: r.profile?.display_name ?? 'Unknown',
-        added_at: r.created_at,
-      }));
 
       const { data: reqs, error: rErr } = await supabase
         .from('friend_requests')
-        .select('id, from_user, created_at, profile:user_profiles!friend_requests_from_user_fkey(display_name)')
+        .select('id, from_user, created_at')
         .eq('to_user', me)
         .eq('status', 'pending');
       if (rErr) throw rErr;
+
+      const ids = new Set<string>();
+      (rows ?? []).forEach((r: any) => ids.add(r.friend_id));
+      (reqs ?? []).forEach((r: any) => ids.add(r.from_user));
+
+      let nameMap = new Map<string, string>();
+      if (ids.size > 0) {
+        const { data: profiles } = await supabase
+          .from('user_profiles')
+          .select('id, display_name')
+          .in('id', Array.from(ids));
+        for (const p of profiles ?? []) {
+          nameMap.set((p as any).id, (p as any).display_name ?? 'Friend');
+        }
+      }
+
+      const friends: Friend[] = (rows ?? []).map((r: any) => ({
+        user_id: r.friend_id,
+        display_name: nameMap.get(r.friend_id) ?? 'Friend',
+        added_at: r.created_at,
+      }));
       const incoming: IncomingRequest[] = (reqs ?? []).map((r: any) => ({
         id: r.id,
         from_user: r.from_user,
-        display_name: r.profile?.display_name ?? 'Unknown',
+        display_name: nameMap.get(r.from_user) ?? 'Friend',
         created_at: r.created_at,
       }));
 
-      set({ friends, incoming, loading: false });
+      set({ friends, incoming, loading: false, error: null });
     } catch (e: any) {
-
       const msg = String(e?.message ?? e);
-      const benign = msg.includes('does not exist') || msg.includes('relation') || msg.includes('schema cache');
+      const tableMissing = msg.includes('does not exist') || msg.includes('relation "public.friend');
       set({
         loading: false,
-        error: benign ? 'Friends backend not provisioned yet — apply 004_friends.sql in Supabase.' : msg,
+        error: tableMissing
+          ? 'Friends backend not provisioned yet — apply supabase/migrations/004_friends.sql in your Supabase Dashboard → SQL Editor.'
+          : msg,
       });
     }
   },

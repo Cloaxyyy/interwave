@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Download, ArrowClockwise, X } from '@phosphor-icons/react';
 import { useUpdateStore, applyUpdate, checkForUpdate } from '../../lib/updater';
 
-const APP_VERSION = '0.5.1';
+const APP_VERSION = '0.6.0';
 
 export default function UpdatePill() {
   const status = useUpdateStore((s) => s.status);

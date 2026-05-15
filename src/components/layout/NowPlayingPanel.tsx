@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HeartStraight, MicrophoneStage } from '@phosphor-icons/react';
+import { HeartStraight, MicrophoneStage, Queue as QueueIcon, Play, ArrowRight } from '@phosphor-icons/react';
 import { usePlayerStore } from '../../stores/playerStore';
 import { useUiStore } from '../../stores/uiStore';
 import { likeTrack, unlikeTrack, playTrack, addToQueue } from '../../lib/tauri';
@@ -13,8 +13,9 @@ import MiniLyrics from '../player/MiniLyrics';
 const HANDLE_WIDTH = 6;
 
 export default function NowPlayingPanel() {
-  const { currentTrack, playbackState, setCurrentTrack, recommendations } = usePlayerStore();
-  const { rightPanelWidth, setRightPanelWidth, bumpLibraryVersion, setLyricsFullscreen } = useUiStore();
+  const { currentTrack, playbackState, setCurrentTrack, recommendations, queue } = usePlayerStore();
+  const { rightPanelWidth, setRightPanelWidth, bumpLibraryVersion, setLyricsFullscreen, setActiveView } = useUiStore();
+  const nextUp = queue[0] ?? null;
   const isPlaying = playbackState === 'playing';
   const [handleHover, setHandleHover] = useState(false);
   const [resizing, setResizing] = useState(false);
@@ -64,15 +65,18 @@ export default function NowPlayingPanel() {
       style={{
         width: rightPanelWidth,
         background: `
-          linear-gradient(180deg, var(--tint-18) 0%, var(--tint-4) 60%)
+          linear-gradient(180deg,
+            color-mix(in oklch, var(--accent-live) 14%, var(--bg-surface)) 0%,
+            color-mix(in oklch, var(--accent-live) 6%, var(--bg-surface)) 35%,
+            var(--bg-base) 100%
+          )
         `,
-        borderLeft: '1px solid var(--seam)',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
         overflow: 'hidden',
         position: 'relative',
-        transition: resizing ? 'none' : 'background 600ms ease, border-color 600ms ease',
+        transition: resizing ? 'none' : 'background 600ms ease',
       }}
     >
       {}
@@ -111,7 +115,8 @@ export default function NowPlayingPanel() {
           alignItems: 'center',
           padding: `22px 18px 16px ${HANDLE_WIDTH + 14}px`,
           gap: 14,
-          overflow: 'hidden',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           minWidth: 0,
         }}>
             <AlbumArt size={240} />
@@ -176,6 +181,137 @@ export default function NowPlayingPanel() {
             <PlaybackControls variant="full" />
 
             {}
+            {currentTrack && (
+              <div style={{ width: '100%', flexShrink: 0, marginTop: 6 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginBottom: 8,
+                }}>
+                  <h3 style={{
+                    fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700,
+                    color: 'var(--text-secondary)',
+                    textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0,
+                  }}>
+                    Next in queue
+                  </h3>
+                  <button
+                    onClick={() => setActiveView('queue')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      background: 'none', border: 'none',
+                      color: 'var(--text-muted)', cursor: 'pointer',
+                      fontFamily: 'var(--mono)', fontSize: 10,
+                      letterSpacing: '0.05em',
+                      padding: '2px 4px', borderRadius: 4,
+                      transition: 'color 120ms',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  >
+                    <QueueIcon size={11} weight="bold" /> Open Queue
+                  </button>
+                </div>
+                {nextUp ? (
+                  <div
+                    onClick={() => playTrack({
+                      video_id: nextUp.youtube_id,
+                      title: nextUp.title,
+                      artist: nextUp.artist,
+                      duration_seconds: nextUp.duration_seconds,
+                      thumbnail_url: nextUp.thumbnail_url,
+                    }).catch(console.error)}
+                    title="Click to play next now"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 10px', borderRadius: 8,
+                      background: 'color-mix(in oklch, var(--bg-overlay) 70%, transparent)',
+                      cursor: 'pointer',
+                      transition: 'background 140ms',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-overlay)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'color-mix(in oklch, var(--bg-overlay) 70%, transparent)')}
+                  >
+                    <div style={{
+                      width: 38, height: 38, borderRadius: 5, flexShrink: 0,
+                      background: nextUp.thumbnail_url
+                        ? `center/cover url(${nextUp.thumbnail_url})`
+                        : 'var(--bg-elevated)',
+                    }}/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 600,
+                        color: 'var(--text-primary)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{cleanTrackTitle(nextUp.title)}</div>
+                      <div style={{
+                        fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--text-muted)',
+                        marginTop: 1,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>{nextUp.artist}</div>
+                    </div>
+                    <Play size={14} weight="fill" color="var(--text-muted)" />
+                    {queue.length > 1 && (
+                      <span style={{
+                        fontFamily: 'var(--mono)', fontSize: 9.5,
+                        color: 'var(--text-muted)', marginLeft: 4,
+                      }}>+{queue.length - 1}</span>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{
+                    padding: '10px 12px',
+                    fontFamily: 'var(--sans)', fontSize: 11.5,
+                    color: 'var(--text-muted)',
+                    textAlign: 'center',
+                    background: 'color-mix(in oklch, var(--bg-overlay) 50%, transparent)',
+                    borderRadius: 8,
+                  }}>
+                    Nothing queued. Plays will autopick.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {}
+            {currentTrack && (
+              <div style={{ width: '100%', flexShrink: 0, marginTop: 4 }}>
+                <h3 style={{
+                  fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700,
+                  color: 'var(--text-secondary)',
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  marginBottom: 8,
+                }}>
+                  About the artist
+                </h3>
+                <div
+                  onClick={() => useUiStore.getState().setActiveArtist(currentTrack.artist)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px',
+                    borderRadius: 10,
+                    background: 'color-mix(in oklch, var(--bg-overlay) 50%, transparent)',
+                    cursor: 'pointer',
+                    transition: 'background 140ms',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-overlay)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'color-mix(in oklch, var(--bg-overlay) 50%, transparent)')}
+                >
+                  <ArtistAvatar name={currentTrack.artist} thumbnail={currentTrack.thumbnail_url} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{currentTrack.artist}</div>
+                    <div style={{
+                      fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--text-muted)',
+                      marginTop: 1,
+                    }}>View artist page</div>
+                  </div>
+                  <ArrowRight size={12} weight="bold" color="var(--text-muted)" />
+                </div>
+              </div>
+            )}
 
             {}
             {currentTrack && recommendations.length > 0 && (
@@ -254,5 +390,27 @@ export default function NowPlayingPanel() {
             )}
       </div>
     </aside>
+  );
+}
+
+function ArtistAvatar({ name, thumbnail }: { name: string; thumbnail: string | null }) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+  const initials = name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('') || '?';
+  if (thumbnail) {
+    return (
+      <div style={{
+        width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+        background: `center/cover url(${thumbnail})`,
+      }}/>
+    );
+  }
+  return (
+    <div style={{
+      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+      background: `linear-gradient(135deg, oklch(0.45 0.12 ${h}), oklch(0.30 0.10 ${(h + 40) % 360}))`,
+      display: 'grid', placeItems: 'center',
+      fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 700, color: '#fff',
+    }}>{initials}</div>
   );
 }

@@ -128,7 +128,7 @@ export default function LibraryView() {
   );
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="iw-page-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <HeroHeader
         eyebrow="Your Music"
         title="Library"

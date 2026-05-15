@@ -27,6 +27,7 @@ export function PageShell({
 }: PageShellProps) {
   return (
     <div
+      className="iw-page-bg"
       style={{
         flex: 1,
         display: 'flex',
@@ -34,6 +35,7 @@ export function PageShell({
         overflow: noScroll ? 'hidden' : 'auto',
         overflowX: 'hidden',
         minHeight: 0,
+        position: 'relative',
       }}
     >
       <div
@@ -46,6 +48,7 @@ export function PageShell({
           display: noScroll ? 'flex' : 'block',
           flexDirection: 'column',
           minHeight: noScroll ? 0 : undefined,
+          position: 'relative',
           ...contentStyle,
         }}
       >

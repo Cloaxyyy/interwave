@@ -151,7 +151,7 @@ export default function LikedSongsView() {
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="iw-page-bg" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <HeroHeader
         eyebrow="Your Library"
         title="Liked Songs"

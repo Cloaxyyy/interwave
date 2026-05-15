@@ -173,7 +173,7 @@ export default function App() {
       <Titlebar />
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <Sidebar />
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)' }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-base)', position: 'relative' }}>
           <ErrorBoundary>
             <AnimatePresence mode="wait">
               <PageTransition viewKey={activeView}>

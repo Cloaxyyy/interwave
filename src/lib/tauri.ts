@@ -170,8 +170,6 @@ export interface RecentTrack {
 export const getStats = () => invoke<ListeningStats>('get_stats');
 export const getTopArtists = () => invoke<TopArtist[]>('get_top_artists');
 export const getRecentlyPlayed = () => invoke<RecentTrack[]>('get_recently_played');
-export const importLocalFiles = (paths: string[]) =>
-  invoke<Track[]>('import_local_files', { paths });
 export const getRecentlyAdded = () => invoke<Track[]>('get_recently_added');
 export const getMostPlayed = () => invoke<Track[]>('get_most_played');
 export const getForgottenFavorites = () => invoke<Track[]>('get_forgotten_favorites');
@@ -208,9 +206,6 @@ export const getRecommendations = (youtubeId: string) =>
 
 export const setMiniPlayer = (enabled: boolean) =>
   invoke<void>('set_mini_player', { enabled });
-
-export const downloadTrack = (trackId: string, youtubeId: string) =>
-  invoke<string>('download_track', { trackId, youtubeId });
 
 export const setEqBand = (band: number, db: number) =>
   invoke<void>('set_eq_band', { band, db });

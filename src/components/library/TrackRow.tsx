@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Play, MusicNote, Heart, Plus, ListPlus } from '@phosphor-icons/react';
 import type { Track } from '../../lib/tauri';
-import { addToQueue, downloadTrack } from '../../lib/tauri';
+import { addToQueue } from '../../lib/tauri';
 import TrackContextMenu from '../common/TrackContextMenu';
 import PlaylistPickerModal from './PlaylistPickerModal';
-import { useUiStore } from '../../stores/uiStore';
 
 function formatDuration(seconds: number | null): string {
   if (seconds === null) return '';
@@ -64,28 +63,10 @@ export default function TrackRow({
   const [hovered, setHovered] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [showPlaylistPicker, setShowPlaylistPicker] = useState(false);
-  const [downloadState, setDownloadState] = useState<'idle' | 'loading' | 'error'>('idle');
-  const bumpLibraryVersion = useUiStore((s) => s.bumpLibraryVersion);
 
   const handleQueue = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToQueue(track).catch(console.error);
-  };
-
-  const handleDownload = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (track.local_path || downloadState === 'loading') return;
-    setDownloadState('loading');
-    downloadTrack(track.id, track.youtube_id)
-      .then(() => {
-        setDownloadState('idle');
-        bumpLibraryVersion();
-      })
-      .catch((err) => {
-        console.error('Download failed:', err);
-        setDownloadState('error');
-        setTimeout(() => setDownloadState('idle'), 2000);
-      });
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -204,32 +185,6 @@ export default function TrackRow({
           <ActionButton title="Add to playlist" onClick={() => onAddToPlaylist(track)}>
             <Plus size={15} weight="bold" />
           </ActionButton>
-          <button
-            title={track.local_path ? 'Downloaded' : 'Download track'}
-            onClick={handleDownload}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: track.local_path ? 'default' : 'pointer',
-              color: track.local_path
-                ? 'var(--accent)'
-                : downloadState === 'error'
-                ? '#ef4444'
-                : 'var(--text-muted)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 28,
-              height: 28,
-              padding: 5,
-              borderRadius: 4,
-              fontSize: 14,
-              lineHeight: 1,
-              transition: 'color 120ms',
-            }}
-          >
-            {track.local_path ? '✓' : downloadState === 'loading' ? '⟳' : downloadState === 'error' ? '✗' : '⬇'}
-          </button>
         </div>
       )}
     </div>

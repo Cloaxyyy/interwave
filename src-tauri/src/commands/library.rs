@@ -115,53 +115,6 @@ pub fn get_liked_tracks(state: State<'_, AppState>) -> Result<Vec<tracks::Track>
 }
 
 #[tauri::command]
-pub fn import_local_files(
-    paths: Vec<String>,
-    state: State<'_, AppState>,
-) -> Result<Vec<tracks::Track>, WaveError> {
-    let conn = state.db.get().map_err(WaveError::from)?;
-    let mut imported = Vec::new();
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs() as i64;
-
-    for path_str in paths {
-        let p = std::path::PathBuf::from(&path_str);
-        if !p.exists() || !p.is_file() {
-            log::warn!("import_local_files: skipping {path_str} (not a file)");
-            continue;
-        }
-        let stem = p.file_stem().and_then(|s| s.to_str()).unwrap_or("Unknown").to_string();
-        let (title, artist) = match stem.split_once(" - ") {
-            Some((a, t)) => (t.trim().to_string(), a.trim().to_string()),
-            None => (stem.clone(), "Local File".to_string()),
-        };
-        let local_id = format!("local:{}", uuid::Uuid::new_v4());
-        let track = tracks::Track {
-            id: uuid::Uuid::new_v4().to_string(),
-            youtube_id: local_id,
-            title,
-            artist,
-            album: None,
-            duration_seconds: None,
-            thumbnail_url: None,
-            play_count: 0,
-            last_played_at: None,
-            liked: false,
-            created_at: now,
-            local_path: Some(path_str.clone()),
-        };
-        if let Err(e) = tracks::upsert_track(&conn, &track) {
-            log::error!("import_local_files: upsert failed for {path_str}: {e}");
-            continue;
-        }
-        imported.push(track);
-    }
-    Ok(imported)
-}
-
-#[tauri::command]
 pub fn get_recently_added(state: State<'_, AppState>) -> Result<Vec<tracks::Track>, WaveError> {
     let conn = state.db.get().map_err(WaveError::from)?;
     Ok(tracks::get_recently_added(&conn, 12)?)

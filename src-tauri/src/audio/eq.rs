@@ -24,7 +24,24 @@ impl EqSettings {
             self.inner.lock().unwrap()[band] = db.clamp(-12.0, 12.0);
         }
     }
+
+    pub fn set_all(&self, bands: [f32; 5]) {
+        let mut g = self.inner.lock().unwrap();
+        for (i, db) in bands.iter().enumerate() {
+            g[i] = db.clamp(-12.0, 12.0);
+        }
+    }
 }
+
+pub const PRESETS: &[(&str, [f32; 5])] = &[
+    ("Flat",         [ 0.0,  0.0,  0.0,  0.0,  0.0]),
+    ("Bass Boost",   [ 6.0,  4.0,  0.0, -1.0, -2.0]),
+    ("Vocal",        [-2.0, -1.0,  3.0,  4.0,  1.0]),
+    ("Acoustic",     [ 2.0,  3.0,  1.0,  2.0,  3.0]),
+    ("Electronic",   [ 4.0,  2.0, -2.0,  1.0,  4.0]),
+    ("Treble Boost", [-2.0, -1.0,  0.0,  3.0,  6.0]),
+    ("Loudness",     [ 5.0,  2.0, -1.0,  2.0,  5.0]),
+];
 
 #[derive(Clone, Copy, Default)]
 struct BiquadState {

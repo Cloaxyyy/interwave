@@ -828,13 +828,21 @@ pub fn set_speed(speed: f32, state: State<'_, AppState>) -> Result<(), WaveError
 }
 
 #[tauri::command]
-pub fn set_crossfade(_secs: f32, _state: State<'_, AppState>) -> Result<(), WaveError> {
+pub fn set_crossfade(secs: f32, state: State<'_, AppState>) -> Result<(), WaveError> {
+    let clamped = secs.clamp(0.0, 12.0);
+    state.audio.send(crate::audio::thread::AudioCommand::SetCrossfade(clamped));
+    let conn = state.db.get().map_err(WaveError::from)?;
+    crate::db::settings::set_kv(&conn, "crossfade_seconds", &format!("{clamped:.1}"))?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn get_crossfade(_state: State<'_, AppState>) -> Result<f32, WaveError> {
-    Ok(0.0)
+pub fn get_crossfade(state: State<'_, AppState>) -> Result<f32, WaveError> {
+    let conn = state.db.get().map_err(WaveError::from)?;
+    let val = crate::db::settings::get_kv(&conn, "crossfade_seconds")?
+        .and_then(|v| v.parse::<f32>().ok())
+        .unwrap_or(0.0);
+    Ok(val)
 }
 
 #[tauri::command]
@@ -909,4 +917,19 @@ pub fn set_eq_band(band: usize, db: f32, state: State<'_, AppState>) -> Result<(
 #[tauri::command]
 pub fn get_eq_bands(state: State<'_, AppState>) -> Result<Vec<f32>, WaveError> {
     Ok(state.eq.get().to_vec())
+}
+
+#[tauri::command]
+pub fn set_eq_preset(name: String, state: State<'_, AppState>) -> Result<Vec<f32>, WaveError> {
+    let preset = crate::audio::eq::PRESETS
+        .iter()
+        .find(|(n, _)| n.eq_ignore_ascii_case(&name))
+        .ok_or_else(|| WaveError::Internal(format!("unknown preset: {name}")))?;
+    state.eq.set_all(preset.1);
+    Ok(preset.1.to_vec())
+}
+
+#[tauri::command]
+pub fn list_eq_presets() -> Result<Vec<String>, WaveError> {
+    Ok(crate::audio::eq::PRESETS.iter().map(|(n, _)| n.to_string()).collect())
 }

@@ -4,6 +4,7 @@ use std::io::Cursor;
 use std::panic::AssertUnwindSafe;
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
+use crate::audio::eq::{EqSettings, EqSource};
 use crate::db::tracks::Track;
 use crate::error::WaveError;
 
@@ -176,6 +177,7 @@ pub enum AudioCommand {
     SetRepeat(String),
     SetQueue(Vec<Track>),
     SetSpeed(f32),
+    SetCrossfade(f32),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -275,7 +277,7 @@ impl AudioHandle {
     }
 }
 
-pub fn spawn_audio_thread() -> AudioHandle {
+pub fn spawn_audio_thread(eq: EqSettings) -> AudioHandle {
     let (cmd_tx, cmd_rx) = std::sync::mpsc::sync_channel::<AudioCommand>(64);
 
     let shared = Arc::new(Mutex::new(AudioStateSnapshot {
@@ -320,6 +322,27 @@ pub fn spawn_audio_thread() -> AudioHandle {
         let mut current_pos: Option<Arc<AtomicUsize>> = None;
         let mut current_sr: u32 = 48000;
         let mut current_ch: u16 = 2;
+        let mut crossfade_secs: f32 = 0.0;
+
+        let begin_crossfade = |sink_slot: &mut Option<Sink>, secs: f32, start_vol: f32| {
+            let Some(old_sink) = sink_slot.take() else { return };
+            if secs < 0.1 || start_vol <= 0.0 || old_sink.empty() {
+                old_sink.stop();
+                return;
+            }
+            std::thread::spawn(move || {
+                const STEPS: u32 = 40;
+                let step_dur = std::time::Duration::from_millis(
+                    ((secs * 1000.0) / STEPS as f32).max(8.0) as u64,
+                );
+                for i in 1..=STEPS {
+                    let frac = 1.0 - (i as f32 / STEPS as f32);
+                    old_sink.set_volume(start_vol * frac);
+                    std::thread::sleep(step_dur);
+                }
+                old_sink.stop();
+            });
+        };
 
         loop {
             match cmd_rx.recv_timeout(std::time::Duration::from_millis(50)) {
@@ -331,6 +354,7 @@ pub fn spawn_audio_thread() -> AudioHandle {
                             history.push_back(t);
                             if history.len() > 50 { history.pop_front(); }
                         }
+                        begin_crossfade(&mut sink, crossfade_secs, volume);
                         prepare_playback(&mut current_track, &mut sink, &mut playback_started_at, &mut paused_position, &shared_clone, &track, &queue, volume);
 
                         enum PlaySource {
@@ -381,8 +405,14 @@ pub fn spawn_audio_thread() -> AudioHandle {
                             }
                             Ok(source) => {
                                 match source {
-                                    PlaySource::Rodio(dec) => start_sink(dec, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx),
-                                    PlaySource::Pcm(buf)   => start_sink(buf, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx),
+                                    PlaySource::Rodio(dec) => {
+                                        let s = EqSource::new(dec.convert_samples::<f32>(), eq.clone());
+                                        start_sink(s, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx);
+                                    }
+                                    PlaySource::Pcm(buf) => {
+                                        let s = EqSource::new(buf.convert_samples::<f32>(), eq.clone());
+                                        start_sink(s, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx);
+                                    }
                                 }
                             }
                         }
@@ -393,6 +423,7 @@ pub fn spawn_audio_thread() -> AudioHandle {
                             history.push_back(t);
                             if history.len() > 50 { history.pop_front(); }
                         }
+                        begin_crossfade(&mut sink, crossfade_secs, volume);
                         prepare_playback(&mut current_track, &mut sink, &mut playback_started_at, &mut paused_position, &shared_clone, &track, &queue, volume);
                         normalize_samples(&mut samples);
                         let sr = sample_rate.max(1);
@@ -404,7 +435,8 @@ pub fn spawn_audio_thread() -> AudioHandle {
                         current_sr = sr;
                         current_ch = ch;
                         let src = AtomicSeekSource::new(arc_samples, pos, sr, ch);
-                        start_sink(src, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx);
+                        let eq_src = EqSource::new(src.convert_samples::<f32>(), eq.clone());
+                        start_sink(eq_src, &stream_handle, &mut sink, &mut current_track, &mut playback_started_at, track, &shared_clone, &queue, volume, &result_tx);
                         if let Some(ref s) = sink { s.set_speed(speed); }
                     }
 
@@ -413,7 +445,8 @@ pub fn spawn_audio_thread() -> AudioHandle {
                             let sr = sample_rate.max(1);
                             let ch = channels.max(1);
                             let buf = rodio::buffer::SamplesBuffer::new(ch, sr, samples);
-                            s.append(buf);
+                            let eq_buf = EqSource::new(buf.convert_samples::<f32>(), eq.clone());
+                            s.append(eq_buf);
                             log::debug!("AppendChunk: queued tail samples sr={sr} ch={ch}");
                         }
                     }
@@ -546,7 +579,8 @@ pub fn spawn_audio_thread() -> AudioHandle {
                                         s.set_speed(speed);
                                         let new_pos = Arc::new(AtomicUsize::new(target));
                                         current_pos = Some(new_pos.clone());
-                                        s.append(AtomicSeekSource::new(pcm, new_pos, sr, ch));
+                                        let revived = AtomicSeekSource::new(pcm, new_pos, sr, ch);
+                                        s.append(EqSource::new(revived.convert_samples::<f32>(), eq.clone()));
                                         sink = Some(s);
                                         log::info!("Seek (revive) → {clamped_secs:.2}s / {} samples", total_samples);
                                     }
@@ -643,6 +677,11 @@ pub fn spawn_audio_thread() -> AudioHandle {
                         if let Ok(mut s) = shared_clone.lock() {
                             s.repeat = repeat_mode.clone();
                         }
+                    }
+
+                    AudioCommand::SetCrossfade(s) => {
+                        crossfade_secs = s.clamp(0.0, 12.0);
+                        log::info!("crossfade set to {crossfade_secs:.2}s");
                     }
 
                     AudioCommand::SetSpeed(s) => {
@@ -747,9 +786,7 @@ fn start_sink<S>(
     result_tx: &std::sync::mpsc::SyncSender<Result<(), WaveError>>,
 )
 where
-    S: rodio::Source + Send + 'static,
-    S::Item: rodio::Sample + Send,
-    f32: rodio::cpal::FromSample<S::Item>,
+    S: rodio::Source<Item = f32> + Send + 'static,
 {
     match Sink::try_new(stream_handle) {
         Err(e) => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ImportView from './ImportView';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
-import { setEqBand as setEqBandCmd, getEqBands } from '../lib/tauri';
+import { setEqBand as setEqBandCmd, getEqBands, setEqPreset, listEqPresets, setCrossfade as setCrossfadeCmd, getCrossfade } from '../lib/tauri';
 import { usePlayerStore } from '../stores/playerStore';
 import {
   ACTIONS, loadBindings, saveBindings, resetBindings,
@@ -565,6 +565,9 @@ function EqualizerSection() {
   const eqBands = usePlayerStore((s) => s.eqBands);
   const setEqBandStore = usePlayerStore((s) => s.setEqBand);
   const [localBands, setLocalBands] = useState<number[]>(eqBands);
+  const [presets, setPresets] = useState<string[]>([]);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [crossfade, setCrossfade] = useState<number>(0);
 
   useEffect(() => {
     getEqBands()
@@ -573,6 +576,8 @@ function EqualizerSection() {
         bands.forEach((db, i) => setEqBandStore(i, db));
       })
       .catch(() => {});
+    listEqPresets().then(setPresets).catch(() => {});
+    getCrossfade().then(setCrossfade).catch(() => {});
 
   }, []);
 
@@ -582,6 +587,7 @@ function EqualizerSection() {
     setLocalBands(next);
     setEqBandStore(band, db);
     setEqBandCmd(band, db).catch(() => {});
+    setActivePreset(null);
   };
 
   const handleReset = () => {
@@ -591,6 +597,22 @@ function EqualizerSection() {
       setEqBandStore(i, db);
       setEqBandCmd(i, db).catch(() => {});
     });
+    setActivePreset('Flat');
+  };
+
+  const handlePreset = (name: string) => {
+    setEqPreset(name)
+      .then((bands) => {
+        setLocalBands(bands);
+        bands.forEach((db, i) => setEqBandStore(i, db));
+        setActivePreset(name);
+      })
+      .catch(() => {});
+  };
+
+  const handleCrossfade = (secs: number) => {
+    setCrossfade(secs);
+    setCrossfadeCmd(secs).catch(() => {});
   };
 
   const formatDb = (db: number) => {
@@ -601,9 +623,35 @@ function EqualizerSection() {
   return (
     <div>
       <h3 style={{ fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, margin: '0 0 4px', color: 'var(--text-primary)' }}>Equalizer</h3>
-      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 28, fontFamily: 'var(--sans)' }}>
-        Boost or cut each frequency band by up to ±12 dB. Pipeline wiring is a follow-up — gains are stored now and applied once wired.
+      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 18, fontFamily: 'var(--sans)' }}>
+        Boost or cut each frequency band by up to ±12 dB. Changes apply live to the audio pipeline.
       </p>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
+        {presets.map((name) => {
+          const active = activePreset === name;
+          return (
+            <button
+              key={name}
+              onClick={() => handlePreset(name)}
+              style={{
+                padding: '5px 12px',
+                borderRadius: 999,
+                border: `1px solid ${active ? 'var(--accent)' : 'var(--border-default)'}`,
+                background: active ? 'rgba(200,255,87,0.1)' : 'transparent',
+                color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                fontFamily: 'var(--sans)',
+                fontSize: 12,
+                fontWeight: active ? 600 : 400,
+                cursor: 'pointer',
+                transition: 'all 120ms',
+              }}
+            >
+              {name}
+            </button>
+          );
+        })}
+      </div>
 
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', marginBottom: 16 }}>
         {EQ_BAND_NAMES.map((name, i) => {
@@ -662,6 +710,31 @@ function EqualizerSection() {
       >
         Reset EQ
       </button>
+
+      <div style={{ height: 1, background: 'var(--border-subtle)', margin: '32px 0 24px' }}/>
+
+      <h3 style={{ fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, margin: '0 0 4px', color: 'var(--text-primary)' }}>Crossfade</h3>
+      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 18, fontFamily: 'var(--sans)' }}>
+        Smoothly fade out the previous track when a new one starts. 0 disables.
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, maxWidth: 460 }}>
+        <input
+          type="range"
+          min={0}
+          max={12}
+          step={0.5}
+          value={crossfade}
+          onChange={(e) => handleCrossfade(parseFloat(e.target.value))}
+          style={{ flex: 1, accentColor: 'var(--accent)', cursor: 'pointer' }}
+        />
+        <span style={{
+          fontFamily: 'var(--mono)', fontSize: 12,
+          color: crossfade > 0 ? 'var(--accent)' : 'var(--text-muted)',
+          minWidth: 48, textAlign: 'right',
+        }}>
+          {crossfade > 0 ? `${crossfade.toFixed(1)} s` : 'Off'}
+        </span>
+      </div>
     </div>
   );
 }

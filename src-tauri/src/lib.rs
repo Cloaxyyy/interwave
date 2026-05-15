@@ -85,7 +85,16 @@ pub fn run() {
 
             let eq = audio::eq::EqSettings::new();
 
-            let audio = audio::thread::spawn_audio_thread();
+            let audio = audio::thread::spawn_audio_thread(eq.clone());
+
+            {
+                let conn = pool.get().expect("DB connection for crossfade init");
+                if let Ok(Some(v)) = db::settings::get_kv(&conn, "crossfade_seconds") {
+                    if let Ok(secs) = v.parse::<f32>() {
+                        audio.send(audio::thread::AudioCommand::SetCrossfade(secs.clamp(0.0, 12.0)));
+                    }
+                }
+            }
 
             let discord = discord::spawn();
 
@@ -177,6 +186,8 @@ pub fn run() {
             commands::playback::download_track,
             commands::playback::set_eq_band,
             commands::playback::get_eq_bands,
+            commands::playback::set_eq_preset,
+            commands::playback::list_eq_presets,
             commands::playback::set_crossfade,
             commands::playback::get_crossfade,
             commands::hotkeys::set_global_hotkey,

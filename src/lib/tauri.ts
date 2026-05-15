@@ -210,6 +210,9 @@ export const downloadTrack = (trackId: string, youtubeId: string) =>
 export const setEqBand = (band: number, db: number) =>
   invoke<void>('set_eq_band', { band, db });
 export const getEqBands = () => invoke<number[]>('get_eq_bands');
+export const setEqPreset = (name: string) =>
+  invoke<number[]>('set_eq_preset', { name });
+export const listEqPresets = () => invoke<string[]>('list_eq_presets');
 
 export const setGlobalHotkey = (action: string, combo: string) =>
   invoke<void>('set_global_hotkey', { action, combo });

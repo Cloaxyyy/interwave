@@ -24,10 +24,13 @@ import OnboardingModal from './components/common/OnboardingModal';
 import HomeView from './views/HomeView';
 import LibraryView from './views/LibraryView';
 import LoginView from './views/LoginView';
+import { usePlayerStore } from './stores/playerStore';
+import { useFriendsStore, startPresence, stopPresence, broadcastNowPlaying } from './stores/friendsStore';
 import MiniPlayer from './components/layout/MiniPlayer';
 import AdminGate from './components/common/AdminGate';
 
 const SearchView = lazy(() => import('./views/SearchView'));
+const FriendsView = lazy(() => import('./views/FriendsView'));
 const QueueView = lazy(() => import('./views/QueueView'));
 const ImportView = lazy(() => import('./views/ImportView'));
 const PlaylistView = lazy(() => import('./views/PlaylistView'));
@@ -54,6 +57,7 @@ function ActiveView() {
       case 'profile':  return <ProfileView />;
       case 'settings': return <SettingsView />;
       case 'search':   return <SearchView />;
+      case 'friends':  return <FriendsView />;
       case 'queue':    return <QueueView />;
       case 'import':   return <ImportView />;
       case 'admin':    return <AdminView />;
@@ -72,11 +76,53 @@ export default function App() {
   useKeyboardShortcuts();
   const activeView = useUiStore((s) => s.activeView);
   const miniPlayer = useUiStore((s) => s.miniPlayer);
-  const { session, loading, initialize } = useAuthStore();
+  const { session, loading, initialize, displayName } = useAuthStore();
+  const { currentTrack, playbackState, position, duration } = usePlayerStore();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    if (!session?.user) { stopPresence(); return; }
+    const me = session.user.id;
+    const myName = displayName ?? session.user.email ?? 'Anonymous';
+    useFriendsStore.getState().load();
+    startPresence(me, myName);
+    return () => { stopPresence(); };
+  }, [session?.user?.id, displayName]);
+
+  useEffect(() => {
+    if (!session?.user) return;
+    const myName = displayName ?? session.user.email ?? 'Anonymous';
+    if (!currentTrack) {
+      broadcastNowPlaying({ display_name: myName, track: null });
+      return;
+    }
+    if (playbackState !== 'playing' && playbackState !== 'paused') {
+      broadcastNowPlaying({ display_name: myName, track: null });
+      return;
+    }
+    broadcastNowPlaying({
+      display_name: myName,
+      track: {
+        title: currentTrack.title,
+        artist: currentTrack.artist,
+        thumbnail_url: currentTrack.thumbnail_url,
+        state: playbackState === 'playing' ? 'playing' : 'paused',
+        position,
+        duration,
+      },
+    });
+  }, [
+    session?.user?.id,
+    displayName,
+    currentTrack?.id,
+    playbackState,
+
+    Math.floor(position / 5),
+    duration,
+  ]);
 
   if (miniPlayer) return <MiniPlayer />;
 

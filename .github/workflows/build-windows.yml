@@ -24,6 +24,27 @@ jobs:
           echo "version=$v" >> $GITHUB_OUTPUT
           echo "tag=v$v-build.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
+      - name: Build release notes from commit message
+        id: notes
+        shell: bash
+        run: |
+          # Prefer RELEASE_NOTES.md if maintainer wrote one for this build.
+          # Otherwise, use the latest commit subject + body verbatim.
+          if [ -s RELEASE_NOTES.md ]; then
+            body=$(cat RELEASE_NOTES.md)
+          else
+            body=$(git log -1 --pretty=format:'%B')
+          fi
+          # GitHub Actions multi-line output
+          {
+            echo "body<<__IW_EOF__"
+            echo "$body"
+            echo ""
+            echo "---"
+            echo "_Build ${{ github.run_number }} · commit \`${GITHUB_SHA::7}\` · Tauri auto-update payload signed with the project key._"
+            echo "__IW_EOF__"
+          } >> $GITHUB_OUTPUT
+
       - name: Install Node 22
         uses: actions/setup-node@v4
         with:
@@ -75,7 +96,7 @@ jobs:
         with:
           tagName:    ${{ steps.version.outputs.tag }}
           releaseName: "Interwave v${{ steps.version.outputs.version }} (build ${{ github.run_number }})"
-          releaseBody: "Auto-built from `${{ github.sha }}`. Auto-update payload signed with the project key."
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease:   false
           # The "latest" release that the updater plugin polls — we always
@@ -92,3 +113,24 @@ jobs:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
           if-no-files-found: error
           retention-days: 7
+
+      # Wipe every prior release+tag so the repo only ever shows the build
+      # the user is currently on. The updater itself only reads "latest",
+      # so older builds were just clutter.
+      - name: Prune old releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          KEEP="${{ steps.version.outputs.tag }}"
+          echo "Keeping: $KEEP"
+          # List every release tag (paginated), filter out the one we just shipped.
+          mapfile -t OLD < <(gh release list --limit 200 --json tagName --jq '.[].tagName' | grep -vx "$KEEP" || true)
+          if [ ${#OLD[@]} -eq 0 ]; then
+            echo "Nothing to prune."
+            exit 0
+          fi
+          for tag in "${OLD[@]}"; do
+            echo "Deleting release+tag: $tag"
+            gh release delete "$tag" --yes --cleanup-tag || echo "  (failed to delete $tag — continuing)"
+          done

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type View = 'library' | 'search' | 'queue' | 'import' | 'playlist' | 'liked' | 'home' | 'profile' | 'settings' | 'admin' | 'artist' | 'browse';
+export type View = 'library' | 'search' | 'queue' | 'import' | 'playlist' | 'liked' | 'home' | 'profile' | 'settings' | 'admin' | 'artist' | 'browse' | 'friends';
 
 interface UiStore {
   activeView: View;

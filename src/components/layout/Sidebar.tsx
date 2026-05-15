@@ -14,6 +14,7 @@ import {
   X,
   ShieldStar,
   Compass,
+  Users,
 } from '@phosphor-icons/react';
 import { useUiStore, type View } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'library' as View, label: 'Library', icon: <MusicNotes size={17} weight="duotone" /> },
   { id: 'search' as View,  label: 'Search',  icon: <MagnifyingGlass size={17} weight="duotone" /> },
   { id: 'queue' as View,   label: 'Queue',   icon: <Queue size={17} weight="duotone" /> },
+  { id: 'friends' as View, label: 'Friends', icon: <Users size={17} weight="duotone" /> },
 ];
 
 interface NavButtonProps {

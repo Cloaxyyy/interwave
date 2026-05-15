@@ -16,7 +16,18 @@ const HANDLE_WIDTH = 6;
 export default function NowPlayingPanel() {
   const { currentTrack, playbackState, setCurrentTrack, recommendations, queue } = usePlayerStore();
   const { rightPanelWidth, setRightPanelWidth, bumpLibraryVersion, setLyricsFullscreen, setActiveView } = useUiStore();
+  const activePlaylistName = useUiStore((s) => s.activePlaylistName);
+  const activeView = useUiStore((s) => s.activeView);
   const nextUp = queue[0] ?? null;
+
+  const playingFromLabel = (() => {
+    if (!currentTrack) return null;
+    if (activeView === 'liked' || (activePlaylistName && activeView === 'playlist')) {
+      return activeView === 'liked' ? 'Liked Songs' : activePlaylistName;
+    }
+    if (currentTrack.liked) return 'Liked Songs';
+    return 'Now Playing';
+  })();
   const isPlaying = playbackState === 'playing';
   const [handleHover, setHandleHover] = useState(false);
   const [resizing, setResizing] = useState(false);
@@ -120,23 +131,39 @@ export default function NowPlayingPanel() {
           overflowX: 'hidden',
           minWidth: 0,
         }}>
+            {currentTrack && (
+              <div style={{
+                width: '100%', textAlign: 'left',
+                fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 700,
+                color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                paddingBottom: 2,
+              }}>
+                {playingFromLabel ?? 'Now Playing'}
+              </div>
+            )}
+
             <AlbumArt size={240} />
 
             {}
-            <div style={{ width: '100%', textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                {isPlaying && <SoundWaveIcon size={13} />}
+            <div style={{ width: '100%', textAlign: 'left' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {isPlaying && <SoundWaveIcon size={14} />}
                 <p style={{
-                  fontFamily: 'var(--sans)', fontSize: 16, fontWeight: 700,
+                  fontFamily: 'var(--sans)', fontSize: 19, fontWeight: 800,
                   color: 'var(--text-primary)',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260,
+                  letterSpacing: '-0.005em',
+                  textTransform: 'uppercase',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  flex: 1, minWidth: 0,
+                  lineHeight: 1.15,
                 }}>
                   {currentTrack ? cleanTrackTitle(currentTrack.title) : 'Nothing playing'}
                 </p>
               </div>
               <p style={{
                 fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-secondary)',
-                marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {currentTrack?.artist ?? '—'}
               </p>

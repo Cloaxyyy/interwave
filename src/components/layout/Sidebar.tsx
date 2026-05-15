@@ -35,8 +35,9 @@ import type { Playlist } from '../../lib/tauri';
 
 type SortMode = 'recent' | 'added' | 'alpha' | 'creator';
 type ViewMode = 'list' | 'list-compact' | 'grid' | 'grid-compact';
+type FilterPill = 'all' | 'playlists' | 'liked';
 
-const APP_VERSION = '0.6.3';
+const APP_VERSION = '0.6.4';
 
 export default function Sidebar() {
   const { activeView, setActiveView, setActivePlaylist, bumpLibraryVersion, libraryVersion } = useUiStore();
@@ -48,6 +49,8 @@ export default function Sidebar() {
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [thumbs, setThumbs] = useState<Record<string, string | null>>({});
+  const [trackCounts, setTrackCounts] = useState<Record<string, number>>({});
+  const [filter, setFilter] = useState<FilterPill>('all');
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [libExpanded, setLibExpanded] = useState(true);
@@ -64,20 +67,27 @@ export default function Sidebar() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const updates: Record<string, string | null> = {};
+      const thumbUpdates: Record<string, string | null> = {};
+      const countUpdates: Record<string, number> = {};
       for (const p of playlists) {
-        if (thumbs[p.id] !== undefined) continue;
+        if (thumbs[p.id] !== undefined && trackCounts[p.id] !== undefined) continue;
         try {
           const tracks = await getPlaylist(p.id);
-          updates[p.id] = tracks.find((t) => t.thumbnail_url)?.thumbnail_url ?? null;
-        } catch { updates[p.id] = null; }
+          thumbUpdates[p.id] = tracks.find((t) => t.thumbnail_url)?.thumbnail_url ?? null;
+          countUpdates[p.id] = tracks.length;
+        } catch {
+          thumbUpdates[p.id] = null;
+          countUpdates[p.id] = 0;
+        }
       }
-      if (!cancelled && Object.keys(updates).length > 0) {
-        setThumbs((prev) => ({ ...prev, ...updates }));
+      if (!cancelled) {
+        if (Object.keys(thumbUpdates).length > 0) setThumbs((prev) => ({ ...prev, ...thumbUpdates }));
+        if (Object.keys(countUpdates).length > 0) setTrackCounts((prev) => ({ ...prev, ...countUpdates }));
       }
     })();
     return () => { cancelled = true; };
-  }, [playlists]);
+
+  }, [playlists, libraryVersion]);
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -260,7 +270,37 @@ export default function Sidebar() {
         {libExpanded && (
           <>
             {}
-            <div style={{ padding: '6px 12px 4px', display: 'flex', gap: 6 }}>
+            <div style={{ padding: '4px 12px 6px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {([
+                { id: 'all',       label: 'All' },
+                { id: 'playlists', label: 'Playlists' },
+                { id: 'liked',     label: 'Liked' },
+              ] as const).map(({ id, label }) => {
+                const active = filter === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setFilter(active ? 'all' : id)}
+                    style={{
+                      padding: '4px 11px',
+                      borderRadius: 999,
+                      background: active ? 'var(--text-primary)' : 'var(--bg-elevated)',
+                      color: active ? 'var(--bg-base)' : 'var(--text-secondary)',
+                      border: 'none',
+                      fontFamily: 'var(--sans)', fontSize: 11.5,
+                      fontWeight: active ? 700 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 120ms',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {}
+            <div style={{ padding: '4px 12px 4px', display: 'flex', gap: 6 }}>
               <div style={{
                 flex: 1, display: 'flex', alignItems: 'center', gap: 6,
                 background: 'var(--bg-elevated)',
@@ -271,7 +311,7 @@ export default function Sidebar() {
                 <input
                   value={librarySearch}
                   onChange={(e) => setLibrarySearch(e.target.value)}
-                  placeholder="Search playlists"
+                  placeholder="Search in library"
                   style={{
                     flex: 1, background: 'transparent', border: 'none', outline: 'none',
                     color: 'var(--text-primary)', fontFamily: 'var(--sans)', fontSize: 11.5,
@@ -284,7 +324,9 @@ export default function Sidebar() {
 
             {}
             <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0 12px' }}>
-              <LikedSongsButton active={activeView === 'liked'} onClick={() => setActiveView('liked')} viewMode={viewMode} />
+              {filter !== 'playlists' && (
+                <LikedSongsButton active={activeView === 'liked'} onClick={() => setActiveView('liked')} viewMode={viewMode} />
+              )}
 
               {creating && (
                 <div style={{
@@ -320,33 +362,37 @@ export default function Sidebar() {
                 </p>
               )}
 
-              {viewMode === 'list' || viewMode === 'list-compact' ? (
-                sortedFiltered.map((p) => (
-                  <PlaylistListRow
-                    key={p.id} playlist={p}
-                    thumbnail={thumbs[p.id] ?? null}
-                    isActive={useUiStore.getState().activePlaylistId === p.id && activeView === 'playlist'}
-                    compact={viewMode === 'list-compact'}
-                    onNavigate={(id, name) => setActivePlaylist(id, name)}
-                    onRename={handleRename} onDelete={handleDelete}
-                  />
-                ))
-              ) : (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: viewMode === 'grid-compact' ? 'repeat(auto-fill, minmax(54px, 1fr))' : 'repeat(auto-fill, minmax(86px, 1fr))',
-                  gap: 8,
-                  padding: '6px 12px',
-                }}>
-                  {sortedFiltered.map((p) => (
-                    <PlaylistGridCard
+              {filter !== 'liked' && (
+                viewMode === 'list' || viewMode === 'list-compact' ? (
+                  sortedFiltered.map((p) => (
+                    <PlaylistListRow
                       key={p.id} playlist={p}
                       thumbnail={thumbs[p.id] ?? null}
-                      compact={viewMode === 'grid-compact'}
+                      trackCount={trackCounts[p.id]}
+                      ownerName={displayName ?? user?.email?.split('@')[0] ?? 'You'}
+                      isActive={useUiStore.getState().activePlaylistId === p.id && activeView === 'playlist'}
+                      compact={viewMode === 'list-compact'}
                       onNavigate={(id, name) => setActivePlaylist(id, name)}
+                      onRename={handleRename} onDelete={handleDelete}
                     />
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: viewMode === 'grid-compact' ? 'repeat(auto-fill, minmax(54px, 1fr))' : 'repeat(auto-fill, minmax(86px, 1fr))',
+                    gap: 8,
+                    padding: '6px 12px',
+                  }}>
+                    {sortedFiltered.map((p) => (
+                      <PlaylistGridCard
+                        key={p.id} playlist={p}
+                        thumbnail={thumbs[p.id] ?? null}
+                        compact={viewMode === 'grid-compact'}
+                        onNavigate={(id, name) => setActivePlaylist(id, name)}
+                      />
+                    ))}
+                  </div>
+                )
               )}
             </div>
           </>
@@ -695,34 +741,46 @@ function LikedSongsButton({ active, onClick, viewMode }: { active: boolean; onCl
       style={{
         display: 'flex', alignItems: 'center', gap: 10,
         width: 'calc(100% - 16px)', margin: '2px 8px',
-        background: active ? 'var(--accent-dim)' : 'transparent',
+        background: active ? 'rgba(80, 220, 100, 0.10)' : 'transparent',
         border: 'none', borderRadius: 6,
         padding: '5px 8px',
         cursor: 'pointer', textAlign: 'left',
-        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-        fontFamily: 'var(--sans)', fontSize: 12, fontWeight: active ? 600 : 500,
-        transition: 'background 120ms, color 120ms',
+        transition: 'background 120ms',
       }}
       onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-elevated)'; }}
       onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
     >
       <div style={{
-        width: 28, height: 28, borderRadius: 5, flexShrink: 0,
-        background: 'var(--grad-twilight)',
+        width: 40, height: 40, borderRadius: 5, flexShrink: 0,
+        background: 'linear-gradient(135deg, oklch(0.55 0.18 280), oklch(0.45 0.20 230))',
         display: 'grid', placeItems: 'center',
+        boxShadow: '0 4px 10px -4px rgba(120, 60, 200, 0.5)',
       }}>
-        <HeartStraight size={13} weight="fill" color="white" />
+        <HeartStraight size={18} weight="fill" color="white" />
       </div>
-      Liked Songs
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 600,
+          color: active ? 'oklch(0.78 0.18 145)' : 'var(--text-primary)',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>Liked Songs</div>
+        <div style={{
+          fontFamily: 'var(--sans)', fontSize: 11,
+          color: active ? 'oklch(0.78 0.18 145)' : 'var(--text-muted)',
+          marginTop: 1,
+        }}>Playlist</div>
+      </div>
     </button>
   );
 }
 
 function PlaylistListRow({
-  playlist, isActive, thumbnail, compact,
+  playlist, isActive, thumbnail, trackCount, ownerName, compact,
   onNavigate, onRename, onDelete,
 }: {
-  playlist: Playlist; isActive: boolean; thumbnail: string | null; compact: boolean;
+  playlist: Playlist; isActive: boolean; thumbnail: string | null;
+  trackCount?: number; ownerName?: string;
+  compact: boolean;
   onNavigate: (id: string, name: string) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
@@ -754,7 +812,7 @@ function PlaylistListRow({
       }}
     >
       {!compact && (
-        <PlaylistCover name={playlist.name} thumbnail={thumbnail} size={32} />
+        <PlaylistCover name={playlist.name} thumbnail={thumbnail} size={40} />
       )}
       {editing ? (
         <input
@@ -776,16 +834,23 @@ function PlaylistListRow({
       ) : (
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily: 'var(--sans)', fontSize: compact ? 11.5 : 12.5,
+            fontFamily: 'var(--sans)', fontSize: compact ? 12 : 13,
             fontWeight: isActive ? 600 : 500,
-            color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+            color: isActive ? 'var(--accent)' : 'var(--text-primary)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{playlist.name}</div>
           {!compact && (
             <div style={{
-              fontFamily: 'var(--sans)', fontSize: 10.5, color: 'var(--text-muted)',
+              fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--text-muted)',
               marginTop: 1,
-            }}>Playlist</div>
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              Playlist
+              {ownerName ? ` · ${ownerName}` : ''}
+              {typeof trackCount === 'number' && trackCount > 0
+                ? ` · ${trackCount} ${trackCount === 1 ? 'song' : 'songs'}`
+                : ''}
+            </div>
           )}
         </div>
       )}

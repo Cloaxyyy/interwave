@@ -69,7 +69,9 @@ function pickBestStream(streams: PipedAudioStream[]): ResolvedStream | null {
   };
 }
 
-async function tryInstance(instance: string, videoId: string): Promise<ResolvedStream | null> {
+type InstanceResult = ResolvedStream | { notFound: true } | null;
+
+async function tryInstance(instance: string, videoId: string): Promise<InstanceResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), INSTANCE_TIMEOUT_MS);
   try {
@@ -77,6 +79,8 @@ async function tryInstance(instance: string, videoId: string): Promise<ResolvedS
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     });
+    // 404/410 = the video itself is gone — no point trying other instances.
+    if (res.status === 404 || res.status === 410) return { notFound: true };
     if (!res.ok) return null;
     const json = (await res.json()) as PipedStreamsResponse;
     const streams = json.audioStreams ?? [];
@@ -96,6 +100,9 @@ export async function resolveStream(videoId: string): Promise<ResolvedStream> {
 
   for (const instance of PIPED_INSTANCES) {
     const result = await tryInstance(instance, videoId);
+    if (result && 'notFound' in result) {
+      throw new Error('Video not available');
+    }
     if (result) {
       cache.set(videoId, { ...result, expiresAt: Date.now() + CACHE_TTL_MS });
       return result;

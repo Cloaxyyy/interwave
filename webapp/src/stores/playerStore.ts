@@ -28,6 +28,7 @@ interface PlayerStore {
   previous(): Promise<void>;
   seek(seconds: number): void;
   setVolume(v: number): void;
+  reset(): void;
 }
 
 function updateMediaSession(track: Track | null): void {
@@ -45,6 +46,17 @@ function updateMediaSession(track: Track | null): void {
   });
 }
 
+// Monotonic token used to ignore stale async results from rapid track changes.
+// Each call to playTrack/playQueue bumps this; awaits check it before mutating
+// state, so a late-arriving resolveStream from track A is discarded after the
+// user clicks track B.
+let playToken = 0;
+
+// The engine re-emits state on every event (volumechange, timeupdate, etc),
+// including 'ended'. We only want to auto-advance once per track end, not on
+// every subsequent emit while sitting in the 'ended' state.
+let lastEndedTrackId: string | null = null;
+
 export const usePlayerStore = create<PlayerStore>((set, get) => {
   // Mirror engine state into the store.
   playerEngine.subscribe((s) => {
@@ -56,8 +68,12 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
       error: s.error ?? null,
     });
     if (s.state === 'ended') {
-      // Auto-advance when a track finishes.
-      void get().next();
+      const currentId = get().currentTrack?.id ?? null;
+      if (currentId && lastEndedTrackId !== currentId) {
+        lastEndedTrackId = currentId;
+        // Auto-advance when a track finishes.
+        void get().next();
+      }
     }
   });
 
@@ -72,12 +88,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
     error: null,
 
     async playTrack(track) {
+      const token = ++playToken;
+      lastEndedTrackId = null;
       set({ currentTrack: track, state: 'loading', error: null, queue: [track], queueIndex: 0 });
       updateMediaSession(track);
       try {
         const { url } = await resolveStream(track.youtube_id);
+        if (token !== playToken) return;
         await playerEngine.loadAndPlay(url);
+        if (token !== playToken) return;
       } catch (err) {
+        if (token !== playToken) return;
         const message = err instanceof Error ? err.message : 'Could not load track.';
         set({ state: 'error', error: message });
       }
@@ -85,14 +106,19 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
 
     async playQueue(tracks, startIndex = 0) {
       if (tracks.length === 0) return;
+      const token = ++playToken;
+      lastEndedTrackId = null;
       const idx = Math.max(0, Math.min(tracks.length - 1, startIndex));
       const track = tracks[idx];
       set({ queue: tracks, queueIndex: idx, currentTrack: track, state: 'loading', error: null });
       updateMediaSession(track);
       try {
         const { url } = await resolveStream(track.youtube_id);
+        if (token !== playToken) return;
         await playerEngine.loadAndPlay(url);
+        if (token !== playToken) return;
       } catch (err) {
+        if (token !== playToken) return;
         const message = err instanceof Error ? err.message : 'Could not load track.';
         set({ state: 'error', error: message });
       }
@@ -103,7 +129,11 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
       if (!currentTrack) return;
       if (state === 'playing') {
         playerEngine.pause();
-      } else if (state === 'paused' || state === 'error') {
+      } else if (state === 'error') {
+        // Stream resolution previously failed and audio.src is empty —
+        // resume() would no-op. Retry the full load instead.
+        void get().playTrack(currentTrack);
+      } else if (state === 'paused') {
         playerEngine.resume();
       } else if (state === 'ended') {
         playerEngine.seek(0);
@@ -119,12 +149,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
         return;
       }
       const track = queue[nextIdx];
+      const token = ++playToken;
+      lastEndedTrackId = null;
       set({ queueIndex: nextIdx, currentTrack: track, state: 'loading', error: null });
       updateMediaSession(track);
       try {
         const { url } = await resolveStream(track.youtube_id);
+        if (token !== playToken) return;
         await playerEngine.loadAndPlay(url);
+        if (token !== playToken) return;
       } catch (err) {
+        if (token !== playToken) return;
         const message = err instanceof Error ? err.message : 'Could not load track.';
         set({ state: 'error', error: message });
       }
@@ -143,12 +178,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
         return;
       }
       const track = queue[prevIdx];
+      const token = ++playToken;
+      lastEndedTrackId = null;
       set({ queueIndex: prevIdx, currentTrack: track, state: 'loading', error: null });
       updateMediaSession(track);
       try {
         const { url } = await resolveStream(track.youtube_id);
+        if (token !== playToken) return;
         await playerEngine.loadAndPlay(url);
+        if (token !== playToken) return;
       } catch (err) {
+        if (token !== playToken) return;
         const message = err instanceof Error ? err.message : 'Could not load track.';
         set({ state: 'error', error: message });
       }
@@ -160,6 +200,24 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
 
     setVolume(v) {
       playerEngine.setVolume(v);
+    },
+
+    reset() {
+      // Invalidate any in-flight playTrack/playQueue so their late awaits bail.
+      playToken++;
+      lastEndedTrackId = null;
+      playerEngine.pause();
+      // Don't reset volume — that's a user preference, not session state.
+      set({
+        currentTrack: null,
+        state: 'idle',
+        position: 0,
+        duration: 0,
+        queue: [],
+        queueIndex: -1,
+        error: null,
+      });
+      updateMediaSession(null);
     },
   };
 });

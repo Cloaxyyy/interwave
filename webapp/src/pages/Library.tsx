@@ -91,9 +91,14 @@ export function Library() {
             inter<em>wave</em>
           </span>
         </Link>
-        <button type="button" className="iw-btn iw-btn-ghost iw-btn-sm" onClick={signOut}>
-          Sign out
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link to="/browse" className="iw-btn iw-btn-ghost iw-btn-sm">
+            Browse
+          </Link>
+          <button type="button" className="iw-btn iw-btn-ghost iw-btn-sm" onClick={signOut}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="iw-main">
@@ -186,13 +191,15 @@ export function Library() {
             ) : (
               playlists.map((p) => (
                 <li key={p.id} className="iw-pl-card">
-                  <div className="iw-pl-art-fallback">
-                    <PlaylistIcon size={28} weight="duotone" />
-                  </div>
-                  <div className="iw-pl-name">{p.name}</div>
-                  <div className="iw-pl-meta">
-                    Updated {new Date(p.updated_at * 1000).toLocaleDateString()}
-                  </div>
+                  <Link to={`/playlist/${p.id}`} className="iw-pl-link">
+                    <div className="iw-pl-art-fallback">
+                      <PlaylistIcon size={28} weight="duotone" />
+                    </div>
+                    <div className="iw-pl-name">{p.name}</div>
+                    <div className="iw-pl-meta">
+                      Updated {new Date(p.updated_at * 1000).toLocaleDateString()}
+                    </div>
+                  </Link>
                 </li>
               ))
             )}

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { usePlayerStore } from './playerStore';
 
 interface AuthStore {
   session: Session | null;
@@ -28,6 +29,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
+    // Stop any in-flight playback so audio doesn't keep going after sign-out.
+    usePlayerStore.getState().reset();
     set({ session: null, user: null, displayName: null });
   },
 

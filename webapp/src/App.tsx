@@ -5,6 +5,8 @@ import { AuthGate } from './components/AuthGate';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Library } from './pages/Library';
+import { Browse } from './pages/Browse';
+import { PlaylistDetail } from './pages/PlaylistDetail';
 import { PlayerBar } from './components/PlayerBar';
 
 export function App() {
@@ -48,6 +50,22 @@ export function App() {
           element={
             <AuthGate>
               <Library />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/browse"
+          element={
+            <AuthGate>
+              <Browse />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/playlist/:id"
+          element={
+            <AuthGate>
+              <PlaylistDetail />
             </AuthGate>
           }
         />

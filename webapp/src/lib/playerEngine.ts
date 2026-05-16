@@ -51,12 +51,16 @@ class PlayerEngine {
   private error: string | undefined;
   private lastTimeUpdate = 0;
   private destroyed = false;
+  private loadGen = 0;
 
   constructor() {
     if (typeof window === 'undefined') return;
     const audio = new Audio();
     audio.preload = 'metadata';
-    audio.crossOrigin = 'anonymous';
+    // NOTE: do NOT set crossOrigin='anonymous'. Piped's pre-signed googlevideo
+    // URLs don't always return CORS headers, and forcing a preflight causes
+    // silent "format not supported" failures. Add this back when/if we wire
+    // up Web Audio API for EQ.
     audio.volume = readStoredVolume();
     this.audio = audio;
     this.attach(audio);
@@ -116,12 +120,16 @@ class PlayerEngine {
   async loadAndPlay(streamUrl: string): Promise<void> {
     const audio = this.audio;
     if (!audio) return;
+    const gen = ++this.loadGen;
     this.error = undefined;
     this.setState('loading');
     audio.src = streamUrl;
     try {
       await audio.play();
+      // A newer loadAndPlay superseded us — don't clobber its state.
+      if (gen !== this.loadGen) return;
     } catch (err) {
+      if (gen !== this.loadGen) return;
       // Autoplay rejection on mobile / blocked tabs — surface as paused with
       // a friendly nudge. The user can tap play to retry.
       this.error =

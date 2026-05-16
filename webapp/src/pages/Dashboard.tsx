@@ -31,12 +31,15 @@ export function Dashboard() {
             Welcome, <em>{greeting}</em>
           </h1>
           <p className="iw-sub">
-            You're signed in. The full web player is coming soon — for now, grab the
-            desktop app to listen.
+            You're signed in. Listen anywhere — your library and playlists sync
+            from the desktop app and play right in the browser.
           </p>
           <div className="iw-cta-row">
             <Link className="iw-btn iw-btn-primary" to="/library">
-              Open your library
+              Your library
+            </Link>
+            <Link className="iw-btn iw-btn-ghost" to="/browse">
+              Browse public
             </Link>
             <a
               className="iw-btn iw-btn-ghost"
@@ -44,13 +47,9 @@ export function Dashboard() {
               target="_blank"
               rel="noopener"
             >
-              Download desktop app
+              Desktop app
             </a>
           </div>
-          <p className="iw-fineprint">
-            Audio playback in the browser is coming soon. For now, your library
-            and playlists sync from the desktop app — view them here, listen there.
-          </p>
         </div>
       </main>
     </div>

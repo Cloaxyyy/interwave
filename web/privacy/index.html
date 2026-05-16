@@ -58,53 +58,270 @@
     background: var(--bg-1); padding: 1px 6px; border-radius: 4px;
     color: var(--accent);
   }
+  .toc {
+    background: var(--bg-1); border: 1px solid var(--line);
+    border-radius: 8px; padding: 16px 20px; margin: 24px 0 36px;
+    font-size: 13px;
+  }
+  .toc-title {
+    color: var(--ink-3); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .toc ol {
+    list-style: none; padding: 0; margin: 0;
+    columns: 2; column-gap: 24px;
+  }
+  .toc li {
+    margin-bottom: 4px; break-inside: avoid;
+    color: var(--ink-2);
+  }
+  .toc a { color: var(--ink-2); }
+  .toc a:hover { color: var(--accent); }
+  h3 {
+    font-size: 14px; font-weight: 600;
+    margin: 16px 0 6px; color: var(--ink-1);
+  }
+  .disclaimer {
+    margin-top: 36px; padding: 16px 20px;
+    background: var(--bg-1); border: 1px solid var(--line);
+    border-radius: 8px; font-size: 13px; color: var(--ink-3);
+  }
+  .disclaimer p { color: var(--ink-3); }
 </style>
 </head>
 <body>
   <div class="wrap">
     <a class="back" href="/">← Back to Interwave</a>
     <h1>Privacy <em>policy</em></h1>
-    <div class="subtitle">Last updated: 2026-05-15</div>
+    <div class="subtitle">Last updated: 2026-05-15 · Effective immediately upon publication.</div>
 
-    <h2>What we store</h2>
+    <div class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#collect">2. Information we collect</a></li>
+        <li><a href="#use">3. How we use information</a></li>
+        <li><a href="#legal-basis">4. Legal basis (GDPR)</a></li>
+        <li><a href="#third-parties">5. Third-party services</a></li>
+        <li><a href="#cookies">6. Cookies & local storage</a></li>
+        <li><a href="#retention">7. Data retention</a></li>
+        <li><a href="#sharing">8. Data sharing</a></li>
+        <li><a href="#rights">9. Your rights</a></li>
+        <li><a href="#children">10. Children's privacy</a></li>
+        <li><a href="#transfers">11. International transfers</a></li>
+        <li><a href="#security">12. Security</a></li>
+        <li><a href="#deletion">13. Account deletion</a></li>
+        <li><a href="#changes">14. Changes to this policy</a></li>
+        <li><a href="#contact">15. Contact</a></li>
+        <li><a href="#disclaimer">16. Disclaimer</a></li>
+      </ol>
+    </div>
+
+    <h2 id="overview">1. Overview</h2>
     <p>
-      Interwave is a desktop application. The vast majority of your data — playlists, listening history, settings — lives in a local SQLite database on your computer and never leaves the device.
+      Interwave is a free, open-source desktop music player developed by an independent solo developer operating under the name "Cloaxy" (the "operator," "we," "us," or "our"). The source code is published at <a href="https://github.com/Cloaxyyy/wave">github.com/Cloaxyyy/wave</a> and the project's home is <a href="https://interwave.cc">interwave.cc</a>. This privacy policy explains, in plain English, what information Interwave collects, how it is used, who it is shared with, and what choices you have.
     </p>
-    <p>If you create an account, the managed backend stores only:</p>
+    <p>
+      The short version: the vast majority of your data — your library, playlists, listening history, settings, and search history — lives in a local <code>SQLite</code> database on your own computer and never leaves the device. If you choose to create an optional account, a small amount of information (your email, display name, friends list, and any playlists you choose to share) is stored in our managed backend so that features like friends and shared playlists can work across devices. We do not run advertising, we do not sell, rent, or trade personal information, and we do not collect analytics or telemetry without an explicit action on your part.
+    </p>
+    <p>
+      We try to collect as little as possible, store it for as short a time as is useful, and be transparent about every external service the app talks to. If anything in this document is unclear, email <a href="mailto:support@interwave.cc">support@interwave.cc</a>.
+    </p>
+
+    <h2 id="collect">2. Information we collect</h2>
+
+    <h3>2.1 Information you provide directly</h3>
+    <p>
+      When you create an optional Interwave account, you provide an email address and a display name. The email address is used as your login identifier and as the channel through which we can contact you about account-related matters (password resets, security notices, account-deletion confirmations). The display name is what other Interwave users see when they search for you, send friend requests, or view your shared playlists. You may change your display name at any time from the in-app settings.
+    </p>
+    <p>
+      When you contact support — whether by email to <a href="mailto:support@interwave.cc">support@interwave.cc</a> or via the in-app "Send feedback" form — we receive the content of your message, your email address, and any attachments you choose to include. If you tick the "Attach diagnostics" checkbox when submitting a ticket, the report will additionally include a snapshot of the app's recent crash log buffer, your app version, your operating system version, and a list of which features were enabled at the time of the report. Diagnostics are <em>never</em> attached unless you explicitly tick the box.
+    </p>
+    <p>
+      If you submit a friend request, your display name and account ID are visible to the recipient. If you accept a friend request, your account ID becomes visible to that friend in their friends list. If you choose to share a playlist, the playlist's name, cover image, and the list of YouTube video IDs it contains are uploaded as a snapshot to our backend so that the recipient can import it.
+    </p>
+
+    <h3>2.2 Information stored locally on your device</h3>
+    <p>
+      Interwave maintains a local <code>SQLite</code> database in your operating system's standard application-data directory (for example, <code>%APPDATA%/Interwave</code> on Windows, <code>~/Library/Application Support/Interwave</code> on macOS, and <code>~/.config/Interwave</code> on Linux). This database contains your imported tracks and their metadata, your playlists, your listening history, your in-app settings, your search history, and any cached cover art or artist images. <strong>This data never leaves your device unless you explicitly export, share, or attach it to a support ticket.</strong> It is not synchronised, backed up, or transmitted to us in any form.
+    </p>
+    <p>
+      You are in full control of this database. You may delete it at any time by quitting Interwave and removing the application-data directory described above. Uninstalling the app does not always remove the database automatically, so a complete deletion of local data may require both steps.
+    </p>
+
+    <h3>2.3 Information collected automatically</h3>
+    <p>
+      The Interwave website at <a href="https://interwave.cc">interwave.cc</a> is a static site hosted on GitHub Pages and served through Cloudflare. We do not run any analytics, tracking pixels, fingerprinting scripts, or custom logging on the site. However, as is standard for any web service, the hosting and CDN providers automatically receive standard server log information — including your IP address, the URL you requested, the time of the request, your user-agent string, and the referring URL — for the purposes of delivering the page, mitigating abuse, and operating their networks. We do not have access to a fine-grained log of this activity beyond what GitHub and Cloudflare make available in aggregated form.
+    </p>
+    <p>
+      The desktop app does not contact any "phone-home" endpoint. It does not transmit telemetry, usage statistics, listening data, or device fingerprints to us or to any third party as part of its normal operation. The only outbound network calls the app makes are the ones required to deliver features you have actively used: fetching audio from YouTube, lyrics from LRCLIB, artist information from Wikipedia and MusicBrainz, authentication and friends data from Supabase, and update checks from GitHub Releases. Each of these is documented in <a href="#third-parties">Section 5</a>.
+    </p>
+
+    <h3>2.4 Information from third parties</h3>
+    <p>
+      We do not purchase, license, or otherwise acquire personal information about you from data brokers, advertising networks, social-media platforms, or other third-party sources. The only information we hold about you is what you have provided directly or what is generated by your direct use of the app.
+    </p>
+
+    <h2 id="use">3. How we use information</h2>
+    <p>
+      We use the limited information we collect for narrowly defined purposes, each tied to a feature you have chosen to use:
+    </p>
     <ul>
-      <li>Your email address and a display name (for sign-in and friend search)</li>
-      <li>Your friend list (so we can show you what they're playing)</li>
-      <li>Snapshots of any playlist you choose to <b>Share</b> (the snapshot includes the playlist name, cover, and the list of YouTube IDs in it)</li>
-      <li>Support tickets you submit, with whatever diagnostic data you opt to include</li>
+      <li><strong>Authentication.</strong> Your email and a securely hashed password are used to authenticate you when you sign in.</li>
+      <li><strong>Friends and social features.</strong> Your display name, account ID, and friends list are used to find friends, send and receive friend requests, and (when Presence is enabled) broadcast your currently playing track to your friends in real time.</li>
+      <li><strong>Shared playlists.</strong> Playlist snapshots you upload are stored so that the friends you share them with can import them into their own libraries.</li>
+      <li><strong>Support.</strong> The contents of support tickets, including any diagnostics you opt to attach, are used to diagnose and respond to your specific issue, to reproduce bugs, and — in aggregate, never identifying individual users — to improve the app.</li>
+      <li><strong>Abuse prevention and safety.</strong> Account and request metadata may be used to detect, investigate, and prevent abuse of the service, including spam, harassment, scraping, denial-of-service, and other violations of our terms.</li>
+      <li><strong>Legal compliance.</strong> Information may be processed where necessary to comply with a legal obligation that applies to us.</li>
+      <li><strong>App improvement.</strong> Crash and diagnostic information that <em>you have voluntarily submitted</em> may be used to identify bugs and improve the app. We do not collect such information passively.</li>
     </ul>
-    <p>That's it. We don't track listening history server-side, we don't sell anything, we don't have ads.</p>
-
-    <h2>Realtime presence</h2>
     <p>
-      When you have <b>Presence</b> enabled in Settings, your current track is broadcast to friends through a Supabase Realtime channel. Nothing is persisted from this — friends just see what you're listening to right now.
+      We do not use your information for advertising, profiling, automated decision-making with legal effect, or training machine-learning models.
     </p>
 
-    <h2>Crash diagnostics</h2>
+    <h2 id="legal-basis">4. Legal basis for processing (GDPR)</h2>
     <p>
-      Errors caught in the app are kept locally in your browser's localStorage. They are <b>never</b> sent automatically. If you submit a support ticket and check "Attach diagnostics," the report you send includes them.
+      For users located in the European Economic Area, the United Kingdom, or Switzerland, the General Data Protection Regulation (GDPR) requires us to identify a legal basis for each category of processing. The bases we rely on are:
     </p>
-
-    <h2>Third parties</h2>
     <ul>
-      <li><b>YouTube</b> — used to resolve and stream audio. Subject to YouTube's terms.</li>
-      <li><b>LRCLIB</b> — fetched anonymously when you open lyrics for a track.</li>
-      <li><b>Wikipedia + MusicBrainz</b> — fetched anonymously for the "About the artist" card.</li>
-      <li><b>Supabase</b> — the managed backend that hosts auth, friends, support, and shared playlists.</li>
-      <li><b>GitHub Releases</b> — checked for the auto-updater and the "What's New" page.</li>
+      <li><strong>Consent</strong> (Art. 6(1)(a)) — for the creation of an optional account, the enabling of Presence broadcasting, and the attachment of diagnostics to support tickets. You may withdraw consent at any time by disabling the feature or deleting your account.</li>
+      <li><strong>Performance of a contract</strong> (Art. 6(1)(b)) — for delivering the account-bound features you have signed up for, such as friends, shared playlists, and support correspondence.</li>
+      <li><strong>Legitimate interests</strong> (Art. 6(1)(f)) — for keeping the service secure and free from abuse, for maintaining technical logs as needed to operate the service, and for responding to support inquiries. We balance these interests against your rights and freedoms and only rely on this basis where the processing is proportionate.</li>
+      <li><strong>Legal obligation</strong> (Art. 6(1)(c)) — where we are required to process or retain information to comply with a law that applies to us.</li>
     </ul>
 
-    <h2>Account deletion</h2>
+    <h2 id="third-parties">5. Third-party services</h2>
     <p>
-      Email <a href="mailto:support@interwave.cc">support@interwave.cc</a> from the address on your account and we'll wipe everything tied to it.
+      Interwave relies on a small number of third-party services to deliver its features. Each is listed below with a description of what the service receives, what it sees about you, and a link to its own privacy policy. We have no control over how these third parties operate, and you are encouraged to review their policies independently.
+    </p>
+    <ul>
+      <li>
+        <strong>YouTube (Google LLC).</strong> Interwave streams audio from YouTube using the open-source <code>yt-dlp</code> tool, which connects to YouTube's public web endpoints in the same manner as a web browser. No Google account is used and no YouTube Data API key is involved. YouTube will receive your IP address and user-agent string when audio is streamed, and any metadata YouTube ordinarily logs for an anonymous web visitor. See <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.
+      </li>
+      <li>
+        <strong>LRCLIB.</strong> Anonymous, unauthenticated lookups for synced and unsynced lyrics. LRCLIB receives the track title and artist, your IP address, and your user-agent string. See <a href="https://lrclib.net">lrclib.net</a>.
+      </li>
+      <li>
+        <strong>Wikipedia and MusicBrainz.</strong> Anonymous lookups used to populate the "About the artist" panel with biography text and basic discography information. These services receive the artist name being looked up, your IP address, and your user-agent string. See <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy">Wikimedia's privacy policy</a> and <a href="https://metabrainz.org/privacy">MetaBrainz's privacy policy</a>.
+      </li>
+      <li>
+        <strong>Supabase (Supabase, Inc.).</strong> Supabase provides the managed backend that powers authentication, friends, realtime presence, shared playlists, support tickets, and storage. Supabase will see and store the account and feature data described in <a href="#collect">Section 2</a>, plus standard server-side request metadata (IP, timestamps, user-agent) necessary to operate the platform. Data is hosted in regions selected by Supabase. See <a href="https://supabase.com/privacy">supabase.com/privacy</a>.
+      </li>
+      <li>
+        <strong>GitHub (GitHub, Inc.).</strong> The auto-updater and the "What's New" feature check the GitHub Releases API for new versions of the application. GitHub receives your IP address and user-agent string when those checks are made. The website itself is also hosted on GitHub Pages. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>.
+      </li>
+      <li>
+        <strong>Google Fonts.</strong> The website at interwave.cc loads the Geist and Instrument Serif typefaces from the Google Fonts CDN. Google receives your IP address and user-agent string when these font files are fetched. We may move to a self-hosted copy of these fonts in a future revision of the site to remove this dependency. See <a href="https://policies.google.com/privacy">policies.google.com/privacy</a>.
+      </li>
+    </ul>
+
+    <h2 id="cookies">6. Cookies and local storage</h2>
+    <p>
+      <strong>Website.</strong> The interwave.cc website does not set any cookies of our own and does not use any browser storage for tracking or analytics. The hosting providers (GitHub Pages and Cloudflare) may set strictly necessary cookies for content delivery, abuse mitigation, and security; these are operational in nature and outside our control.
+    </p>
+    <p>
+      <strong>Desktop application.</strong> Interwave's user interface is rendered in an embedded web view and uses <code>localStorage</code> for internal application state, including a small ring buffer of the most recent fifty error and crash messages so that they can be attached to a support ticket if you choose. This buffer is held entirely on your device and is never transmitted automatically. The app does not place any third-party tracking cookies.
     </p>
 
-    <h2>Contact</h2>
-    <p>Questions? <a href="mailto:support@interwave.cc">support@interwave.cc</a> or open an issue on <a href="https://github.com/Cloaxyyy/wave">GitHub</a>.</p>
+    <h2 id="retention">7. Data retention</h2>
+    <p>
+      Information stored in the managed backend is retained for as long as your account exists. If you delete your account (see <a href="#deletion">Section 13</a>), the account record, your friends-list edges, and any playlist snapshots you have uploaded are deleted within thirty days. Realtime presence messages are ephemeral — they exist only in transit on the realtime channel and are not written to long-term storage.
+    </p>
+    <p>
+      Support tickets, including their content and any attached diagnostics, are retained indefinitely by default so that we have a record of prior correspondence and can recognise recurring issues. You may at any time request that we delete the contents of any support thread you have initiated; we will honour such requests within thirty days unless retention is required to defend against, or to comply with, a legal claim.
+    </p>
+    <p>
+      Local data on your device is retained for as long as you keep it. Uninstalling the application does not always remove the local <code>SQLite</code> database; complete removal requires deleting the application-data directory described in <a href="#collect">Section 2.2</a>.
+    </p>
+    <p>
+      Server logs maintained by our hosting and infrastructure providers are subject to those providers' own retention schedules, which are typically measured in days to weeks.
+    </p>
+
+    <h2 id="sharing">8. Data sharing</h2>
+    <p>
+      We do not sell, rent, lease, or trade your personal information. We do not share it with advertising networks, data brokers, or marketing partners. The only circumstances in which your information may be shared with third parties are:
+    </p>
+    <ul>
+      <li><strong>With service providers acting on our behalf</strong> — principally Supabase, which hosts the backend infrastructure described in <a href="#third-parties">Section 5</a>. These providers process information solely to deliver their services to us and are bound by their own privacy and security obligations.</li>
+      <li><strong>When required by law</strong> — in response to a valid subpoena, court order, or other legally compelling request from a competent authority. Where we are permitted to do so, we will notify the affected user before complying.</li>
+      <li><strong>To protect rights, safety, or property</strong> — where we have a good-faith belief that disclosure is necessary to investigate, prevent, or respond to suspected fraud, security incidents, harassment, threats to user safety, or violations of our terms.</li>
+      <li><strong>In the event of a transfer of the project</strong> — if the Interwave project, or substantially all of its assets, is transferred to another operator, information stored in the backend would be transferred as part of that transaction. You would be notified by email and given the opportunity to delete your account before any such transfer takes effect.</li>
+    </ul>
+
+    <h2 id="rights">9. Your rights</h2>
+    <p>
+      Depending on where you live, applicable data-protection law may give you a number of rights with respect to the information we hold about you. These include, without limitation, the rights described in the European Union's GDPR, the United Kingdom's UK GDPR, the California Consumer Privacy Act (CCPA / CPRA), Canada's PIPEDA, Brazil's LGPD, and similar laws elsewhere. The rights that may apply to you include:
+    </p>
+    <ul>
+      <li><strong>Access</strong> — to obtain confirmation of whether we process your personal information, and a copy of that information.</li>
+      <li><strong>Rectification</strong> — to correct information that is inaccurate or incomplete.</li>
+      <li><strong>Erasure</strong> ("right to be forgotten") — to request deletion of your information, subject to limited exceptions.</li>
+      <li><strong>Portability</strong> — to receive a machine-readable copy of information you have provided to us.</li>
+      <li><strong>Restriction</strong> and <strong>objection</strong> — to limit or object to certain processing of your information.</li>
+      <li><strong>Withdrawal of consent</strong> — where processing is based on consent, to withdraw that consent at any time without affecting the lawfulness of past processing.</li>
+      <li><strong>Opt-out of "sale" or "sharing"</strong> — under U.S. state privacy laws. We do not sell or share personal information as those terms are defined, so there is nothing operative to opt out of, but we recognise and honour the right.</li>
+      <li><strong>Non-discrimination</strong> — we will not retaliate against you, refuse service to you, or degrade your experience for exercising any right granted to you by law.</li>
+      <li><strong>Lodging a complaint</strong> with your local data-protection authority. EU and UK users may complain to their national supervisory authority.</li>
+    </ul>
+    <p>
+      To exercise any of these rights, email <a href="mailto:support@interwave.cc">support@interwave.cc</a> from the email address associated with your account. We may need to verify your identity before acting on a request; verification typically consists of confirming control of the registered email address. We will respond within the period required by applicable law, ordinarily within thirty days.
+    </p>
+
+    <h2 id="children">10. Children's privacy</h2>
+    <p>
+      Interwave is not directed to children under the age of thirteen (or the equivalent minimum age in your jurisdiction, where higher). We do not knowingly collect personal information from children under that age. If you are a parent or guardian and you believe that a child has provided personal information to us, please contact <a href="mailto:support@interwave.cc">support@interwave.cc</a> and we will take reasonable steps to delete that information promptly. Where applicable law requires verifiable parental consent for processing the personal data of minors above the age of thirteen, we do not knowingly process such data without that consent.
+    </p>
+
+    <h2 id="transfers">11. International data transfers</h2>
+    <p>
+      Interwave is operated by an individual developer and its backend is hosted by Supabase in regions selected by Supabase. Depending on the region in which your data is stored and the country from which you access the service, your personal information may be transferred to, processed in, and stored in countries other than your country of residence, including jurisdictions whose data-protection laws may differ from those of your home country. By creating an account and using the service, you acknowledge and consent to such transfers to the extent permitted by applicable law.
+    </p>
+    <p>
+      Where personal information is transferred from the European Economic Area, the United Kingdom, or Switzerland to a country that has not received an adequacy decision, we rely on the European Commission's Standard Contractual Clauses, the UK International Data Transfer Addendum, or another lawful transfer mechanism as appropriate, typically as incorporated into our data-processing agreements with our service providers.
+    </p>
+
+    <h2 id="security">12. Security</h2>
+    <p>
+      We take reasonable technical and organisational measures designed to protect the information we hold against unauthorised access, alteration, disclosure, or destruction. Account passwords are never stored in plaintext; they are hashed by Supabase Auth using <code>bcrypt</code> before being written to the database. All traffic between the desktop application and the backend, and between the website and visitors' browsers, is encrypted in transit using HTTPS / TLS. Access to administrative interfaces is protected by strong authentication.
+    </p>
+    <p>
+      No method of transmission or storage is completely secure, and we cannot guarantee absolute security. In particular, the local <code>SQLite</code> database is <strong>not</strong> encrypted at rest by default; anyone with access to your computer or to a backup of it can read its contents. You are responsible for the physical and logical security of your own device, including the use of full-disk encryption and an appropriate operating-system account password. If you become aware of an actual or suspected security incident affecting your Interwave account, please contact <a href="mailto:support@interwave.cc">support@interwave.cc</a> immediately.
+    </p>
+
+    <h2 id="deletion">13. Account deletion</h2>
+    <p>
+      To delete your account, email <a href="mailto:support@interwave.cc">support@interwave.cc</a> from the address registered to the account and ask us to delete it. We will confirm the request, perform the deletion within thirty days, and notify you when it is complete. Deletion removes your account record, your display name, your friends-list edges, your uploaded playlist snapshots, and any other account-bound data from the backend. Support-ticket history may be retained as described in <a href="#retention">Section 7</a>; you may ask us to redact or delete it as part of the same request.
+    </p>
+    <p>
+      Deleting your account does <em>not</em> delete the local <code>SQLite</code> database on your device. To remove local data, quit Interwave, uninstall the application, and delete the application-data directory described in <a href="#collect">Section 2.2</a>.
+    </p>
+
+    <h2 id="changes">14. Changes to this policy</h2>
+    <p>
+      We may revise this policy from time to time to reflect changes in the service, in applicable law, or in our practices. The "Last updated" date at the top of this page will always reflect the date of the most recent revision. For material changes — for example, a change to the categories of information collected, the purposes for which it is used, or the third parties with which it is shared — we will provide additional notice through an in-app banner, a notice on the website, and, where we have your email address and the change is significant, by email. Continued use of the service after a change takes effect constitutes acceptance of the revised policy. If you do not agree with a revision, you should stop using the service and, if you wish, delete your account as described above.
+    </p>
+
+    <h2 id="contact">15. Contact</h2>
+    <p>
+      For any privacy-related question, request, or complaint, the primary contact is <a href="mailto:support@interwave.cc">support@interwave.cc</a>. We will do our best to respond within a reasonable period, typically within a few business days for routine inquiries and within thirty days (or as otherwise required by applicable law) for formal rights requests.
+    </p>
+    <p>
+      For non-sensitive technical questions about the application itself, you are also welcome to open an issue on the public repository at <a href="https://github.com/Cloaxyyy/wave">github.com/Cloaxyyy/wave</a>. Please do not include account credentials, personal information, or anything you would not want to be publicly readable in a GitHub issue.
+    </p>
+    <p>
+      Interwave is operated by an independent individual developer rather than a registered company. A postal address suitable for formal legal correspondence can be provided on request to the email address above.
+    </p>
+
+    <h2 id="disclaimer">16. Disclaimer</h2>
+    <div class="disclaimer">
+      <p>
+        This privacy policy is provided in good faith and reflects the operator's honest description of how Interwave handles personal information at the date stated above. Interwave is a free, non-commercial, hobbyist software project distributed at no cost and without warranty. Nothing in this document is legal advice. The operator is not a lawyer, makes no representation that this policy satisfies the requirements of any particular jurisdiction's data-protection law, and disclaims, to the maximum extent permitted by applicable law, any liability arising from reliance on it.
+      </p>
+      <p>
+        If you have specific legal concerns about your use of Interwave or about the processing of your personal information, you should consult qualified counsel in your own jurisdiction. If any provision of this policy is found to be unenforceable, the remaining provisions will continue in full force and effect.
+      </p>
+    </div>
   </div>
 </body>
 </html>

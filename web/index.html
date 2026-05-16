@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Interwave</title>
+<title>Interwave — Free music player powered by YouTube</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="Interwave — a free, lightweight desktop music player powered by YouTube." />
+<meta name="description" content="Interwave is a free, lightweight desktop music player powered by YouTube. Search anything, build a library, share playlists with friends." />
 <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
 <meta property="og:title" content="Interwave" />
 <meta property="og:description" content="A free, lightweight desktop music player powered by YouTube." />
@@ -13,291 +13,215 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --bg-0: oklch(0.13 0.014 295);
-    --bg-1: oklch(0.16 0.018 295);
-    --bg-2: oklch(0.20 0.022 295);
-    --bg-3: oklch(0.25 0.025 295);
-    --ink-1: oklch(0.97 0.005 295);
-    --ink-2: oklch(0.78 0.012 295);
-    --ink-3: oklch(0.58 0.016 295);
-    --accent: oklch(0.72 0.18 295);
-    --accent-2: oklch(0.62 0.20 295);
-    --accent-deep: oklch(0.50 0.22 295);
-    --accent-ink: oklch(0.10 0.02 295);
-    --line: oklch(0.30 0.022 295);
-    --line-soft: oklch(0.22 0.018 295);
-    --serif: 'Instrument Serif', 'Times New Roman', serif;
-    --sans:  'Geist', -apple-system, system-ui, sans-serif;
-    --mono:  'Geist Mono', ui-monospace, monospace;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: var(--sans);
-    font-size: 14px; line-height: 1.5;
-    background:
-      radial-gradient(ellipse at 110% -10%, color-mix(in oklch, var(--accent) 22%, transparent) 0%, transparent 50%),
-      radial-gradient(ellipse at -10% 110%, color-mix(in oklch, var(--accent-deep) 18%, transparent) 0%, transparent 50%),
-      oklch(0.08 0.012 295);
-    color: var(--ink-1);
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-  }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  button { font-family: inherit; }
-  header {
-    padding: 22px 32px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand img { width: 28px; height: 28px; display: block; }
-  .brand .name {
-    font-size: 17px; font-weight: 600; letter-spacing: -0.015em;
-  }
-  .brand .name em { font-style: normal; color: var(--accent); }
-  header nav { display: flex; gap: 18px; align-items: center; font-size: 13px; color: var(--ink-2); }
-  header nav a { color: var(--ink-2); }
-  header nav a:hover { color: var(--ink-1); }
-
-  main { flex: 1; display: flex; flex-direction: column; }
-
-  .hero {
-    padding: 80px 32px 40px;
-    max-width: 920px; margin: 0 auto;
-    text-align: center;
-  }
-  .hero h1 {
-    font-family: var(--sans); font-weight: 800;
-    font-size: clamp(48px, 8vw, 96px);
-    line-height: 0.92; letter-spacing: -0.04em;
-    margin-bottom: 22px;
-  }
-  .hero h1 em {
-    font-family: var(--serif); font-weight: 400; font-style: italic;
-    color: var(--accent); letter-spacing: -0.02em;
-  }
-  .hero p {
-    font-size: 17px; color: var(--ink-2);
-    max-width: 580px; margin: 0 auto 36px; line-height: 1.55;
-  }
-  .cta-row {
-    display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center;
-  }
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    height: 46px; padding: 0 24px; border-radius: 999px;
-    font-size: 14px; font-weight: 600;
-    border: none; cursor: pointer;
-    text-decoration: none;
-    transition: transform 200ms cubic-bezier(0.34,1.4,0.64,1), background 160ms, box-shadow 200ms;
-  }
-  .btn-primary {
-    background: var(--accent); color: var(--accent-ink);
-    box-shadow: 0 8px 28px -8px color-mix(in oklch, var(--accent) 70%, transparent);
-  }
-  .btn-primary:hover {
-    transform: scale(1.04);
-    box-shadow:
-      0 12px 36px -8px color-mix(in oklch, var(--accent) 90%, transparent),
-      0 0 0 4px color-mix(in oklch, var(--accent) 18%, transparent);
-    text-decoration: none;
-  }
-  .btn-ghost {
-    background: transparent; color: var(--ink-1);
-    border: 1px solid var(--line);
-  }
-  .btn-ghost:hover { background: var(--bg-1); border-color: var(--ink-3); text-decoration: none; }
-
-  .feature-grid {
-    max-width: 1080px; margin: 56px auto 64px;
-    padding: 0 32px;
-    display: grid; gap: 18px;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-  .feature {
-    background: var(--bg-1);
-    border: 1px solid var(--line-soft);
-    border-radius: 14px;
-    padding: 22px;
-  }
-  .feature .kicker {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 10px;
-  }
-  .feature h3 {
-    font-size: 16px; font-weight: 600; margin-bottom: 6px;
-    letter-spacing: -0.005em;
-  }
-  .feature p { font-size: 13px; color: var(--ink-3); line-height: 1.55; }
-
-  /* Share resolver view */
-  .share-wrap {
-    max-width: 720px; margin: 0 auto;
-    padding: 60px 32px;
-  }
-  .share-card {
-    background: var(--bg-1);
-    border: 1px solid var(--line-soft);
-    border-radius: 22px;
-    padding: 32px;
-    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
-  }
-  .share-head {
-    display: grid; gap: 22px;
-    grid-template-columns: 200px 1fr;
-    align-items: end;
-    margin-bottom: 28px;
-  }
-  .share-cover {
-    width: 200px; height: 200px;
-    border-radius: 16px; overflow: hidden;
-    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-    display: grid; place-items: center;
-    box-shadow: 0 18px 40px -16px rgba(0,0,0,0.5);
-  }
-  .share-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .share-cover .glyph {
-    font-family: var(--serif); font-style: italic; font-size: 72px;
-    color: rgba(255,255,255,0.85); text-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  }
-  .share-meta .kicker {
-    font-family: var(--mono); font-size: 11px;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--ink-3); margin-bottom: 12px;
-  }
-  .share-meta h2 {
-    font-family: var(--sans); font-weight: 800;
-    font-size: clamp(32px, 5vw, 48px);
-    line-height: 0.95; letter-spacing: -0.03em;
-    margin-bottom: 12px;
-  }
-  .share-meta h2 em {
-    font-family: var(--serif); font-weight: 400; font-style: italic;
-    color: var(--accent); letter-spacing: -0.02em;
-  }
-  .share-meta .sub {
-    font-family: var(--mono); font-size: 12px; color: var(--ink-3);
-    letter-spacing: 0.06em;
-  }
-  .track-preview {
-    border-top: 1px solid var(--line-soft);
-    padding-top: 18px;
-  }
-  .track-preview h4 {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--ink-3);
-    font-weight: 500; margin-bottom: 10px;
-  }
-  .track-row {
-    display: grid; grid-template-columns: 22px 36px 1fr auto; gap: 12px;
-    align-items: center; padding: 6px 0;
-    font-size: 13px;
-  }
-  .track-row .num {
-    font-family: var(--mono); font-size: 12px; color: var(--ink-3);
-    text-align: right;
-  }
-  .track-row .thumb {
-    width: 36px; height: 36px; border-radius: 5px; overflow: hidden;
-    background: var(--bg-2);
-  }
-  .track-row .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .track-row .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .track-row .title b { font-weight: 500; color: var(--ink-1); }
-  .track-row .title span { color: var(--ink-3); font-family: var(--mono); font-size: 11px; }
-  .track-row .dur {
-    font-family: var(--mono); font-size: 11px; color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
-  }
-  .share-cta { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
-  .share-token-row {
-    display: flex; gap: 8px; margin-top: 14px;
-    background: var(--bg-2); border: 1px solid var(--line-soft);
-    border-radius: 10px; padding: 8px 10px 8px 14px;
-    align-items: center;
-  }
-  .share-token-row code {
-    font-family: var(--mono); font-size: 12px; color: var(--ink-2);
-    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .share-token-row button {
-    background: var(--bg-3); color: var(--ink-1);
-    border: none; border-radius: 6px; padding: 6px 10px;
-    font-size: 11px; font-family: var(--mono); cursor: pointer;
-  }
-  .share-token-row button:hover { background: var(--accent); color: var(--accent-ink); }
-
-  .status {
-    font-family: var(--mono); font-size: 12px; color: var(--ink-3);
-    text-align: center; padding: 24px 0;
-  }
-  .status.error { color: oklch(0.7 0.18 25); }
-
-  footer {
-    padding: 28px 32px;
-    text-align: center;
-    color: var(--ink-3); font-size: 12px;
-    border-top: 1px solid var(--line-soft);
-  }
-  footer a { color: var(--ink-3); }
-  footer a:hover { color: var(--accent); }
-</style>
+<link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-<header>
+<header class="site-header">
   <a class="brand" href="/">
     <img src="./interwave-appicon.svg" alt="" />
     <div class="name">inter<em>wave</em></div>
   </a>
   <nav>
+    <a href="/docs/">Docs</a>
     <a href="https://github.com/Cloaxyyy/wave/releases/latest" target="_blank" rel="noopener">Download</a>
     <a href="https://github.com/Cloaxyyy/wave" target="_blank" rel="noopener">GitHub</a>
   </nav>
 </header>
 
 <main id="main">
-  <!-- Landing (default) -->
-  <section id="landing" class="hero">
-    <h1>The free music player <em>that just works</em></h1>
-    <p>
-      Interwave is a lightweight desktop player powered by YouTube. Search anything, build a library, share playlists with friends — all from one fast native window.
-    </p>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="https://github.com/Cloaxyyy/wave/releases/latest" target="_blank" rel="noopener">
-        Download for Windows
-      </a>
-      <a class="btn btn-ghost" href="https://github.com/Cloaxyyy/wave" target="_blank" rel="noopener">
-        See the source
-      </a>
+  <!-- Landing -->
+  <section id="landing">
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        v0.8 · Latest release
+      </div>
+      <h1>The music player <em>that just works</em></h1>
+      <p class="lede">
+        Free, lightweight, and built around how you actually listen. Stream anything from YouTube, build a library, share playlists with friends — all from one fast native window.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Cloaxyyy/wave/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 6 20 20 12"/></svg>
+          Download for Windows
+        </a>
+        <a class="btn btn-ghost" href="/docs/">
+          See what it does →
+        </a>
+      </div>
+      <div class="hero-meta">
+        <span>Windows</span>
+        <span>·</span>
+        <span>macOS soon</span>
+        <span>·</span>
+        <span>Open source</span>
+        <span>·</span>
+        <span>No ads, no tracking</span>
+      </div>
     </div>
 
-    <div class="feature-grid">
-      <div class="feature">
-        <div class="kicker">YOUTUBE-POWERED</div>
-        <h3>Anything you can find, you can play</h3>
-        <p>Search, play, queue. No ads, no recommendations you didn't ask for, no algorithm noise.</p>
-      </div>
-      <div class="feature">
-        <div class="kicker">FRIENDS</div>
-        <h3>See what friends are playing</h3>
-        <p>Add friends inside the app and watch their now-playing in real time on your home screen.</p>
-      </div>
-      <div class="feature">
-        <div class="kicker">SHAREABLE</div>
-        <h3>Snapshot a playlist, send a link</h3>
-        <p>Hit Share on any playlist and get a one-click <code style="font-family:var(--mono);font-size:12px;color:var(--accent)">interwave.cc/p/&hellip;</code> link your friends can import.</p>
-      </div>
-      <div class="feature">
-        <div class="kicker">EQ + LYRICS</div>
-        <h3>Five-band EQ, live karaoke lyrics</h3>
-        <p>Crossfade, sleep timer, presets, synced lyrics from LRCLIB. Built for actually listening.</p>
+    <!-- APP MOCKUP -->
+    <div class="mockup-wrap">
+      <div class="mockup">
+        <div class="mockup-chrome">
+          <div class="mockup-controls">
+            <span class="m-dot red"></span>
+            <span class="m-dot yellow"></span>
+            <span class="m-dot green"></span>
+          </div>
+          <div class="mockup-search">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="6.5"/><line x1="20" y1="20" x2="16" y2="16"/></svg>
+            <span>Search artists, songs, albums…</span>
+          </div>
+          <div class="mockup-avatar">C</div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-rail">
+            <div class="rail-icon active"></div>
+            <div class="rail-icon"></div>
+            <div class="rail-icon"></div>
+            <div class="rail-icon"></div>
+          </div>
+          <div class="mockup-main">
+            <div class="mockup-cover">
+              <div class="cover-glyph">M</div>
+            </div>
+            <div class="mockup-meta">
+              <div class="kicker">PLAYLIST · CLOAXY</div>
+              <div class="title">Late night <em>moods</em></div>
+              <div class="tracks">
+                <div class="trow active"><span class="dot-bar"></span><span class="ttitle">Track ◯◯◯◯ — playing</span><span class="tdur">3:42</span></div>
+                <div class="trow"><span></span><span class="ttitle">Another track here</span><span class="tdur">2:58</span></div>
+                <div class="trow"><span></span><span class="ttitle">And one more for good measure</span><span class="tdur">4:20</span></div>
+                <div class="trow"><span></span><span class="ttitle">Closing it out</span><span class="tdur">3:15</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-player">
+          <div class="player-art"></div>
+          <div class="player-info">
+            <div class="player-title">NOW PLAYING</div>
+            <div class="player-artist">From the playlist</div>
+          </div>
+          <div class="player-transport">
+            <span class="t-btn"></span><span class="t-btn"></span>
+            <span class="t-btn play"></span>
+            <span class="t-btn"></span><span class="t-btn"></span>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- FEATURE BLOCKS -->
+    <section class="features">
+      <h2 class="section-title">Built for <em>actually listening</em></h2>
+      <p class="section-sub">Everything Spotify charges for, plus the things they took away.</p>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="kicker">YOUTUBE-POWERED</div>
+          <h3>Anything you can find, you can play</h3>
+          <p>Search any song, any artist, any obscure remix from 2009. Interwave resolves it on YouTube and streams the audio cleanly. No ads, no algorithm noise, no sponsored content. Just the music you searched for.</p>
+        </div>
+        <div class="feature">
+          <div class="kicker">FRIENDS</div>
+          <h3>See what friends are playing — live</h3>
+          <p>Add friends inside the app and their now-playing track appears in your sidebar in real time. Powered by Supabase Realtime presence — instant updates, no polling, no creepy "last seen" footprints.</p>
+        </div>
+        <div class="feature">
+          <div class="kicker">SHAREABLE</div>
+          <h3>Snapshot a playlist, send a link</h3>
+          <p>Hit Share on any playlist and get a one-click <code>interwave.cc/p/&hellip;</code> link. Friends without the app see a preview page; friends with the app paste the token to import the whole snapshot into their library.</p>
+        </div>
+        <div class="feature">
+          <div class="kicker">EQ + LYRICS</div>
+          <h3>Five-band EQ. Synced lyrics. Crossfade.</h3>
+          <p>Boost the bass, cut the air, save EQ presets. Karaoke lyrics from LRCLIB highlight the active line in real time. Crossfade between tracks for a seamless listen. The full audiophile toolkit — built in.</p>
+        </div>
+        <div class="feature">
+          <div class="kicker">YOUR LIBRARY</div>
+          <h3>Yours, locally, forever</h3>
+          <p>Your playlists, listening history, settings — all stored in a local SQLite database on your device. No subscription. No vendor lock-in. Uninstalling Interwave doesn't take your library with it.</p>
+        </div>
+        <div class="feature">
+          <div class="kicker">PRIVATE BY DEFAULT</div>
+          <h3>What you play is your business</h3>
+          <p>We don't track listening history server-side, we don't sell data, there are no ads, there's no algorithm tuning itself based on your taste. Our managed backend exists to sync friends and share links — that's it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INNER MOMENT — friends activity -->
+    <section class="moment">
+      <div class="moment-text">
+        <div class="kicker">FRIENDS · LIVE</div>
+        <h2>Listen <em>together</em>, even when you're apart</h2>
+        <p>Add friends by display name. The moment they hit play, you see what's spinning in their now-playing — track title, artist, album cover, and a green online dot. No DMs needed. No "what are you listening to?" Spotify never had this — Interwave does.</p>
+        <a class="btn btn-ghost" href="/docs/#friends">How friends work →</a>
+      </div>
+      <div class="moment-visual">
+        <div class="friend-card">
+          <div class="favatar a">A</div>
+          <div class="finfo"><div class="fname">Alex</div><div class="ftrack">▶ Some song everyone loves</div></div>
+        </div>
+        <div class="friend-card">
+          <div class="favatar b">J</div>
+          <div class="finfo"><div class="fname">Jordan</div><div class="ftrack">▶ Late-night chill mix</div></div>
+        </div>
+        <div class="friend-card">
+          <div class="favatar c">M</div>
+          <div class="finfo"><div class="fname">Mia</div><div class="ftrack">▶ A song with a long enough title to clip</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ teaser -->
+    <section class="faq">
+      <h2 class="section-title">Quick <em>answers</em></h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>Is it really free?</h4>
+          <p>Yes. No subscription, no ads, no upsell screen. Open-source on GitHub. The only "cost" is bringing your own internet to talk to YouTube.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Is this legal?</h4>
+          <p>Interwave streams audio from YouTube through their public APIs. You're responsible for using it within YouTube's terms and your local copyright laws — same as any browser playing YouTube.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Does it work offline?</h4>
+          <p>No. Interwave is online-only by design — every play resolves through YouTube. Your library and playlists are stored locally, but playback needs a connection.</p>
+        </div>
+        <div class="faq-item">
+          <h4>What about Mac / Linux?</h4>
+          <p>Windows builds are signed and shipped today. macOS and Linux build pipelines are scaffolded — they need per-platform signing infrastructure to ship publicly. Expect them soon.</p>
+        </div>
+        <div class="faq-item">
+          <h4>What about my data?</h4>
+          <p>Most of it lives locally on your device. The managed backend stores only what's needed for friends, sharing, and support — never your listening history. <a href="/privacy">Read the full policy →</a></p>
+        </div>
+        <div class="faq-item">
+          <h4>How do I get help?</h4>
+          <p>The Support page inside the app sends a ticket directly to the team. Or open an issue on GitHub. Or email <a href="mailto:support@interwave.cc">support@interwave.cc</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD CTA -->
+    <section class="download-cta">
+      <h2 class="section-title">Get <em>Interwave</em></h2>
+      <p class="section-sub">One installer. Auto-updates from inside the app.</p>
+      <div class="cta-row" style="justify-content:center;margin-top:24px">
+        <a class="btn btn-primary" href="https://github.com/Cloaxyyy/wave/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 6 20 20 12"/></svg>
+          Download for Windows
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Cloaxyyy/wave" target="_blank" rel="noopener">
+          View source on GitHub
+        </a>
+      </div>
+    </section>
   </section>
 
   <!-- Share resolver (mounted via JS when ?p=<token> is present) -->
@@ -305,158 +229,24 @@
 </main>
 
 <footer>
-  <div>© <span id="year"></span> Interwave · <a href="https://github.com/Cloaxyyy/wave" target="_blank" rel="noopener">GitHub</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></div>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="./interwave-appicon.svg" alt="" />
+      <span>inter<em>wave</em></span>
+    </div>
+    <div class="footer-links">
+      <a href="/docs/">Documentation</a>
+      <a href="/privacy">Privacy policy</a>
+      <a href="/terms">Terms of service</a>
+      <a href="https://github.com/Cloaxyyy/wave" target="_blank" rel="noopener">GitHub</a>
+      <a href="mailto:support@interwave.cc">Contact</a>
+    </div>
+    <div class="footer-meta">
+      © <span id="year"></span> Interwave · Powered by YouTube · Made with caffeine
+    </div>
+  </div>
 </footer>
 
-<script>
-document.getElementById('year').textContent = new Date().getFullYear();
-
-/* ----------------------------------------------------------------------
- * Share resolver
- * Reads ?p=<token> from the URL (set by /p/<token> via 404.html), fetches
- * the snapshot from Supabase using the public anon key, and renders the
- * playlist preview with deep-link + copy-token buttons.
- * ---------------------------------------------------------------------- */
-const SUPABASE_URL = window.IW_SUPABASE_URL || '__SUPABASE_URL__';
-const SUPABASE_ANON = window.IW_SUPABASE_ANON || '__SUPABASE_ANON__';
-
-const params = new URLSearchParams(location.search);
-const token = params.get('p');
-
-function showStatus(text, isError) {
-  const el = document.getElementById('share');
-  el.style.display = 'block';
-  document.getElementById('landing').style.display = 'none';
-  el.innerHTML = `<div class="share-wrap"><div class="status ${isError ? 'error' : ''}">${text}</div></div>`;
-}
-
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  })[c]);
-}
-
-function fmtDur(sec) {
-  if (sec === null || sec === undefined) return '—';
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2,'0')}`;
-}
-
-function renderShare(snap) {
-  const el = document.getElementById('share');
-  el.style.display = 'block';
-  document.getElementById('landing').style.display = 'none';
-
-  const tracks = Array.isArray(snap.tracks) ? snap.tracks : [];
-  const cover = snap.cover_url || tracks.find((t) => t.thumbnail_url)?.thumbnail_url || null;
-  const name = snap.name || 'Untitled playlist';
-
-  const trackRowsHtml = tracks.slice(0, 12).map((t, i) => `
-    <div class="track-row">
-      <span class="num">${i + 1}</span>
-      <div class="thumb">${t.thumbnail_url ? `<img src="${escapeHtml(t.thumbnail_url)}" alt=""/>` : ''}</div>
-      <div class="title"><b>${escapeHtml(t.title || 'Untitled')}</b> <span>· ${escapeHtml(t.artist || 'Unknown')}</span></div>
-      <span class="dur">${fmtDur(t.duration_seconds)}</span>
-    </div>
-  `).join('');
-
-  const tail = tracks.length > 12
-    ? `<div class="status" style="padding:14px 0 0">+ ${tracks.length - 12} more tracks</div>`
-    : '';
-
-  el.innerHTML = `
-    <div class="share-wrap">
-      <div class="share-card">
-        <div class="share-head">
-          <div class="share-cover">
-            ${cover
-              ? `<img src="${escapeHtml(cover)}" alt=""/>`
-              : `<span class="glyph">${escapeHtml((name[0] || '♪').toUpperCase())}</span>`}
-          </div>
-          <div class="share-meta">
-            <div class="kicker">Shared playlist</div>
-            <h2>${renderHeroTitle(name)}</h2>
-            <div class="sub">${tracks.length} ${tracks.length === 1 ? 'TRACK' : 'TRACKS'}${snap.created_at ? ` · ${new Date(snap.created_at).toLocaleDateString()}` : ''}</div>
-          </div>
-        </div>
-
-        <div class="track-preview">
-          <h4>Tracks</h4>
-          ${trackRowsHtml || `<div class="status">No tracks in this snapshot.</div>`}
-          ${tail}
-        </div>
-
-        <div class="share-cta">
-          <a class="btn btn-primary" href="https://github.com/Cloaxyyy/wave/releases/latest" target="_blank" rel="noopener">
-            Get Interwave
-          </a>
-          <button class="btn btn-ghost" id="copy-token">Copy import token</button>
-        </div>
-        <div class="share-token-row">
-          <code id="token-text">${escapeHtml(token)}</code>
-          <button id="copy-token-2">Copy</button>
-        </div>
-        <p style="margin-top:14px; font-size:12px; color:var(--ink-3); line-height:1.55">
-          Open Interwave, go to <b style="color:var(--ink-1)">Import → Import from a friend's share link</b>, paste this token, and the playlist lands in your library.
-        </p>
-      </div>
-    </div>
-  `;
-
-  const copyAll = () => {
-    navigator.clipboard.writeText(token).then(() => {
-      const a = document.getElementById('copy-token');
-      const b = document.getElementById('copy-token-2');
-      if (a) a.textContent = '✓ Copied!';
-      if (b) b.textContent = 'Copied';
-      setTimeout(() => { if (a) a.textContent = 'Copy import token'; if (b) b.textContent = 'Copy'; }, 1800);
-    });
-  };
-  document.getElementById('copy-token').addEventListener('click', copyAll);
-  document.getElementById('copy-token-2').addEventListener('click', copyAll);
-}
-
-function renderHeroTitle(name) {
-  const t = name.trim();
-  const idx = t.lastIndexOf(' ');
-  if (idx <= 0 || idx >= t.length - 1) return `<em>${escapeHtml(t)}</em>`;
-  return `${escapeHtml(t.slice(0, idx))} <em>${escapeHtml(t.slice(idx + 1))}</em>`;
-}
-
-async function fetchSnapshot(t) {
-  if (!SUPABASE_URL.startsWith('http') || SUPABASE_ANON.length < 40) {
-    throw new Error('Backend not configured for this build.');
-  }
-  const url = `${SUPABASE_URL}/rest/v1/shared_playlists?token=eq.${encodeURIComponent(t)}&select=token,name,description,cover_url,tracks,created_at`;
-  const resp = await fetch(url, {
-    headers: {
-      apikey: SUPABASE_ANON,
-      Authorization: `Bearer ${SUPABASE_ANON}`,
-      Accept: 'application/json',
-    },
-  });
-  if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status}`);
-  }
-  const arr = await resp.json();
-  if (!Array.isArray(arr) || arr.length === 0) {
-    const e = new Error('not found'); e.code = 'notfound'; throw e;
-  }
-  return arr[0];
-}
-
-if (token) {
-  showStatus('Loading shared playlist…');
-  fetchSnapshot(token)
-    .then(renderShare)
-    .catch((err) => {
-      const msg = err.code === 'notfound'
-        ? `Share link not found — it may have been deleted or never existed.`
-        : `Couldn't load this share link: ${err.message}`;
-      showStatus(msg, true);
-    });
-}
-</script>
+<script src="./share.js"></script>
 </body>
 </html>

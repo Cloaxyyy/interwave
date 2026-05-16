@@ -51,34 +51,135 @@
   <div class="wrap">
     <a class="back" href="/">← Back to Interwave</a>
     <h1>Terms of <em>service</em></h1>
-    <div class="subtitle">Last updated: 2026-05-15</div>
+    <div class="subtitle">Last updated: 2026-05-15 · Effective immediately upon publication.</div>
 
-    <h2>What you're agreeing to</h2>
-    <p>By using Interwave you agree to these terms. If you don't, don't use it. We can update these terms; if you keep using the app after a change, you accept the new version.</p>
-
-    <h2>The app</h2>
-    <p>Interwave is provided "as is," with no warranty. It's a free, open-source music player. Use at your own risk. Don't expect five-nines uptime, and don't depend on it for anything mission-critical.</p>
-
-    <h2>YouTube content</h2>
-    <p>Interwave streams audio from YouTube. The content you play is governed by YouTube's terms. You're responsible for making sure your usage complies with copyright law in your jurisdiction.</p>
-
-    <h2>Acceptable use</h2>
+    <h2 id="toc">Contents</h2>
     <ul>
-      <li>Don't abuse the friends or sharing features to spam or harass.</li>
-      <li>Don't try to break authentication, exfiltrate other users' data, or scrape the backend.</li>
-      <li>Don't impersonate Interwave staff or other users.</li>
-      <li>Don't use the app for anything illegal where you live.</li>
+      <li><a href="#acceptance">1. Acceptance of these terms</a></li>
+      <li><a href="#service">2. Description of the service</a></li>
+      <li><a href="#opensource">3. Open source and licensing</a></li>
+      <li><a href="#eligibility">4. Eligibility</a></li>
+      <li><a href="#accounts">5. Account registration</a></li>
+      <li><a href="#youtube">6. YouTube content and copyright</a></li>
+      <li><a href="#acceptable-use">7. Acceptable use</a></li>
+      <li><a href="#user-content">8. User content</a></li>
+      <li><a href="#ip">9. Intellectual property</a></li>
+      <li><a href="#disclaimers">10. Disclaimers of warranty</a></li>
+      <li><a href="#liability">11. Limitation of liability</a></li>
+      <li><a href="#indemnification">12. Indemnification</a></li>
+      <li><a href="#availability">13. Service availability and modifications</a></li>
+      <li><a href="#termination">14. Termination</a></li>
+      <li><a href="#third-party">15. Third-party services</a></li>
+      <li><a href="#law">16. Governing law and disputes</a></li>
+      <li><a href="#class-waiver">17. Class action waiver</a></li>
+      <li><a href="#severability">18. Severability</a></li>
+      <li><a href="#entire">19. Entire agreement</a></li>
+      <li><a href="#changes">20. Changes to these terms</a></li>
+      <li><a href="#contact">21. Contact</a></li>
+      <li><a href="#disclaimer-doc">22. About this document</a></li>
     </ul>
-    <p>We may suspend or close accounts that break these rules.</p>
 
-    <h2>Your account</h2>
-    <p>You're responsible for your account credentials. If you think your account is compromised, email <a href="mailto:support@interwave.cc">support@interwave.cc</a>.</p>
+    <h2 id="acceptance">1. Acceptance of these terms</h2>
+    <p>These Terms of Service ("Terms") form a binding agreement between you ("you," "your," or "user") and the individual operator of Interwave ("Interwave," "we," "us," or "our"), a sole developer publishing under the name "Cloaxy." By downloading, installing, launching, accessing, or otherwise using the Interwave desktop application, the website at interwave.cc, or any associated backend, API, or service provided by us (collectively, the "Service"), you confirm that you have read, understood, and agreed to be bound by these Terms in their entirety.</p>
+    <p>If you do not agree to any part of these Terms, you must not download, install, access, or use the Service in any way. Your only remedy if you disagree with these Terms is to stop using the Service and uninstall the application.</p>
+    <p>You must be at least 13 years old to use the Service. If you are between 13 and the age of majority in your jurisdiction (typically 18), you may only use the Service with the involvement, consent, and supervision of a parent or legal guardian who agrees to be bound by these Terms on your behalf. If we discover that an account was created by someone under 13, we will terminate that account.</p>
 
-    <h2>Liability</h2>
-    <p>Interwave is provided free of charge. To the maximum extent allowed by law, we are not liable for any indirect, incidental, special, or consequential damages arising from your use of the app.</p>
+    <h2 id="service">2. Description of the service</h2>
+    <p>Interwave is a free, open-source desktop music player that allows users to discover, queue, and listen to audio content that is publicly available on YouTube and other third-party sources. The application resolves third-party URLs (primarily via the open-source tool yt-dlp) and streams the resulting audio data directly through your computer to your audio output device.</p>
+    <p>Interwave does <strong>not</strong> host, store, cache, transcode, redistribute, or otherwise act as the source for any audio or video content. We do not operate a content delivery network for media. We do not sell, license, or otherwise offer music for sale. The Service acts purely as a client-side player that requests publicly accessible content on the user's behalf. All audio content originates from, and remains the property of, the respective third-party platform and rights holders.</p>
+    <p>In addition to the player, we operate certain optional hosted features through the Service, including but not limited to: account authentication, a friends list, shared playlist functionality, support ticket submission, and an automatic update mechanism. These hosted features are provided through third-party infrastructure (notably Supabase) and are subject to these Terms as well as the terms of those underlying providers.</p>
 
-    <h2>Contact</h2>
-    <p>Questions? <a href="mailto:support@interwave.cc">support@interwave.cc</a> or open an issue on <a href="https://github.com/Cloaxyyy/wave">GitHub</a>.</p>
+    <h2 id="opensource">3. Open source and licensing</h2>
+    <p>The source code for the Interwave desktop application is published under the MIT License at <a href="https://github.com/Cloaxyyy/wave">github.com/Cloaxyyy/wave</a>. You are free to inspect, fork, modify, and redistribute that code in accordance with the MIT License. The MIT License covers the source code only.</p>
+    <p>These Terms separately govern your use of the Service that we operate — that is, the website at interwave.cc, the Supabase-backed hosted features, the auto-update infrastructure, branding, and any other resources we make available. Forking and self-hosting the open-source code for your own personal or non-commercial use is permitted by the code license. However, you may <strong>not</strong>: (a) use our branding, name, or logo in a way that suggests affiliation, sponsorship, or endorsement by us; (b) impersonate Interwave or hold yourself out as the official Interwave service; (c) use, access, or build against our hosted backend (authentication, friends, shared playlists, ticketing, etc.) for any purpose other than as an end user of the official Interwave client; or (d) operate a competing service that piggybacks on our backend infrastructure.</p>
+
+    <h2 id="eligibility">4. Eligibility</h2>
+    <p>To use the Service you must (a) be at least the minimum age required to form a binding contract in your jurisdiction, (b) not be barred from receiving the Service under the laws of any applicable jurisdiction (including the country in which you reside or from which you access the Service), and (c) not have been previously suspended or removed from the Service.</p>
+    <p>If you are a minor under the age of majority in your jurisdiction but at least 13 years old, your parent or legal guardian must read and agree to these Terms on your behalf and supervise your use of the Service. Accounts are intended for individual human use; you may not register on behalf of a group, organization, or as a corporate entity without our express written permission. Account sharing — providing your credentials to another person so they may use the Service under your identity — is not permitted.</p>
+
+    <h2 id="accounts">5. Account registration</h2>
+    <p>Certain features of the Service require you to create an account. When you register, you agree to provide accurate, current, and complete information, and to update such information as it changes. You are solely responsible for safeguarding your password and any other credentials, and for any activity that occurs under your account, whether or not you authorized it. You agree to notify us immediately at <a href="mailto:support@interwave.cc">support@interwave.cc</a> if you suspect any unauthorized use of your account or any other breach of security.</p>
+    <p>You may not create more than one account per natural person, use another person's account without permission, create accounts by automated means (bots, scripts, crawlers, or similar), or register with an email address you do not own or control. We reserve the right, in our sole discretion and without obligation, to refuse registration, reclaim usernames, or suspend or terminate accounts at any time, with or without notice, including for violations of these Terms or for any other reason we deem appropriate.</p>
+
+    <h2 id="youtube">6. YouTube content and copyright</h2>
+    <p>Interwave is a media player, not a content provider, content host, content publisher, or content distributor. When you play a track through Interwave, the underlying audio data originates from YouTube or another third-party platform, is requested by the application on your behalf, and is streamed directly to your device. We do not select, curate, encode, store, or rebroadcast that content.</p>
+    <p>All content streamed through Interwave from YouTube is, and remains, subject to <a href="https://www.youtube.com/t/terms">YouTube's Terms of Service</a> and the policies of the rights holders who uploaded or licensed the content. You are solely and exclusively responsible for ensuring that your use of any content through the Service complies with the terms of the originating platform and with all applicable copyright, neighboring rights, performance rights, and related laws in your jurisdiction.</p>
+    <p>We do not endorse, sponsor, verify, or assume responsibility for any content available on YouTube or any other third-party platform accessed through the Service. The presence of any track, channel, video, artwork, or metadata accessible through the Service does not imply any endorsement, affiliation, or licensing relationship between Interwave and the relevant uploader, rights holder, or platform.</p>
+    <p>If you believe that material accessible through YouTube infringes your copyright, your remedy is to file a notice with YouTube under the YouTube takedown process and applicable law (such as the U.S. Digital Millennium Copyright Act). Interwave cannot remove content that resides on YouTube; only YouTube can do that.</p>
+    <p>If you believe that the Interwave Service itself — for example, our source code, website content, branding, documentation, or downloadable application — infringes a copyright that you own or are authorized to act on behalf of, please send a written notice to <a href="mailto:support@interwave.cc">support@interwave.cc</a> with the subject line "[DMCA NOTICE]". The notice should include: (i) your physical or electronic signature; (ii) identification of the copyrighted work you claim has been infringed; (iii) identification of the material claimed to be infringing and information sufficient to allow us to locate it; (iv) your contact information; (v) a statement that you have a good-faith belief that the use is not authorized by the copyright owner, its agent, or the law; and (vi) a statement, under penalty of perjury, that the information in the notice is accurate and that you are authorized to act on behalf of the owner.</p>
+
+    <h2 id="acceptable-use">7. Acceptable use</h2>
+    <p>You agree that you will not, and will not attempt to, do any of the following while using the Service:</p>
+    <ul>
+      <li>Reverse-engineer, decompile, or otherwise probe the authentication system, API, or backend in a way intended to abuse, overload, exfiltrate from, or gain unauthorized access to the Service or other users' data (security research conducted in good faith and disclosed responsibly to <a href="mailto:support@interwave.cc">support@interwave.cc</a> is welcome).</li>
+      <li>Use the friends, sharing, or messaging features to spam, harass, threaten, stalk, defame, or otherwise harm any other user.</li>
+      <li>Impersonate Interwave, its operator, its support staff, or any other user, or otherwise misrepresent your affiliation with any person or entity.</li>
+      <li>Use the Service in any way that violates any applicable local, state, national, or international law or regulation in the jurisdiction in which you reside or from which you access the Service.</li>
+      <li>Scrape, crawl, harvest, or otherwise access the Service or its data by automated means, except for the application's own ordinary operation as distributed by us.</li>
+      <li>Attempt to circumvent, disable, or otherwise interfere with security-related, rate-limiting, anti-abuse, or DRM-related features of YouTube or any other third-party platform accessed through the Service.</li>
+      <li>Use the Service in any manner that violates YouTube's Terms of Service or the terms of any other third-party platform accessed through the Service — you remain personally bound by those terms regardless of how the request is initiated.</li>
+      <li>Submit support tickets or other communications containing malware, malicious code, exploits, phishing content, sexually explicit material involving minors, or content that is otherwise unlawful.</li>
+      <li>Use our hosted backend (authentication, friends, shared playlists, ticketing, update server) for any commercial purpose, resale, white-labeling, or third-party offering without our prior written permission.</li>
+      <li>Take any action that imposes an unreasonable or disproportionately large load on our infrastructure, or interferes with the proper functioning of the Service for other users.</li>
+    </ul>
+    <p>We reserve the right to investigate suspected violations and to take any action we consider appropriate, including issuing warnings, removing content, suspending or terminating accounts, blocking access, and cooperating with law enforcement.</p>
+
+    <h2 id="user-content">8. User content</h2>
+    <p>Certain features of the Service let you submit content — including playlist names and contents, display names, profile information, friend requests, shared playlist titles, support ticket bodies and attachments, and similar materials (collectively, "User Content"). You retain ownership of any intellectual property rights you hold in your User Content.</p>
+    <p>By submitting User Content to the Service, you grant Interwave a non-exclusive, worldwide, royalty-free, sublicensable, and transferable license to host, store, reproduce, transmit, display, modify (for technical purposes such as formatting, encoding, or storage), and distribute your User Content solely to the extent necessary to operate, provide, improve, and secure the Service and the features you have chosen to use (for example, displaying your shared playlist to a friend you have sent it to, or routing your support ticket to the operator). This license terminates when you delete the User Content from the Service or when your account is closed, except (a) to the extent the User Content has been shared with others who have not deleted it, and (b) for backups retained for a reasonable period.</p>
+    <p>You represent and warrant that you own or have the necessary rights to your User Content, and that your User Content does not infringe, misappropriate, or violate the rights of any third party or any applicable law. You are solely responsible for your User Content and the consequences of submitting it.</p>
+
+    <h2 id="ip">9. Intellectual property</h2>
+    <p>The "Interwave" name, the Interwave logo, the visual design of the website at interwave.cc, and any other marks, graphics, page headers, button icons, scripts, and service names associated with the Service are the property of the operator (Cloaxy) and are protected by copyright, trademark, and other intellectual property laws. Nothing in these Terms grants you any right or license to use any of our trademarks, trade names, logos, or other proprietary marks. The source code of the desktop application itself is, as stated above, MIT-licensed and may be used in accordance with that license.</p>
+    <p>Third-party names, marks, and logos referenced or displayed through the Service — including but not limited to YouTube, Google, Supabase, LRCLIB, Wikipedia, MusicBrainz, GitHub, and the names and likenesses of artists, albums, and labels — are the property of their respective owners and are used for identification and interoperability purposes only. Their appearance does not imply any endorsement, sponsorship, or affiliation.</p>
+
+    <h2 id="disclaimers">10. Disclaimers of warranty</h2>
+    <p><strong>TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITH ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS, IMPLIED, OR STATUTORY.</strong> Without limiting the foregoing, Interwave and its operator expressly disclaim all warranties of merchantability, fitness for a particular purpose, title, non-infringement, accuracy, quiet enjoyment, and any warranties arising out of course of dealing or usage of trade.</p>
+    <p>We make no warranty or representation that: (a) the Service will meet your requirements or expectations; (b) the Service will be uninterrupted, timely, secure, or error-free; (c) the results obtained from using the Service will be accurate, reliable, or complete; (d) the quality of any content, information, or other material accessed through the Service will meet your expectations; (e) any errors or defects in the Service will be corrected; (f) the Service or any servers we use are free of viruses or other harmful components; or (g) any particular third-party content (including any track playable via YouTube) will remain available through the Service.</p>
+    <p>You acknowledge that the Service depends on third-party platforms that may change their interfaces, terms, or availability at any time, and that such changes may cause portions of the Service — including audio playback itself — to degrade or stop functioning, and that this is outside our control.</p>
+
+    <h2 id="liability">11. Limitation of liability</h2>
+    <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL INTERWAVE, ITS OPERATOR (CLOAXY), OR ANY OF OUR AFFILIATES, CONTRIBUTORS, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES</strong>, including, without limitation, damages for loss of profits, revenue, goodwill, use, data, or other intangible losses, arising out of or in connection with your access to or use of (or inability to access or use) the Service, any conduct or content of any third party on or through the Service, any content obtained from the Service, or unauthorized access, use, or alteration of your transmissions or content — whether based on warranty, contract, tort (including negligence), statute, or any other legal theory, and whether or not we have been advised of the possibility of such damages.</p>
+    <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE TOTAL AGGREGATE LIABILITY OF INTERWAVE AND ITS OPERATOR FOR ANY AND ALL CLAIMS ARISING OUT OF OR RELATING TO THESE TERMS OR THE SERVICE</strong> shall not exceed the greater of (a) ten U.S. dollars (US$10.00) or (b) the total amount you have paid to us in the twelve (12) months immediately preceding the event giving rise to the claim. You acknowledge that the Service is provided free of charge and that this cap reflects an allocation of risk that is a fundamental element of the basis of the bargain between us. Some jurisdictions do not allow the exclusion or limitation of certain damages; in such jurisdictions, our liability is limited to the maximum extent permitted by law.</p>
+
+    <h2 id="indemnification">12. Indemnification</h2>
+    <p>To the maximum extent permitted by applicable law, you agree to defend, indemnify, and hold harmless Interwave, its operator (Cloaxy), and any contributors, agents, and licensors from and against any and all claims, liabilities, damages, losses, costs, expenses, and fees (including reasonable attorneys' fees) arising out of or related to: (a) your access to or use of the Service; (b) your User Content; (c) your violation of these Terms; (d) your violation of any rights of any third party, including any intellectual property, publicity, confidentiality, property, or privacy right; or (e) your violation of any law, rule, or regulation of any jurisdiction.</p>
+    <p>We reserve the right, at our own expense, to assume the exclusive defense and control of any matter otherwise subject to indemnification by you, in which case you agree to cooperate with our defense of such claim. You may not settle any matter that affects us without our prior written consent.</p>
+
+    <h2 id="availability">13. Service availability and modifications</h2>
+    <p>We may, at any time and without prior notice, modify, suspend, discontinue, or restrict access to all or any portion of the Service, temporarily or permanently, with or without cause, and with or without explanation. We may also impose limits on certain features or restrict your access to parts or all of the Service. We will use reasonable efforts to communicate significant or long-lasting changes — such as the discontinuation of a major feature — through the website, in-app messaging, or other reasonable channels, but we have no obligation to do so.</p>
+    <p>The Interwave desktop application includes an automatic update mechanism that may download and install updates without requiring an additional explicit action from you, in order to keep the application functioning correctly and securely against ongoing changes in third-party platforms. You may disable automatic updates in the application's settings; if you do so, you accept full responsibility for any resulting reduction in functionality, security, or compatibility.</p>
+
+    <h2 id="termination">14. Termination</h2>
+    <p>We may suspend or terminate your account and your access to the Service at any time, with or without notice, for any reason, including without limitation if we believe in good faith that you have violated these Terms, that your conduct may expose us or others to harm or liability, or that we are required to do so by law.</p>
+    <p>You may stop using the Service at any time. You may request deletion of your account by emailing <a href="mailto:support@interwave.cc">support@interwave.cc</a>. Upon termination, your right to access the Service ceases immediately. Provisions of these Terms that by their nature should survive termination shall survive, including but not limited to provisions regarding ownership, user content licenses already granted, disclaimers of warranty, limitations of liability, indemnification, governing law and disputes, the class-action waiver, severability, and these survival terms themselves.</p>
+
+    <h2 id="third-party">15. Third-party services</h2>
+    <p>The Service integrates with, links to, or depends on a number of third-party platforms and services, including but not limited to YouTube, Supabase, LRCLIB, Wikipedia, MusicBrainz, and GitHub. Your use of those third-party services is governed by the terms and privacy policies of the relevant providers, and not by these Terms. We are not responsible for the practices, content, availability, accuracy, or reliability of any third-party service, and your dealings with any third party are solely between you and that third party.</p>
+    <p>You acknowledge and agree that we will not be liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with your use of, or reliance on, any third-party service.</p>
+
+    <h2 id="law">16. Governing law and disputes</h2>
+    <p>These Terms and any dispute, claim, or controversy arising out of or relating to these Terms or the Service (a "Dispute") are governed by the laws of the United States and the state of the operator's primary residence at the time the Dispute arises, without regard to its conflict-of-laws principles. To the extent any specific state or local law would apply, the parties intend that the law of the operator's then-current U.S. state of residence shall govern.</p>
+    <p>Where permitted by applicable law, you and we agree that any Dispute shall be resolved exclusively through final and binding individual arbitration, rather than in court, except that you may bring a qualifying claim in a small-claims court if it qualifies and proceeds only on an individual basis. If arbitration is not enforceable for a particular Dispute, then that Dispute shall be brought exclusively in the state or federal courts located in the operator's jurisdiction, and you consent to the personal jurisdiction of, and venue in, those courts.</p>
+    <p>Nothing in these Terms is intended to or shall deprive consumers residing in the European Union, the United Kingdom, or other jurisdictions whose laws grant non-waivable consumer rights of the benefit of any mandatory consumer-protection provisions of the law of their country of habitual residence. If you are a consumer in such a jurisdiction, you retain any rights that cannot be waived by contract.</p>
+
+    <h2 id="class-waiver">17. Class action waiver</h2>
+    <p>To the maximum extent permitted by applicable law, you and we agree that each may bring claims against the other only in your or our individual capacity, and not as a plaintiff or class member in any purported class, collective, consolidated, or representative proceeding. The arbitrator or court (as applicable) may not consolidate more than one person's claims, may not preside over any form of representative or class proceeding, and may award relief only on an individual basis. If this class-action waiver is found to be unenforceable in a particular jurisdiction or with respect to a particular claim, then this waiver shall be severable from the remainder of the dispute-resolution provisions, and the affected claim shall proceed in court rather than in arbitration, while all other provisions of these Terms remain in full effect.</p>
+
+    <h2 id="severability">18. Severability</h2>
+    <p>If any provision of these Terms is held to be invalid, illegal, or unenforceable by a court or arbitrator of competent jurisdiction, that provision shall be deemed modified to the minimum extent necessary to make it enforceable, or, if it cannot be so modified, severed from these Terms. The invalidity, illegality, or unenforceability of any provision shall not affect the validity or enforceability of any other provision, and the remainder of these Terms shall remain in full force and effect.</p>
+
+    <h2 id="entire">19. Entire agreement</h2>
+    <p>These Terms, together with our Privacy Policy and any other legal notices or supplemental terms we publish on the Service, constitute the entire and exclusive agreement between you and us regarding the Service, and supersede any prior agreements, representations, or understandings (whether oral or written) between you and us regarding the Service. No waiver of any term of these Terms shall be deemed a further or continuing waiver of such term or any other term, and our failure to assert any right or provision under these Terms shall not constitute a waiver of such right or provision.</p>
+
+    <h2 id="changes">20. Changes to these terms</h2>
+    <p>We may revise these Terms from time to time at our sole discretion. When we make changes, we will update the "Last updated" date at the top of this page. If the changes are material, we will provide additional notice through reasonable means — for example, an in-app banner, a notice on the website, or an email to the address associated with your account. Your continued use of the Service after revised Terms have been posted constitutes your acceptance of those revised Terms. If you do not agree to the revised Terms, you must stop using the Service and may close your account.</p>
+
+    <h2 id="contact">21. Contact</h2>
+    <p>For general questions, support requests, or comments, please email <a href="mailto:support@interwave.cc">support@interwave.cc</a>. For legal notices — including DMCA notifications, formal disputes, requests for service of process, and similar matters — please email the same address with the subject line prefix <strong>[LEGAL NOTICE]</strong> so that we can route the message appropriately. You may also open an issue on our public repository at <a href="https://github.com/Cloaxyyy/wave">github.com/Cloaxyyy/wave</a>, although the email address is the official channel for legal communications.</p>
+
+    <h2 id="disclaimer-doc">22. About this document</h2>
+    <p>Interwave is a free, hobbyist project operated by a single individual. These Terms have been drafted in good faith to set out the basic understanding between the operator and the people who use the Service, but they are <strong>not</strong> legal advice and are <strong>not</strong> a substitute for advice from a qualified attorney licensed in your jurisdiction. If you have specific legal concerns about your use of the Service, you should consult counsel of your own choosing. The operator makes no representation or warranty as to the legal sufficiency, completeness, or enforceability of any provision of these Terms in any specific jurisdiction.</p>
   </div>
 </body>
 </html>

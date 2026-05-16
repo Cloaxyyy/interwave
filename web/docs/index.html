@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Docs · Interwave</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-0: oklch(0.13 0.014 295);
+    --bg-1: oklch(0.16 0.018 295);
+    --ink-1: oklch(0.97 0.005 295);
+    --ink-2: oklch(0.78 0.012 295);
+    --ink-3: oklch(0.58 0.016 295);
+    --accent: oklch(0.72 0.18 295);
+    --line: oklch(0.22 0.018 295);
+    --serif: 'Instrument Serif', serif;
+    --sans:  'Geist', -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans); font-size: 15px; line-height: 1.65;
+    background: oklch(0.08 0.012 295); color: var(--ink-1);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 60px 32px 80px; }
+  .back { font-size: 12px; color: var(--ink-3); display: inline-block; margin-bottom: 24px; }
+  h1 {
+    font-family: var(--sans); font-weight: 800;
+    font-size: 48px; letter-spacing: -0.03em; line-height: 1;
+    margin-bottom: 8px;
+  }
+  h1 em {
+    font-family: var(--serif); font-weight: 400; font-style: italic;
+    color: var(--accent); letter-spacing: -0.02em;
+  }
+  .subtitle { color: var(--ink-3); font-size: 13px; margin-bottom: 36px; }
+  h2 {
+    font-size: 18px; font-weight: 600;
+    margin: 28px 0 8px; letter-spacing: -0.005em;
+    scroll-margin-top: 24px;
+  }
+  p { color: var(--ink-2); margin-bottom: 12px; }
+  ul { color: var(--ink-2); padding-left: 20px; margin: 8px 0 16px; }
+  li { margin-bottom: 6px; }
+  code {
+    font-family: ui-monospace, monospace; font-size: 13px;
+    background: var(--bg-1); padding: 1px 6px; border-radius: 4px;
+    color: var(--accent);
+  }
+  .toc {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 22px 18px 38px;
+    margin: 8px 0 32px;
+  }
+  .toc li { margin-bottom: 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← Back to Interwave</a>
+    <h1>Docs <em>&amp; help</em></h1>
+    <div class="subtitle">Everything you need to get the most out of Interwave. Last updated: 2026-05-15</div>
+
+    <ul class="toc">
+      <li><a href="#getting-started">Getting started</a></li>
+      <li><a href="#search">Searching &amp; playing</a></li>
+      <li><a href="#library">Library &amp; playlists</a></li>
+      <li><a href="#friends">Friends</a></li>
+      <li><a href="#sharing">Sharing playlists</a></li>
+      <li><a href="#eq">EQ &amp; audio</a></li>
+      <li><a href="#lyrics">Lyrics</a></li>
+      <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+      <li><a href="#updates">Updates</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      <li><a href="#privacy">Privacy &amp; data</a></li>
+      <li><a href="#open-source">Open source &amp; contributing</a></li>
+      <li><a href="#help">Getting help</a></li>
+    </ul>
+
+    <h2 id="getting-started">Getting started</h2>
+    <p>
+      Interwave is a free desktop music player built on Tauri 2. Windows builds are shipping today; macOS and Linux are close behind. Head to the <a href="https://github.com/Cloaxyyy/wave/releases/latest">latest release on GitHub</a>, grab the installer for your platform, and run it. The Windows installer is signed, so SmartScreen should not get in your way.
+    </p>
+    <p>
+      Signing in is optional. The player works fully offline-of-account: you can search, play, build playlists, tweak the EQ, and use every local feature without ever creating an account. Signing in unlocks <b>friends</b>, <b>playlist sharing</b>, and a persistent <b>support ticket history</b>. You can sign up from <code>Settings → Account</code> at any time.
+    </p>
+
+    <h2 id="search">Searching &amp; playing</h2>
+    <p>
+      The search bar lives at the top of the window. Start typing — results come back grouped by tracks, artists, and albums. Click any track to start playback. On the first listen for a given track the audio buffers in roughly one to three seconds while the yt-dlp sidecar resolves the stream URL; subsequent plays in the same session come straight from cache and start instantly.
+    </p>
+    <p>
+      Right-clicking a result gives you the usual menu: play next, add to queue, add to a playlist, like the track, or jump to the artist page. The queue view at the bottom of the window shows what's playing now and what's coming up — drag rows to reorder, hit <code>Delete</code> to remove.
+    </p>
+
+    <h2 id="library">Library &amp; playlists</h2>
+    <p>
+      Every track you tap the heart on lands in <b>Liked Songs</b>, the always-on playlist pinned at the top of the sidebar. Create more playlists with the <code>+</code> button under the sidebar header — name them whatever you want, pin the ones you use most.
+    </p>
+    <p>
+      To add a track to a playlist, drag it from any list directly onto a playlist in the sidebar, or right-click and pick <b>Add to playlist</b>. Playlists are stored in a local SQLite database on your machine — they are yours forever, they work without the internet, and nothing about them is shared anywhere unless you explicitly hit Share.
+    </p>
+
+    <h2 id="friends">Friends</h2>
+    <p>
+      Open <code>Settings → Account</code> and set a display name — this is how other people will find you. From the <b>Friends</b> page, send a request by display name. The other person has to accept it before you appear in each other's lists; you can cancel a pending request at any time.
+    </p>
+    <p>
+      Online friends and the track they are currently playing show up live in the sidebar. The whole thing runs on a Supabase Realtime channel — no polling, no refresh button, your friends light up the instant they press play.
+    </p>
+
+    <h2 id="sharing">Sharing playlists</h2>
+    <p>
+      Right-click any playlist in the sidebar and pick <b>Share</b>. Interwave uploads a snapshot of the playlist (name, cover, ordered list of YouTube IDs) and copies a link of the form <code>interwave.cc/p/&lt;token&gt;</code> to your clipboard.
+    </p>
+    <p>
+      Anyone with the link can preview the snapshot in their browser, or paste the token into the app's import dialog to clone the playlist into their own library. Snapshots are static — they don't update if you edit the original playlist later. Share again to publish a fresh version.
+    </p>
+
+    <h2 id="eq">EQ &amp; audio</h2>
+    <p>
+      Open <code>Settings → Audio</code> for the audio controls. The five-band equalizer covers <code>60 Hz</code>, <code>250 Hz</code>, <code>1 kHz</code>, <code>4 kHz</code>, and <code>16 kHz</code>, each adjustable by ±12 dB. Save your favorite curves as named presets and switch between them with a click.
+    </p>
+    <p>
+      The crossfade slider blends the tail of one track into the head of the next, anywhere from <code>0</code> to <code>12</code> seconds. Volume normalization is on by default — Interwave estimates a per-track gain so quieter songs don't get drowned by loud ones in the same queue.
+    </p>
+
+    <h2 id="lyrics">Lyrics</h2>
+    <p>
+      When a track starts playing, Interwave fetches lyrics from <a href="https://lrclib.net">LRCLIB</a> in the background. If a synced LRC file exists, the active line is highlighted in real time as the song plays; click any line in the lyrics panel to seek to that timestamp instantly. Static lyrics still render, just without the highlight.
+    </p>
+
+    <h2 id="shortcuts">Keyboard shortcuts</h2>
+    <ul>
+      <li><code>Space</code> — play / pause</li>
+      <li><code>←</code> / <code>→</code> — previous / next track</li>
+      <li><code>Ctrl+L</code> — focus the search bar</li>
+      <li><code>Ctrl+,</code> — open Settings</li>
+      <li><code>F11</code> — fullscreen mini-player</li>
+      <li><code>Ctrl+Shift+P</code> — command palette</li>
+    </ul>
+
+    <h2 id="updates">Updates</h2>
+    <p>
+      Interwave checks for new releases every five minutes in the background. When a newer version is available, a small prompt slides in from the bottom-right corner; click <b>Restart</b> and the updater swaps in the new build and relaunches. You can trigger a manual check anytime from <code>Settings → About</code>.
+    </p>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+    <ul>
+      <li><b>Audio won't play</b> — confirm you have an internet connection, try a different track to rule out a single resolve failure, and as a last resort fully quit and relaunch the app.</li>
+      <li><b>Friends look offline who shouldn't be</b> — open <code>Settings → Account</code> and make sure <b>Presence</b> is turned on. Without it, neither side broadcasts.</li>
+      <li><b>Update failed</b> — download the latest installer manually from <a href="https://github.com/Cloaxyyy/wave/releases/latest">GitHub Releases</a> and run it over the top of your existing install. Your library is preserved.</li>
+      <li><b>Can't sign in</b> — make sure your email address is verified (check your spam folder for the confirmation message). If you still can't get in, email <a href="mailto:support@interwave.cc">support@interwave.cc</a>.</li>
+    </ul>
+
+    <h2 id="privacy">Privacy &amp; data</h2>
+    <p>
+      The short version: everything that can live locally, does. Playlists, listening history, settings, and crash diagnostics all sit in a local SQLite database on your machine. The Supabase backend only ever touches auth, friends, shared playlist snapshots, and support tickets. The full breakdown is on the <a href="/privacy">privacy page</a>.
+    </p>
+
+    <h2 id="open-source">Open source &amp; contributing</h2>
+    <p>
+      Interwave is MIT licensed and developed in the open at <a href="https://github.com/Cloaxyyy/wave">github.com/Cloaxyyy/wave</a>. Pull requests are welcome — bug fixes, new features, translations, all of it. Bugs, feature requests, and discussions live on the GitHub issue tracker.
+    </p>
+
+    <h2 id="help">Getting help</h2>
+    <p>
+      The fastest path is the <b>Support</b> page inside the app: it files a ticket directly to the team and you can attach diagnostics with one checkbox. For public issues — bug reports, feature ideas — open a GitHub issue. For anything else, email <a href="mailto:support@interwave.cc">support@interwave.cc</a>.
+    </p>
+  </div>
+</body>
+</html>

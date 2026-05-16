@@ -4,6 +4,7 @@ import { useAuthStore } from './stores/authStore';
 import { AuthGate } from './components/AuthGate';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { Library } from './pages/Library';
 
 export function App() {
   const initialize = useAuthStore((s) => s.initialize);
@@ -37,6 +38,14 @@ export function App() {
         element={
           <AuthGate>
             <Dashboard />
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/library"
+        element={
+          <AuthGate>
+            <Library />
           </AuthGate>
         }
       />

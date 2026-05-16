@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 export function Dashboard() {
@@ -34,18 +35,22 @@ export function Dashboard() {
             desktop app to listen.
           </p>
           <div className="iw-cta-row">
+            <Link className="iw-btn iw-btn-primary" to="/library">
+              Open your library
+            </Link>
             <a
-              className="iw-btn iw-btn-primary"
+              className="iw-btn iw-btn-ghost"
               href="https://github.com/Cloaxyyy/wave/releases/latest"
               target="_blank"
               rel="noopener"
             >
               Download desktop app
             </a>
-            <a className="iw-btn iw-btn-ghost" href="/">
-              Back to interwave.cc
-            </a>
           </div>
+          <p className="iw-fineprint">
+            Audio playback in the browser is coming soon. For now, your library
+            and playlists sync from the desktop app — view them here, listen there.
+          </p>
         </div>
       </main>
     </div>

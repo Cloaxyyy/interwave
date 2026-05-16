@@ -627,3 +627,37 @@ footer {
   background: color-mix(in oklch, oklch(0.7 0.18 70) 8%, var(--bg-1));
   border-color: oklch(0.7 0.18 70);
 }
+
+/* ===== Share resolver (rendered by share.js) ===== */
+.share-loading { padding: 48px 0; text-align: center; color: var(--ink-3); font-size: 13px; }
+.share-title {
+  font-size: 44px; font-weight: 800; letter-spacing: -0.025em;
+  line-height: 1.05; margin: 6px 0 8px;
+}
+.share-kicker {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3);
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.share-sub { color: var(--ink-2); margin: 6px 0 18px; }
+.share-desc { color: var(--ink-2); margin-top: 4px; max-width: 560px; }
+.share-count {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3);
+  letter-spacing: 0.06em; margin-top: 10px;
+}
+.share-cover-fallback {
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 28%, var(--bg-2)), var(--bg-2));
+  font-size: 64px; color: var(--ink-1);
+}
+.share-list {
+  list-style: none; padding: 0; margin: 24px 0 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.share-track {
+  display: flex; gap: 14px; align-items: baseline;
+  padding: 10px 12px; border-radius: 8px;
+  background: var(--bg-1); border: 1px solid var(--line-soft);
+}
+.share-track-title { color: var(--ink-1); font-weight: 500; flex: 1; min-width: 0; }
+.share-track-artist { color: var(--ink-3); font-size: 12px; }
+.share-track.more { color: var(--ink-3); font-size: 12px; justify-content: center; }

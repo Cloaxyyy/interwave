@@ -97,16 +97,49 @@ jobs:
             -o "src-tauri/binaries/yt-dlp-${{ matrix.target }}"
           chmod +x "src-tauri/binaries/yt-dlp-${{ matrix.target }}"
 
-      - name: Build (and optionally sign + release) Tauri app
+      # Detect whether Apple signing secrets are configured. We use a job-scoped
+      # env (HAS_APPLE) so subsequent steps can branch on it — `if:` can't read
+      # secrets directly.
+      - name: Detect Apple signing config
+        id: apple
+        env:
+          CERT: ${{ secrets.APPLE_CERTIFICATE }}
+        shell: bash
+        run: |
+          if [ -n "$CERT" ]; then
+            echo "has_apple=true" >> "$GITHUB_OUTPUT"
+            echo "Apple signing secrets present — will sign + notarize."
+          else
+            echo "has_apple=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Apple signing secrets not set — building unsigned .app/.dmg (good for local install, but auto-update won't be published)."
+          fi
+
+      # ── Unsigned build (default until APPLE_* secrets are added) ────────────
+      - name: Build Tauri app (unsigned)
+        if: steps.apple.outputs.has_apple == 'false'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN:                       ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY:          ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # Apple signing — empty string when secrets aren't set, which
-          # tauri-action handles gracefully (skips notarization).
+          VITE_SUPABASE_URL:                  ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY:             ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        with:
+          # No release publish without signing — just build the .app/.dmg as
+          # a workflow artifact. (Unsigned macOS apps trigger Gatekeeper
+          # warnings that public users shouldn't have to bypass.)
+          args: --target ${{ matrix.target }} --bundles dmg
+
+      # ── Signed + notarized + published build (requires Apple secrets) ──────
+      - name: Build, sign, notarize, and release Tauri app
+        if: steps.apple.outputs.has_apple == 'true'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN:                       ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY:          ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          VITE_SUPABASE_URL:                  ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY:             ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           APPLE_CERTIFICATE:          ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY:     ${{ secrets.APPLE_SIGNING_IDENTITY }}

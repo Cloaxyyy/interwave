@@ -5,6 +5,7 @@ import { AuthGate } from './components/AuthGate';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Library } from './pages/Library';
+import { PlayerBar } from './components/PlayerBar';
 
 export function App() {
   const initialize = useAuthStore((s) => s.initialize);
@@ -24,32 +25,35 @@ export function App() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Navigate to={session ? '/dashboard' : '/login'} replace />}
-      />
-      <Route
-        path="/login"
-        element={session ? <Navigate to="/dashboard" replace /> : <Login />}
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <AuthGate>
-            <Dashboard />
-          </AuthGate>
-        }
-      />
-      <Route
-        path="/library"
-        element={
-          <AuthGate>
-            <Library />
-          </AuthGate>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={session ? '/dashboard' : '/login'} replace />}
+        />
+        <Route
+          path="/login"
+          element={session ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGate>
+              <Dashboard />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/library"
+          element={
+            <AuthGate>
+              <Library />
+            </AuthGate>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      {session && <PlayerBar />}
+    </>
   );
 }

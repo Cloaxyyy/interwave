@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MusicNote, Playlist as PlaylistIcon } from '@phosphor-icons/react';
+import { Heart, MusicNote, Play, Playlist as PlaylistIcon, SpeakerHigh } from '@phosphor-icons/react';
 import { useAuthStore } from '../stores/authStore';
+import { usePlayerStore } from '../stores/playerStore';
 import { supabase } from '../lib/supabase';
 
 interface Track {
@@ -141,17 +142,39 @@ export function Library() {
         {error && <div className="iw-error">{error}</div>}
 
         {!loading && !error && tab !== 'playlists' && (
-          <ul className="iw-list" role="list">
-            {visibleTracks.length === 0 ? (
-              <li className="iw-empty">
-                {tab === 'liked'
-                  ? "You haven't liked anything yet."
-                  : 'Your library is empty. Sign into the desktop app and play some tracks to populate it.'}
-              </li>
-            ) : (
-              visibleTracks.map((t) => <TrackRow key={t.id} track={t} />)
+          <>
+            {visibleTracks.length > 0 && (
+              <div className="iw-list-actions">
+                <button
+                  type="button"
+                  className="iw-btn iw-btn-primary iw-btn-sm"
+                  onClick={() => {
+                    void usePlayerStore.getState().playQueue(visibleTracks);
+                  }}
+                >
+                  <Play size={14} weight="fill" />
+                  Play all
+                </button>
+              </div>
             )}
-          </ul>
+            <ul className="iw-list" role="list">
+              {visibleTracks.length === 0 ? (
+                <li className="iw-empty">
+                  {tab === 'liked'
+                    ? "You haven't liked anything yet."
+                    : 'Your library is empty. Sign into the desktop app and play some tracks to populate it.'}
+                </li>
+              ) : (
+                visibleTracks.map((t, i) => (
+                  <TrackRow
+                    key={t.id}
+                    track={t}
+                    onPlay={() => { void usePlayerStore.getState().playQueue(visibleTracks, i); }}
+                  />
+                ))
+              )}
+            </ul>
+          </>
         )}
 
         {!loading && !error && tab === 'playlists' && (
@@ -180,27 +203,43 @@ export function Library() {
   );
 }
 
-function TrackRow({ track }: { track: Track }) {
+function TrackRow({ track, onPlay }: { track: Track; onPlay: () => void }) {
   const dur = track.duration_seconds ?? 0;
   const m = Math.floor(dur / 60);
   const s = String(dur % 60).padStart(2, '0');
+  const currentId = usePlayerStore((st) => st.currentTrack?.id ?? null);
+  const playerState = usePlayerStore((st) => st.state);
+  const isCurrent = currentId === track.id;
+  const isPlaying = isCurrent && playerState === 'playing';
   return (
-    <li className="iw-row">
-      <div className="iw-row-art">
-        {track.thumbnail_url ? (
-          <img src={track.thumbnail_url} alt="" loading="lazy" draggable={false} />
-        ) : (
-          <MusicNote size={18} weight="duotone" />
-        )}
-      </div>
-      <div className="iw-row-meta">
-        <div className="iw-row-title">{track.title}</div>
-        <div className="iw-row-artist">{track.artist}</div>
-      </div>
-      {track.liked && <Heart size={14} weight="fill" className="iw-row-like" />}
-      <div className="iw-row-dur">
-        {dur > 0 ? `${m}:${s}` : ''}
-      </div>
+    <li>
+      <button
+        type="button"
+        className={`iw-row ${isCurrent ? 'iw-row-playing' : ''}`}
+        onClick={onPlay}
+        aria-label={`Play ${track.title} by ${track.artist}`}
+      >
+        <div className="iw-row-art">
+          {track.thumbnail_url ? (
+            <img src={track.thumbnail_url} alt="" loading="lazy" draggable={false} />
+          ) : (
+            <MusicNote size={18} weight="duotone" />
+          )}
+          {isCurrent && (
+            <div className="iw-row-art-overlay" aria-hidden="true">
+              {isPlaying ? <SpeakerHigh size={16} weight="fill" /> : <Play size={16} weight="fill" />}
+            </div>
+          )}
+        </div>
+        <div className="iw-row-meta">
+          <div className="iw-row-title">{track.title}</div>
+          <div className="iw-row-artist">{track.artist}</div>
+        </div>
+        {track.liked && <Heart size={14} weight="fill" className="iw-row-like" />}
+        <div className="iw-row-dur">
+          {dur > 0 ? `${m}:${s}` : ''}
+        </div>
+      </button>
     </li>
   );
 }

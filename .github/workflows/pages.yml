@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'web/**'
+      - 'webapp/**'
+      - 'shared/**'
+      - 'pnpm-workspace.yaml'
+      - 'package.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -45,6 +49,35 @@ jobs:
           sed -i "s|__SUPABASE_ANON__|${SUPABASE_ANON//&/\\&}|g" web/index.html
           echo "Injected. Sample line:"
           grep -n 'SUPABASE_URL\s*=' web/index.html | head -1 | sed -E 's|(SUPABASE_URL = ).{0,12}.*|\1<redacted>|'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install workspace deps
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build webapp
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: pnpm --filter @interwave/webapp build
+
+      - name: Stage webapp into Pages tree at /app/
+        run: |
+          rm -rf web/app
+          mkdir -p web/app
+          cp -R webapp/dist/. web/app/
+          # Reuse the marketing favicon for the webapp so /app/favicon.svg resolves.
+          cp web/favicon.svg web/app/favicon.svg
+          ls -la web/app | head -20
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

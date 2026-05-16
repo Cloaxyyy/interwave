@@ -50,6 +50,9 @@ interwave-crash.log
 src-tauri/target/
 src-tauri/gen/
 
+# Webapp staged into the Pages tree by CI — never commit
+web/app/
+
 # Local OS junk
 Thumbs.db
 *.swp
